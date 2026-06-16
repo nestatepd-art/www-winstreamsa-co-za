@@ -200,7 +200,9 @@ function AuthPage() {
             </div>
 
             <Button variant="outline" type="button" disabled={loading} onClick={signInGoogle} className="w-full">
-              {inIframe ? "Continue with Google (opens new tab)" : "Continue with Google"}
+              <span suppressHydrationWarning>
+                {inIframe ? "Continue with Google (opens new tab)" : "Continue with Google"}
+              </span>
             </Button>
             {inIframe && (
               <p className="mt-2 text-xs text-muted-foreground text-center">
