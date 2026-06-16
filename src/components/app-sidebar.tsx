@@ -3,6 +3,7 @@ import {
   LayoutDashboard,
   Users,
   FileText,
+  FileSignature,
   Settings,
   LogOut,
   Sparkles,
@@ -26,6 +27,7 @@ import {
 const items = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Clients", url: "/clients", icon: Users },
+  { title: "Proposals", url: "/proposals", icon: FileSignature },
   { title: "Quotes", url: "/quotes", icon: FileText },
   { title: "Settings", url: "/settings", icon: Settings },
 ];
