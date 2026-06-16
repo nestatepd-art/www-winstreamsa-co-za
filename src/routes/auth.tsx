@@ -200,8 +200,13 @@ function AuthPage() {
             </div>
 
             <Button variant="outline" type="button" disabled={loading} onClick={signInGoogle} className="w-full">
-              Continue with Google
+              {inIframe ? "Continue with Google (opens new tab)" : "Continue with Google"}
             </Button>
+            {inIframe && (
+              <p className="mt-2 text-xs text-muted-foreground text-center">
+                You're in the Lovable preview. Google sign-in needs a top-level window — we'll open it for you.
+              </p>
+            )}
           </CardContent>
         </Card>
       </div>
