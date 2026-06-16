@@ -155,6 +155,128 @@ export type Database = {
         }
         Relationships: []
       }
+      communications: {
+        Row: {
+          body: string
+          channel: Database["public"]["Enums"]["comm_channel"]
+          client_id: string | null
+          created_at: string
+          direction: Database["public"]["Enums"]["comm_direction"]
+          error: string | null
+          id: string
+          proposal_id: string | null
+          provider: string | null
+          provider_message_id: string | null
+          sent_at: string | null
+          status: Database["public"]["Enums"]["comm_status"]
+          subject: string | null
+          to_address: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          channel: Database["public"]["Enums"]["comm_channel"]
+          client_id?: string | null
+          created_at?: string
+          direction?: Database["public"]["Enums"]["comm_direction"]
+          error?: string | null
+          id?: string
+          proposal_id?: string | null
+          provider?: string | null
+          provider_message_id?: string | null
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["comm_status"]
+          subject?: string | null
+          to_address: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          channel?: Database["public"]["Enums"]["comm_channel"]
+          client_id?: string | null
+          created_at?: string
+          direction?: Database["public"]["Enums"]["comm_direction"]
+          error?: string | null
+          id?: string
+          proposal_id?: string | null
+          provider?: string | null
+          provider_message_id?: string | null
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["comm_status"]
+          subject?: string | null
+          to_address?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "communications_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "communications_proposal_id_fkey"
+            columns: ["proposal_id"]
+            isOneToOne: false
+            referencedRelation: "proposals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      proposals: {
+        Row: {
+          accepted_at: string | null
+          brief: string | null
+          client_id: string | null
+          content: string | null
+          created_at: string
+          id: string
+          sent_at: string | null
+          status: Database["public"]["Enums"]["proposal_status"]
+          title: string
+          updated_at: string
+          user_id: string
+          valid_until: string | null
+        }
+        Insert: {
+          accepted_at?: string | null
+          brief?: string | null
+          client_id?: string | null
+          content?: string | null
+          created_at?: string
+          id?: string
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["proposal_status"]
+          title?: string
+          updated_at?: string
+          user_id: string
+          valid_until?: string | null
+        }
+        Update: {
+          accepted_at?: string | null
+          brief?: string | null
+          client_id?: string | null
+          content?: string | null
+          created_at?: string
+          id?: string
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["proposal_status"]
+          title?: string
+          updated_at?: string
+          user_id?: string
+          valid_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "proposals_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       quote_items: {
         Row: {
           created_at: string
@@ -313,6 +435,16 @@ export type Database = {
     Enums: {
       app_language: "en" | "af" | "zu" | "xh"
       app_role: "admin" | "user"
+      comm_channel: "email" | "whatsapp" | "sms"
+      comm_direction: "outbound" | "inbound"
+      comm_status: "queued" | "simulated" | "sent" | "delivered" | "failed"
+      proposal_status:
+        | "draft"
+        | "sent"
+        | "viewed"
+        | "accepted"
+        | "rejected"
+        | "expired"
       quote_status:
         | "draft"
         | "sent"
@@ -449,6 +581,17 @@ export const Constants = {
     Enums: {
       app_language: ["en", "af", "zu", "xh"],
       app_role: ["admin", "user"],
+      comm_channel: ["email", "whatsapp", "sms"],
+      comm_direction: ["outbound", "inbound"],
+      comm_status: ["queued", "simulated", "sent", "delivered", "failed"],
+      proposal_status: [
+        "draft",
+        "sent",
+        "viewed",
+        "accepted",
+        "rejected",
+        "expired",
+      ],
       quote_status: [
         "draft",
         "sent",
