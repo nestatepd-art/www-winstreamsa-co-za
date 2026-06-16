@@ -67,18 +67,51 @@ function AuthPage() {
     navigate({ to: "/settings" });
   };
 
+  const inIframe = typeof window !== "undefined" && window.self !== window.top;
+
   const signInGoogle = async () => {
-    setLoading(true);
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin + "/dashboard",
-    });
-    if (result.error) {
-      setLoading(false);
-      toast.error("Google sign-in failed");
+    // Lovable preview runs inside an iframe — OAuth popups/redirects can be blocked
+    // by third-party cookie policies, leaving the user on a white page after Google.
+    // Detect iframe and pop the auth page out into a top-level tab first.
+    if (inIframe) {
+      const url = window.location.href;
+      window.open(url, "_blank", "noopener,noreferrer");
+      toast.message("Opened sign-in in a new tab", {
+        description: "Google sign-in needs a top-level window. Continue there.",
+      });
       return;
     }
-    if (result.redirected) return;
-    navigate({ to: "/dashboard" });
+    setLoading(true);
+    try {
+      const result = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: window.location.origin + "/dashboard",
+      });
+      if (result.error) {
+        setLoading(false);
+        toast.error("Google sign-in failed", { description: String(result.error.message ?? result.error) });
+        return;
+      }
+      if (result.redirected) return;
+      // Make sure a business profile exists for this user (Google sign-up bypasses the form)
+      const { data: userData } = await supabase.auth.getUser();
+      if (userData.user) {
+        const { data: existing } = await supabase
+          .from("business_profiles")
+          .select("id")
+          .eq("user_id", userData.user.id)
+          .maybeSingle();
+        if (!existing) {
+          await supabase.from("business_profiles").insert({
+            user_id: userData.user.id,
+            business_name: userData.user.user_metadata?.full_name || "My Business",
+          });
+        }
+      }
+      navigate({ to: "/dashboard" });
+    } catch (err) {
+      setLoading(false);
+      toast.error("Google sign-in failed", { description: err instanceof Error ? err.message : String(err) });
+    }
   };
 
   return (
