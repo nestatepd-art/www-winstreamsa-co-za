@@ -73,6 +73,7 @@ function NewQuotePage() {
 
   const draftAllNotes = async () => {
     if (!scopeBrief.trim()) return toast.error("Describe the job in 1-2 sentences first");
+    if (!(await consume("ai_draft"))) return;
     setDraftingNotes(true);
     try {
       const client = clients.find((c) => c.id === clientId);
