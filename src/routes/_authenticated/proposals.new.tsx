@@ -77,6 +77,7 @@ function NewProposal() {
   const handleSave = async () => {
     if (!title.trim()) return toast.error("Add a title");
     if (!content.trim()) return toast.error("Generate or write a proposal first");
+    if (!(await consume("proposal"))) return;
     setBusy("save");
     const { data: u } = await supabase.auth.getUser();
     if (!u.user) return;
