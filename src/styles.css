@@ -197,3 +197,25 @@
 @utility animate-fade-in {
   animation: ws-fade-in 0.7s ease-out both;
 }
+
+@keyframes ws-gradient-x {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+@utility animate-gradient-x {
+  background-size: 200% auto;
+  animation: ws-gradient-x 6s linear infinite;
+}
+
+@keyframes ws-grid-drift {
+  from { background-position: 0 0; }
+  to { background-position: 60px 60px; }
+}
+@utility bg-ws-grid {
+  background-image:
+    linear-gradient(to right, oklch(1 0 0 / 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, oklch(1 0 0 / 0.04) 1px, transparent 1px);
+  background-size: 60px 60px;
+  animation: ws-grid-drift 40s linear infinite;
+}
+
