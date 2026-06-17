@@ -4,8 +4,9 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* VukaFlow design system — clean, professional, trust-first.
-   Deep navy primary, warm amber accent for highlights, generous whitespace. */
+/* WinStream design system — momentum, flow, confidence.
+   Deep navy primary, electric teal accent (drawn from the ribbon logo),
+   crisp neutrals with generous whitespace. */
 
 @theme inline {
   --font-sans:
