@@ -21,6 +21,7 @@ export const Route = createFileRoute("/_authenticated/proposals/new")({
 function NewProposal() {
   const navigate = useNavigate();
   const generate = useServerFn(draftProposal);
+  const consume = useConsumeQuota();
   const [title, setTitle] = useState("");
   const [clientId, setClientId] = useState<string>("");
   const [brief, setBrief] = useState("");
