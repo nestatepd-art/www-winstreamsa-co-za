@@ -97,6 +97,8 @@ function NewQuotePage() {
 
   const saveMut = useMutation({
     mutationFn: async (status: "draft" | "sent") => {
+      const allowed = await consume("quote");
+      if (!allowed) throw new Error("Quote limit reached. Buy credits or upgrade.");
       const { data: u } = await supabase.auth.getUser();
       if (!u.user) throw new Error("Not signed in");
       const quoteNumber = generateQuoteNumber();
