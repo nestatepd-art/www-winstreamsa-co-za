@@ -79,24 +79,30 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "WinStream — Work automation for SA businesses" },
+      { title: "WinStream SA — AI Automation for SA Businesses" },
       {
         name: "description",
         content:
-          "Automate quoting, writing and follow-ups. Built for South African SMEs — ZAR, VAT-compliant, multilingual.",
+          "AI-powered workflow automation for South African SMEs. Automate quotes, follow-ups, and business writing via WhatsApp and email.",
       },
-      { property: "og:title", content: "WinStream — Work automation for SA businesses" },
+      { property: "og:site_name", content: "WinStream SA" },
+      { property: "og:type", content: "website" },
+      { property: "og:locale", content: "en_ZA" },
+      { property: "og:title", content: "WinStream SA — AI Automation for SA Businesses" },
       {
         property: "og:description",
-        content: "Automate quoting, writing and follow-ups. Built for South African SMEs.",
+        content:
+          "Automate quotes, follow-ups & writing in 10 minutes. Built for South African SMEs.",
       },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-      { name: "twitter:title", content: "WinStream — Work automation for SA businesses" },
-      { name: "description", content: "BizFlow SA automates repetitive business tasks for South African companies." },
-      { property: "og:description", content: "BizFlow SA automates repetitive business tasks for South African companies." },
-      { name: "twitter:description", content: "BizFlow SA automates repetitive business tasks for South African companies." },
+      { property: "og:url", content: "https://biz-buddy-za.lovable.app" },
       { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/0e056a17-f6a5-4524-9d94-f08bae05ab15/id-preview-71c17db4--73382aa4-c3b2-40ab-9e93-3f335115e53a.lovable.app-1781707903270.png" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "WinStream SA — AI Automation for SA Businesses" },
+      {
+        name: "twitter:description",
+        content:
+          "Automate quotes, follow-ups & writing in 10 minutes. Built for South African SMEs.",
+      },
       { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/0e056a17-f6a5-4524-9d94-f08bae05ab15/id-preview-71c17db4--73382aa4-c3b2-40ab-9e93-3f335115e53a.lovable.app-1781707903270.png" },
     ],
     links: [
@@ -104,6 +110,28 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap",
+      },
+    ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "SoftwareApplication",
+          name: "WinStream SA",
+          applicationCategory: "BusinessApplication",
+          operatingSystem: "Web",
+          description:
+            "AI-powered workflow automation for South African SMEs. Automates quotes, follow-ups, and business writing via WhatsApp and email.",
+          offers: {
+            "@type": "Offer",
+            price: "6500",
+            priceCurrency: "ZAR",
+            priceSpecification: "per month",
+          },
+          areaServed: "ZA",
+          url: "https://biz-buddy-za.lovable.app",
+        }),
       },
     ],
   }),
