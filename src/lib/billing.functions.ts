@@ -95,11 +95,20 @@ export const consumeQuota = createServerFn({ method: "POST" })
       kind === "quote" ? "quotes_used" : kind === "proposal" ? "proposals_used" : "ai_drafts_used";
     const used: number = row[counterField];
 
+    const buildPatch = (
+      next: number,
+      extra?: { credit_balance?: number },
+    ): Record<string, number> => {
+      const p: Record<string, number> = { [counterField]: next };
+      if (extra?.credit_balance !== undefined) p.credit_balance = extra.credit_balance;
+      return p;
+    };
+
     if (row.plan === "pro") {
       // unlimited; still track usage for analytics
       const upd = await supabase
         .from("user_credits")
-        .update({ [counterField]: used + 1 })
+        .update(buildPatch(used + 1) as never)
         .eq("user_id", userId);
       if (upd.error) throw new Error(upd.error.message);
       return { ok: true, used: used + 1, limit: Infinity, balance: row.credit_balance, charged: 0 };
@@ -109,7 +118,7 @@ export const consumeQuota = createServerFn({ method: "POST" })
     if (used < limit) {
       const upd = await supabase
         .from("user_credits")
-        .update({ [counterField]: used + 1 })
+        .update(buildPatch(used + 1) as never)
         .eq("user_id", userId);
       if (upd.error) throw new Error(upd.error.message);
       return { ok: true, used: used + 1, limit, balance: row.credit_balance, charged: 0 };
@@ -130,10 +139,7 @@ export const consumeQuota = createServerFn({ method: "POST" })
     const newBalance = row.credit_balance - cost;
     const upd = await supabase
       .from("user_credits")
-      .update({
-        credit_balance: newBalance,
-        [counterField]: used + 1,
-      })
+      .update(buildPatch(used + 1, { credit_balance: newBalance }) as never)
       .eq("user_id", userId);
     if (upd.error) throw new Error(upd.error.message);
     await supabase.from("credit_transactions").insert({
