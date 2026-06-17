@@ -92,6 +92,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
+      { name: "twitter:title", content: "WinStream — Work automation for SA businesses" },
+      { name: "description", content: "BizFlow SA automates repetitive business tasks for South African companies." },
+      { property: "og:description", content: "BizFlow SA automates repetitive business tasks for South African companies." },
+      { name: "twitter:description", content: "BizFlow SA automates repetitive business tasks for South African companies." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/0e056a17-f6a5-4524-9d94-f08bae05ab15/id-preview-71c17db4--73382aa4-c3b2-40ab-9e93-3f335115e53a.lovable.app-1781707903270.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/0e056a17-f6a5-4524-9d94-f08bae05ab15/id-preview-71c17db4--73382aa4-c3b2-40ab-9e93-3f335115e53a.lovable.app-1781707903270.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
