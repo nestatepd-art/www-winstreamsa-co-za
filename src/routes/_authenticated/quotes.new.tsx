@@ -26,6 +26,7 @@ function NewQuotePage() {
   const navigate = useNavigate();
   const draftItem = useServerFn(draftQuoteItem);
   const draftNotes = useServerFn(draftQuoteNotes);
+  const consume = useConsumeQuota();
 
   const { data: clients = [] } = useQuery({
     queryKey: ["clients-min"],
