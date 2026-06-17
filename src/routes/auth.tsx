@@ -118,9 +118,15 @@ function AuthPage() {
   return (
     <div className="min-h-screen grid lg:grid-cols-2">
       {/* Left brand panel */}
-      <div className="hidden lg:flex flex-col justify-between p-12 bg-primary text-primary-foreground">
+      <div
+        className="hidden lg:flex flex-col justify-between p-12 text-white relative overflow-hidden"
+        style={{
+          background:
+            "radial-gradient(60% 50% at 15% 10%, oklch(0.78 0.13 195 / 0.22) 0%, transparent 60%), radial-gradient(55% 45% at 90% 80%, oklch(0.62 0.18 270 / 0.28) 0%, transparent 60%), oklch(0.10 0.04 264)",
+        }}
+      >
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-lg bg-primary-foreground/10 grid place-items-center p-1">
+          <div className="h-10 w-10 rounded-lg bg-white/10 grid place-items-center p-1">
             <img src={winstreamLogo.url} alt="WinStream" className="h-full w-full object-contain" />
           </div>
           <span className="text-lg font-semibold tracking-tight">WinStream</span>
@@ -129,17 +135,17 @@ function AuthPage() {
           <h1 className="text-4xl font-semibold tracking-tight leading-tight">
             Stop writing quotes at midnight.
           </h1>
-          <p className="text-primary-foreground/75 text-lg">
+          <p className="text-white/75 text-lg">
             WinStream drafts, quotes and follows up — in your tone, in ZAR, VAT-compliant.
             Built for South African businesses.
           </p>
-          <ul className="space-y-2 text-sm text-primary-foreground/80">
+          <ul className="space-y-2 text-sm text-white/80">
             <li>✓ Branded quotes in 30 seconds</li>
             <li>✓ Automatic VAT (15%) and SARS-friendly descriptions</li>
             <li>✓ Follow-up sequences that get you paid</li>
           </ul>
         </div>
-        <p className="text-xs text-primary-foreground/50">
+        <p className="text-xs text-white/50">
           🇿🇦 Made for South African SMEs
         </p>
       </div>

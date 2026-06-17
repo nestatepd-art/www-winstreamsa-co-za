@@ -72,58 +72,58 @@
 :root {
   --radius: 0.625rem;
 
-  --background: oklch(0.995 0.003 240);
-  --foreground: oklch(0.20 0.04 260);
+  /* Deep navy app background — matches the landing page */
+  --background: oklch(0.10 0.04 264);
+  --foreground: oklch(0.97 0.01 240);
 
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.20 0.04 260);
+  --card: oklch(0.16 0.05 264);
+  --card-foreground: oklch(0.97 0.01 240);
 
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.20 0.04 260);
+  --popover: oklch(0.16 0.05 264);
+  --popover-foreground: oklch(0.97 0.01 240);
 
-  /* Deep navy from the WinStream ribbon — confident, trustworthy */
-  --primary: oklch(0.26 0.10 264);
-  --primary-foreground: oklch(0.99 0.005 240);
+  /* Electric teal primary on dark surfaces */
+  --primary: oklch(0.78 0.13 195);
+  --primary-foreground: oklch(0.12 0.04 264);
 
-  /* Cool light secondary surface */
-  --secondary: oklch(0.965 0.012 230);
-  --secondary-foreground: oklch(0.26 0.10 264);
+  --secondary: oklch(0.22 0.05 264);
+  --secondary-foreground: oklch(0.97 0.01 240);
 
-  --muted: oklch(0.965 0.012 230);
-  --muted-foreground: oklch(0.50 0.03 255);
+  --muted: oklch(0.20 0.04 264);
+  --muted-foreground: oklch(0.72 0.03 240);
 
-  /* Electric teal — the ribbon highlight, used for momentum/highlights */
-  --accent: oklch(0.78 0.13 195);
-  --accent-foreground: oklch(0.20 0.06 240);
+  --accent: oklch(0.62 0.18 270);
+  --accent-foreground: oklch(0.98 0.01 240);
 
-  --destructive: oklch(0.58 0.22 27);
-  --destructive-foreground: oklch(0.99 0.005 240);
+  --destructive: oklch(0.65 0.22 27);
+  --destructive-foreground: oklch(0.98 0.01 240);
 
-  --success: oklch(0.66 0.15 165);
-  --success-foreground: oklch(0.99 0.005 240);
+  --success: oklch(0.72 0.16 165);
+  --success-foreground: oklch(0.12 0.04 264);
 
-  --warning: oklch(0.80 0.14 75);
-  --warning-foreground: oklch(0.28 0.07 60);
+  --warning: oklch(0.82 0.14 75);
+  --warning-foreground: oklch(0.20 0.06 60);
 
-  --border: oklch(0.92 0.012 235);
-  --input: oklch(0.92 0.012 235);
-  --ring: oklch(0.55 0.14 220);
+  --border: oklch(1 0 0 / 0.10);
+  --input: oklch(1 0 0 / 0.12);
+  --ring: oklch(0.78 0.13 195);
 
-  --chart-1: oklch(0.26 0.10 264);
-  --chart-2: oklch(0.78 0.13 195);
+  --chart-1: oklch(0.78 0.13 195);
+  --chart-2: oklch(0.62 0.18 270);
   --chart-3: oklch(0.55 0.16 240);
-  --chart-4: oklch(0.66 0.15 165);
-  --chart-5: oklch(0.62 0.18 25);
+  --chart-4: oklch(0.72 0.16 165);
+  --chart-5: oklch(0.72 0.18 25);
 
-  --sidebar: oklch(0.99 0.005 240);
-  --sidebar-foreground: oklch(0.26 0.06 260);
-  --sidebar-primary: oklch(0.26 0.10 264);
-  --sidebar-primary-foreground: oklch(0.99 0.005 240);
-  --sidebar-accent: oklch(0.96 0.012 230);
-  --sidebar-accent-foreground: oklch(0.26 0.10 264);
-  --sidebar-border: oklch(0.92 0.012 235);
-  --sidebar-ring: oklch(0.55 0.14 220);
+  --sidebar: oklch(0.13 0.04 264);
+  --sidebar-foreground: oklch(0.92 0.01 240);
+  --sidebar-primary: oklch(0.78 0.13 195);
+  --sidebar-primary-foreground: oklch(0.12 0.04 264);
+  --sidebar-accent: oklch(0.22 0.05 264);
+  --sidebar-accent-foreground: oklch(0.97 0.01 240);
+  --sidebar-border: oklch(1 0 0 / 0.08);
+  --sidebar-ring: oklch(0.78 0.13 195);
 }
+
 
 .dark {
   --background: oklch(0.17 0.03 260);
