@@ -224,6 +224,33 @@ export type Database = {
           },
         ]
       }
+      credit_transactions: {
+        Row: {
+          created_at: string
+          delta: number
+          id: string
+          reason: string
+          related_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          delta: number
+          id?: string
+          reason: string
+          related_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          delta?: number
+          id?: string
+          reason?: string
+          related_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       proposals: {
         Row: {
           accepted_at: string | null
@@ -398,6 +425,45 @@ export type Database = {
           },
         ]
       }
+      user_credits: {
+        Row: {
+          ai_drafts_used: number
+          created_at: string
+          credit_balance: number
+          id: string
+          period_start: string
+          plan: Database["public"]["Enums"]["billing_plan"]
+          proposals_used: number
+          quotes_used: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ai_drafts_used?: number
+          created_at?: string
+          credit_balance?: number
+          id?: string
+          period_start?: string
+          plan?: Database["public"]["Enums"]["billing_plan"]
+          proposals_used?: number
+          quotes_used?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ai_drafts_used?: number
+          created_at?: string
+          credit_balance?: number
+          id?: string
+          period_start?: string
+          plan?: Database["public"]["Enums"]["billing_plan"]
+          proposals_used?: number
+          quotes_used?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -435,6 +501,7 @@ export type Database = {
     Enums: {
       app_language: "en" | "af" | "zu" | "xh"
       app_role: "admin" | "user"
+      billing_plan: "free" | "pro"
       comm_channel: "email" | "whatsapp" | "sms"
       comm_direction: "outbound" | "inbound"
       comm_status: "queued" | "simulated" | "sent" | "delivered" | "failed"
@@ -581,6 +648,7 @@ export const Constants = {
     Enums: {
       app_language: ["en", "af", "zu", "xh"],
       app_role: ["admin", "user"],
+      billing_plan: ["free", "pro"],
       comm_channel: ["email", "whatsapp", "sms"],
       comm_direction: ["outbound", "inbound"],
       comm_status: ["queued", "simulated", "sent", "delivered", "failed"],
