@@ -48,6 +48,7 @@ function NewProposal() {
 
   const handleDraft = async () => {
     if (brief.trim().length < 5) return toast.error("Tell me a bit about the project first.");
+    if (!(await consume("ai_draft"))) return;
     setBusy("ai");
     try {
       const clientName = clients?.find((c) => c.id === clientId)?.name;
