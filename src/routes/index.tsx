@@ -1,5 +1,6 @@
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
+import { Zap, Bell, MessageCircle, ArrowRight } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -31,83 +32,155 @@ export const Route = createFileRoute("/")({
   component: LandingPage,
 });
 
+const TEAL = "oklch(0.78 0.13 195)";
+const INDIGO = "oklch(0.62 0.18 270)";
+const NAVY = "oklch(0.18 0.06 264)";
+const DEEP = "oklch(0.10 0.04 264)";
+
 function LandingPage() {
   return (
-    <main className="relative min-h-screen overflow-hidden bg-background">
-      {/* Ambient brand background */}
+    <main
+      className="relative min-h-screen overflow-hidden text-white"
+      style={{ background: DEEP }}
+    >
+      {/* Ambient glow orbs */}
       <div
         aria-hidden
-        className="absolute inset-0 -z-10"
-        style={{
-          background:
-            "radial-gradient(60% 50% at 15% 10%, oklch(0.78 0.13 195 / 0.22) 0%, transparent 60%), radial-gradient(55% 45% at 90% 20%, oklch(0.55 0.16 240 / 0.20) 0%, transparent 60%), radial-gradient(70% 60% at 50% 100%, oklch(0.26 0.10 264 / 0.15) 0%, transparent 65%)",
-        }}
+        className="pointer-events-none absolute -top-[20%] -left-[15%] -z-10 h-[60vmin] w-[60vmin] rounded-full opacity-60 blur-3xl animate-blob"
+        style={{ background: `${TEAL.replace(")", " / 0.18)")}` }}
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute -top-32 -left-32 -z-10 h-[28rem] w-[28rem] rounded-full opacity-60 blur-3xl animate-blob"
-        style={{ background: "oklch(0.78 0.13 195 / 0.35)" }}
+        className="pointer-events-none absolute top-[10%] -right-[15%] -z-10 h-[65vmin] w-[65vmin] rounded-full opacity-70 blur-3xl animate-blob-delay"
+        style={{ background: `${INDIGO.replace(")", " / 0.22)")}` }}
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute -bottom-40 -right-32 -z-10 h-[32rem] w-[32rem] rounded-full opacity-50 blur-3xl animate-blob-delay"
-        style={{ background: "oklch(0.55 0.16 240 / 0.35)" }}
+        className="pointer-events-none absolute -bottom-[10%] left-[15%] -z-10 h-[50vmin] w-[50vmin] rounded-full opacity-50 blur-3xl"
+        style={{ background: `${NAVY.replace(")", " / 0.55)")}` }}
       />
 
-      <section className="mx-auto max-w-4xl px-6 py-24 text-center">
-        <span className="inline-flex animate-fade-in items-center gap-2 rounded-full border border-accent/30 bg-accent/10 px-3 py-1 text-xs font-medium text-foreground/80 backdrop-blur">
-          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-accent" />
+      {/* Drifting grid */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 bg-ws-grid opacity-40" />
+
+      {/* Top fade for depth */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-64"
+        style={{ background: "linear-gradient(to bottom, oklch(0 0 0 / 0.5), transparent)" }}
+      />
+
+      <section className="mx-auto flex max-w-5xl flex-col items-center px-6 py-20 text-center sm:py-28">
+        {/* Eyebrow badge */}
+        <span className="inline-flex animate-fade-in items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-widest text-white/80 backdrop-blur-md">
+          <span
+            className="h-1.5 w-1.5 animate-pulse rounded-full"
+            style={{ background: TEAL, boxShadow: `0 0 10px ${TEAL}` }}
+          />
           Built for South African SMEs
         </span>
 
-        <h1
-          className="mt-6 animate-fade-in bg-clip-text text-4xl font-bold tracking-tight text-transparent sm:text-6xl"
-          style={{
-            backgroundImage:
-              "linear-gradient(135deg, oklch(0.22 0.10 264) 0%, oklch(0.55 0.16 240) 55%, oklch(0.78 0.13 195) 100%)",
-          }}
-        >
-          AI Workflow Automation for South African Small Businesses
+        {/* Hero headline */}
+        <h1 className="mt-8 max-w-4xl animate-fade-in text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-6xl">
+          <span className="block text-white">AI Workflow Automation</span>
+          <span
+            className="mt-2 block bg-clip-text text-transparent animate-gradient-x"
+            style={{
+              backgroundImage: `linear-gradient(90deg, ${TEAL}, ${INDIGO}, ${TEAL})`,
+            }}
+          >
+            for South African Small Businesses
+          </span>
         </h1>
 
-        <p className="mx-auto mt-6 max-w-2xl animate-fade-in text-lg text-muted-foreground [animation-delay:120ms]">
+        <p className="mx-auto mt-6 max-w-2xl animate-fade-in text-base leading-relaxed text-white/65 sm:text-lg [animation-delay:120ms]">
           WinStream SA automates quotes, follow-ups, and business writing via WhatsApp and
           email — built for SA SMEs in ZAR, VAT-compliant and multilingual.
         </p>
 
-        <div className="mt-10 flex animate-fade-in justify-center gap-3 [animation-delay:240ms]">
+        {/* CTAs */}
+        <div className="mt-10 flex w-full max-w-md animate-fade-in flex-col gap-3 sm:flex-row sm:justify-center [animation-delay:240ms]">
           <Link
             to="/auth"
-            className="inline-flex items-center justify-center rounded-md px-6 py-3 text-sm font-medium text-primary-foreground shadow-[var(--shadow-glow)] transition-transform duration-200 hover:scale-[1.03]"
-            style={{ backgroundImage: "var(--gradient-brand)" }}
+            className="group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-xl px-7 py-3.5 text-sm font-bold text-[#04121a] transition-transform duration-200 hover:scale-[1.02] active:scale-95"
+            style={{
+              background: TEAL,
+              boxShadow: `0 0 32px -4px ${TEAL.replace(")", " / 0.55)")}`,
+            }}
           >
-            Get started free
+            <span>Get started free</span>
+            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+            <span
+              aria-hidden
+              className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/40 to-transparent transition-transform duration-700 group-hover:translate-x-full"
+            />
           </Link>
           <Link
             to="/auth"
-            className="inline-flex items-center justify-center rounded-md border border-input bg-background/70 px-6 py-3 text-sm font-medium text-foreground backdrop-blur transition-colors hover:bg-accent/15"
+            className="inline-flex items-center justify-center rounded-xl border border-white/15 bg-white/5 px-7 py-3.5 text-sm font-semibold text-white backdrop-blur-md transition-colors hover:bg-white/10 active:scale-95"
           >
             Sign in
           </Link>
         </div>
 
-        <div className="mt-20 grid animate-fade-in gap-4 sm:grid-cols-3 [animation-delay:360ms]">
+        {/* Feature cards */}
+        <div className="mt-20 grid w-full animate-fade-in gap-4 sm:grid-cols-3 [animation-delay:360ms]">
           {[
-            { t: "Smart Quotes", d: "Generate VAT-compliant quotes in seconds." },
-            { t: "Auto Follow-ups", d: "Never chase a payment or proposal again." },
-            { t: "WhatsApp + Email", d: "Meet clients where they already are." },
-          ].map((f) => (
+            {
+              t: "Smart Quotes",
+              d: "Generate VAT-compliant quotes in seconds.",
+              Icon: Zap,
+              tint: TEAL,
+            },
+            {
+              t: "Auto Follow-ups",
+              d: "Never chase a payment or proposal again.",
+              Icon: Bell,
+              tint: INDIGO,
+            },
+            {
+              t: "WhatsApp + Email",
+              d: "Meet clients where they already are.",
+              Icon: MessageCircle,
+              tint: TEAL,
+            },
+          ].map(({ t, d, Icon, tint }) => (
             <div
-              key={f.t}
-              className="rounded-xl border border-border/60 bg-card/70 p-5 text-left shadow-[var(--shadow-card)] backdrop-blur transition-transform duration-200 hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)]"
+              key={t}
+              className="group relative rounded-2xl p-[1px] transition-transform duration-300 hover:-translate-y-1"
+              style={{
+                background:
+                  "linear-gradient(160deg, oklch(1 0 0 / 0.22), oklch(1 0 0 / 0.04) 40%, transparent)",
+              }}
             >
-              <div className="mb-2 inline-flex h-8 w-8 items-center justify-center rounded-lg bg-accent/20 text-accent-foreground">
-                <span className="h-2 w-2 rounded-full bg-accent" />
+              <div
+                className="relative h-full rounded-[15px] p-6 text-left backdrop-blur-xl transition-colors"
+                style={{ background: "oklch(0.16 0.05 264 / 0.75)" }}
+              >
+                <div
+                  className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10"
+                  style={{
+                    background: tint.replace(")", " / 0.12)"),
+                    color: tint,
+                    boxShadow: `inset 0 0 0 1px ${tint.replace(")", " / 0.25)")}`,
+                  }}
+                >
+                  <Icon className="h-5 w-5" />
+                </div>
+                <h3 className="text-base font-semibold text-white">{t}</h3>
+                <p className="mt-1.5 text-sm leading-relaxed text-white/60">{d}</p>
               </div>
-              <h3 className="text-sm font-semibold text-foreground">{f.t}</h3>
-              <p className="mt-1 text-sm text-muted-foreground">{f.d}</p>
             </div>
           ))}
+        </div>
+
+        {/* Trust footer */}
+        <div className="mt-16 flex animate-fade-in items-center gap-3 [animation-delay:480ms]">
+          <span className="h-px w-12 bg-white/15" />
+          <span className="text-[10px] font-semibold uppercase tracking-[0.25em] text-white/40">
+            ZAR · VAT-compliant · POPIA-ready
+          </span>
+          <span className="h-px w-12 bg-white/15" />
         </div>
       </section>
     </main>
