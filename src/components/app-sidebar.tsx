@@ -87,6 +87,7 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="border-t border-sidebar-border">
+        <CreditMeter collapsed={collapsed} />
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton onClick={handleSignOut}>
