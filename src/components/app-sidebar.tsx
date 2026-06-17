@@ -6,9 +6,10 @@ import {
   FileSignature,
   Settings,
   LogOut,
-  Sparkles,
+  
   CreditCard,
 } from "lucide-react";
+import winstreamLogo from "@/assets/winstream-logo.png.asset.json";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -52,12 +53,14 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarHeader className="border-b border-sidebar-border">
         <div className="flex items-center gap-2 px-2 py-2">
-          <div className="h-8 w-8 rounded-md bg-primary text-primary-foreground grid place-items-center shrink-0">
-            <Sparkles className="h-4 w-4" />
-          </div>
+          <img
+            src={winstreamLogo.url}
+            alt="WinStream"
+            className="h-8 w-8 shrink-0 object-contain"
+          />
           {!collapsed && (
             <div className="leading-tight">
-              <div className="font-semibold text-sm tracking-tight">VukaFlow</div>
+              <div className="font-semibold text-sm tracking-tight">WinStream</div>
               <div className="text-[10px] text-muted-foreground uppercase tracking-wider">
                 SA Business OS
               </div>

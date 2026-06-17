@@ -22,7 +22,7 @@ function AuthedLayout() {
           <header className="h-14 flex items-center gap-3 border-b border-border bg-card/60 backdrop-blur px-4 sticky top-0 z-10">
             <SidebarTrigger />
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <span className="font-semibold text-foreground tracking-tight">VukaFlow</span>
+              <span className="font-semibold text-foreground tracking-tight">WinStream</span>
               <span>·</span>
               <span>Work that runs itself</span>
             </div>

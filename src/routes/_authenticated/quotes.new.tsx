@@ -155,7 +155,7 @@ function NewQuotePage() {
           <Link to="/quotes"><ArrowLeft className="h-4 w-4 mr-1" /> Back to quotes</Link>
         </Button>
         <h1 className="text-3xl font-semibold tracking-tight mt-2">New quote</h1>
-        <p className="text-muted-foreground text-sm mt-1">Build your quote. VukaFlow can draft descriptions and notes for you.</p>
+        <p className="text-muted-foreground text-sm mt-1">Build your quote. WinStream can draft descriptions and notes for you.</p>
       </div>
 
       <Card>

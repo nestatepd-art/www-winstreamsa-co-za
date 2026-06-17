@@ -7,14 +7,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Sparkles, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import winstreamLogo from "@/assets/winstream-logo.png.asset.json";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "Sign in · VukaFlow" },
-      { name: "description", content: "Sign in to VukaFlow — work automation for South African businesses." },
+      { title: "Sign in · WinStream" },
+      { name: "description", content: "Sign in to WinStream — turn client conversations into signed quotes and proposals." },
     ],
   }),
   component: AuthPage,
@@ -118,18 +119,18 @@ function AuthPage() {
     <div className="min-h-screen grid lg:grid-cols-2">
       {/* Left brand panel */}
       <div className="hidden lg:flex flex-col justify-between p-12 bg-primary text-primary-foreground">
-        <div className="flex items-center gap-2">
-          <div className="h-9 w-9 rounded-md bg-primary-foreground/10 grid place-items-center">
-            <Sparkles className="h-5 w-5" />
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 rounded-lg bg-primary-foreground/10 grid place-items-center p-1">
+            <img src={winstreamLogo.url} alt="WinStream" className="h-full w-full object-contain" />
           </div>
-          <span className="text-lg font-semibold tracking-tight">VukaFlow</span>
+          <span className="text-lg font-semibold tracking-tight">WinStream</span>
         </div>
         <div className="space-y-6 max-w-md">
           <h1 className="text-4xl font-semibold tracking-tight leading-tight">
             Stop writing quotes at midnight.
           </h1>
           <p className="text-primary-foreground/75 text-lg">
-            VukaFlow drafts, quotes and follows up — in your tone, in ZAR, VAT-compliant.
+            WinStream drafts, quotes and follows up — in your tone, in ZAR, VAT-compliant.
             Built for South African businesses.
           </p>
           <ul className="space-y-2 text-sm text-primary-foreground/80">
@@ -147,7 +148,7 @@ function AuthPage() {
       <div className="flex items-center justify-center p-6 lg:p-12">
         <Card className="w-full max-w-md border-border/60 shadow-sm">
           <CardHeader>
-            <CardTitle className="text-2xl">Welcome to VukaFlow</CardTitle>
+            <CardTitle className="text-2xl">Welcome to WinStream</CardTitle>
             <CardDescription>Sign in or create your business account</CardDescription>
           </CardHeader>
           <CardContent>

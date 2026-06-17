@@ -37,7 +37,7 @@ function QuotesPage() {
       {quotes.length === 0 ? (
         <EmptyState
           title="No quotes yet"
-          body="Build your first quote — VukaFlow drafts the descriptions, computes VAT (15%), and gives you a shareable link."
+          body="Build your first quote — WinStream drafts the descriptions, computes VAT (15%), and gives you a shareable link."
           action={<Button asChild><Link to="/quotes/new"><Plus className="h-4 w-4 mr-1" /> New quote</Link></Button>}
         />
       ) : (

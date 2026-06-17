@@ -74,7 +74,7 @@ function Dashboard() {
           {stats?.recentQuotes?.length === 0 ? (
             <EmptyState
               title="No quotes yet"
-              body="Create your first quote — VukaFlow drafts the descriptions for you."
+              body="Create your first quote — WinStream drafts the descriptions for you."
               action={<Button asChild><Link to="/quotes/new"><Plus className="h-4 w-4 mr-1" /> New quote</Link></Button>}
             />
           ) : (
