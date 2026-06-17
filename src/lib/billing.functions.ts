@@ -37,11 +37,21 @@ export const consumeQuota = createServerFn({ method: "POST" })
     const { supabase } = context;
     const { data: res, error } = await supabase.rpc("consume_quota", {
       _kind: data.kind as QuotaKind,
-      _related_id: data.relatedId ?? null,
+      _related_id: data.relatedId ?? undefined,
     });
     if (error) throw new Error(error.message);
-    if (res.limit === null) res.limit = Infinity;
-    return res;
+    const out = (res ?? {}) as Record<string, any>;
+    if (out.limit === null) out.limit = Infinity;
+    return out as {
+      ok: boolean;
+      used: number;
+      limit: number;
+      balance: number;
+      charged: number;
+      cost?: number;
+      reason?: string;
+      kind?: QuotaKind;
+    };
   });
 
 export const topUpCredits = createServerFn({ method: "POST" })
