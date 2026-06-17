@@ -98,7 +98,7 @@ function LandingPage() {
             { t: "WhatsApp + Email", d: "Meet clients where they already are." },
           ].map((f) => (
             <div
-              key={t(f)}
+              key={f.t}
               className="rounded-xl border border-border/60 bg-card/70 p-5 text-left shadow-[var(--shadow-card)] backdrop-blur transition-transform duration-200 hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)]"
             >
               <div className="mb-2 inline-flex h-8 w-8 items-center justify-center rounded-lg bg-accent/20 text-accent-foreground">
@@ -112,8 +112,4 @@ function LandingPage() {
       </section>
     </main>
   );
-}
-
-function t(f: { t: string }) {
-  return f.t;
 }
