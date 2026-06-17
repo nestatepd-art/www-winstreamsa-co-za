@@ -60,6 +60,7 @@ function NewQuotePage() {
 
   const draftLineMut = async (i: number, brief: string) => {
     if (!brief.trim()) return toast.error("Type a short brief first (e.g. 'install 3 plug points')");
+    if (!(await consume("ai_draft"))) return;
     updateItem(i, { _drafting: true });
     try {
       const res = await draftItem({ data: { brief, tone: profile?.brand_tone ?? undefined } });
