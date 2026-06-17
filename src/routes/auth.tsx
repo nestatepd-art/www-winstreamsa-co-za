@@ -118,7 +118,13 @@ function AuthPage() {
   return (
     <div className="min-h-screen grid lg:grid-cols-2">
       {/* Left brand panel */}
-      <div className="hidden lg:flex flex-col justify-between p-12 bg-primary text-primary-foreground">
+      <div
+        className="hidden lg:flex flex-col justify-between p-12 text-white relative overflow-hidden"
+        style={{
+          background:
+            "radial-gradient(60% 50% at 15% 10%, oklch(0.78 0.13 195 / 0.22) 0%, transparent 60%), radial-gradient(55% 45% at 90% 80%, oklch(0.62 0.18 270 / 0.28) 0%, transparent 60%), oklch(0.10 0.04 264)",
+        }}
+      >
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-lg bg-primary-foreground/10 grid place-items-center p-1">
             <img src={winstreamLogo.url} alt="WinStream" className="h-full w-full object-contain" />
