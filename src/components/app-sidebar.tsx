@@ -7,6 +7,7 @@ import {
   Settings,
   LogOut,
   Sparkles,
+  CreditCard,
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -23,12 +24,14 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { CreditMeter } from "@/components/credit-meter";
 
 const items = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Clients", url: "/clients", icon: Users },
   { title: "Proposals", url: "/proposals", icon: FileSignature },
   { title: "Quotes", url: "/quotes", icon: FileText },
+  { title: "Billing", url: "/billing", icon: CreditCard },
   { title: "Settings", url: "/settings", icon: Settings },
 ];
 
