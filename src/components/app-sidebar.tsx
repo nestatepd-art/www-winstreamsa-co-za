@@ -6,7 +6,7 @@ import {
   FileSignature,
   Settings,
   LogOut,
-  Sparkles,
+  
   CreditCard,
 } from "lucide-react";
 import winstreamLogo from "@/assets/winstream-logo.png.asset.json";

@@ -3,7 +3,7 @@ import { createFileRoute, redirect } from "@tanstack/react-router";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "VukaFlow — Work automation for SA businesses" },
+      { title: "WinStream — Work automation for SA businesses" },
       {
         name: "description",
         content:

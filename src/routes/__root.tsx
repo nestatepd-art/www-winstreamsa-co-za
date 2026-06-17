@@ -79,13 +79,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "VukaFlow — Work automation for SA businesses" },
+      { title: "WinStream — Work automation for SA businesses" },
       {
         name: "description",
         content:
           "Automate quoting, writing and follow-ups. Built for South African SMEs — ZAR, VAT-compliant, multilingual.",
       },
-      { property: "og:title", content: "VukaFlow — Work automation for SA businesses" },
+      { property: "og:title", content: "WinStream — Work automation for SA businesses" },
       {
         property: "og:description",
         content: "Automate quoting, writing and follow-ups. Built for South African SMEs.",

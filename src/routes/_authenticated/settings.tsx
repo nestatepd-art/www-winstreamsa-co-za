@@ -110,7 +110,7 @@ function SettingsPage() {
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Defaults & brand voice</CardTitle>
-          <CardDescription>How VukaFlow writes for you.</CardDescription>
+          <CardDescription>How WinStream writes for you.</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-2">
           <F label="Default language">
