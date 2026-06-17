@@ -490,6 +490,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      consume_quota: {
+        Args: { _kind: string; _related_id?: string }
+        Returns: Json
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -497,6 +501,29 @@ export type Database = {
         }
         Returns: boolean
       }
+      init_user_credits: {
+        Args: never
+        Returns: {
+          ai_drafts_used: number
+          created_at: string
+          credit_balance: number
+          id: string
+          period_start: string
+          plan: Database["public"]["Enums"]["billing_plan"]
+          proposals_used: number
+          quotes_used: number
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "user_credits"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      set_user_plan: { Args: { _plan: string }; Returns: string }
+      topup_credits: { Args: { _credits: number }; Returns: number }
     }
     Enums: {
       app_language: "en" | "af" | "zu" | "xh"
