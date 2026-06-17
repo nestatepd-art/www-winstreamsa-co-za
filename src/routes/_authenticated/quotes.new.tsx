@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
 import { draftQuoteItem, draftQuoteNotes } from "@/lib/ai.functions";
+import { useConsumeQuota } from "@/hooks/use-credits";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,6 +26,7 @@ function NewQuotePage() {
   const navigate = useNavigate();
   const draftItem = useServerFn(draftQuoteItem);
   const draftNotes = useServerFn(draftQuoteNotes);
+  const consume = useConsumeQuota();
 
   const { data: clients = [] } = useQuery({
     queryKey: ["clients-min"],
@@ -58,6 +60,7 @@ function NewQuotePage() {
 
   const draftLineMut = async (i: number, brief: string) => {
     if (!brief.trim()) return toast.error("Type a short brief first (e.g. 'install 3 plug points')");
+    if (!(await consume("ai_draft"))) return;
     updateItem(i, { _drafting: true });
     try {
       const res = await draftItem({ data: { brief, tone: profile?.brand_tone ?? undefined } });
@@ -70,6 +73,7 @@ function NewQuotePage() {
 
   const draftAllNotes = async () => {
     if (!scopeBrief.trim()) return toast.error("Describe the job in 1-2 sentences first");
+    if (!(await consume("ai_draft"))) return;
     setDraftingNotes(true);
     try {
       const client = clients.find((c) => c.id === clientId);
@@ -93,6 +97,8 @@ function NewQuotePage() {
 
   const saveMut = useMutation({
     mutationFn: async (status: "draft" | "sent") => {
+      const allowed = await consume("quote");
+      if (!allowed) throw new Error("Quote limit reached. Buy credits or upgrade.");
       const { data: u } = await supabase.auth.getUser();
       if (!u.user) throw new Error("Not signed in");
       const quoteNumber = generateQuoteNumber();

@@ -4,6 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { draftProposal } from "@/lib/proposals.functions";
+import { useConsumeQuota } from "@/hooks/use-credits";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -20,6 +21,7 @@ export const Route = createFileRoute("/_authenticated/proposals/new")({
 function NewProposal() {
   const navigate = useNavigate();
   const generate = useServerFn(draftProposal);
+  const consume = useConsumeQuota();
   const [title, setTitle] = useState("");
   const [clientId, setClientId] = useState<string>("");
   const [brief, setBrief] = useState("");
@@ -46,6 +48,7 @@ function NewProposal() {
 
   const handleDraft = async () => {
     if (brief.trim().length < 5) return toast.error("Tell me a bit about the project first.");
+    if (!(await consume("ai_draft"))) return;
     setBusy("ai");
     try {
       const clientName = clients?.find((c) => c.id === clientId)?.name;
@@ -74,6 +77,7 @@ function NewProposal() {
   const handleSave = async () => {
     if (!title.trim()) return toast.error("Add a title");
     if (!content.trim()) return toast.error("Generate or write a proposal first");
+    if (!(await consume("proposal"))) return;
     setBusy("save");
     const { data: u } = await supabase.auth.getUser();
     if (!u.user) return;
