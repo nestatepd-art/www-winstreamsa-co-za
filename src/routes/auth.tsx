@@ -205,7 +205,7 @@ function AuthPage() {
               </span>
             </Button>
             {inIframe && (
-              <p className="mt-2 text-xs text-muted-foreground text-center">
+              <p className="mt-2 text-xs text-muted-foreground text-center" suppressHydrationWarning>
                 You're in the Lovable preview. Google sign-in needs a top-level window — we'll open it for you.
               </p>
             )}
