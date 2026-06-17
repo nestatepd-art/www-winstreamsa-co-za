@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://biz-buddy-za.lovable.app/sitemap.xml
