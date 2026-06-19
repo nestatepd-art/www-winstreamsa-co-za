@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import type {} from "@tanstack/react-start";
 
-const BASE_URL = "https://biz-buddy-za.lovable.app";
+const BASE_URL = "https://winstreamsa.co.za";
 
 interface SitemapEntry {
   path: string;
@@ -15,7 +15,7 @@ export const Route = createFileRoute("/sitemap.xml")({
       GET: () => {
         const entries: SitemapEntry[] = [
           { path: "/", changefreq: "weekly", priority: "1.0" },
-          { path: "/auth", changefreq: "monthly", priority: "0.5" },
+          { path: "/trust", changefreq: "monthly", priority: "0.5" },
         ];
 
         const urls = entries.map((e) =>

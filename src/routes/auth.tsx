@@ -14,9 +14,14 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "Sign in · WinStream" },
-      { name: "description", content: "Sign in to WinStream — turn client conversations into signed quotes and proposals." },
+      { title: "Sign in — WinStream SA" },
+      { name: "description", content: "Sign in or create your WinStream SA account to automate quotes, follow-ups, and proposals for your South African business." },
+      { name: "robots", content: "noindex, follow" },
+      { property: "og:title", content: "Sign in — WinStream SA" },
+      { property: "og:description", content: "Access your WinStream SA workspace." },
+      { property: "og:url", content: "https://winstreamsa.co.za/auth" },
     ],
+    links: [{ rel: "canonical", href: "https://winstreamsa.co.za/auth" }],
   }),
   component: AuthPage,
 });
