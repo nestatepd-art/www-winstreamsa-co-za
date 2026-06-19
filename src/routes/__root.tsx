@@ -124,8 +124,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         children: `(function(){var l=document.getElementById('ws-inter-font');if(l){l.addEventListener('load',function(){l.rel='stylesheet';l.media='all';});}var ls=document.querySelectorAll('link[rel="stylesheet"][media="print"]');ls.forEach(function(x){x.media='all';});})();`,
       },
-
-    scripts: [
       {
         type: "application/ld+json",
         children: JSON.stringify({
@@ -147,6 +145,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         }),
       },
     ],
+
 
   }),
   shellComponent: RootShell,
