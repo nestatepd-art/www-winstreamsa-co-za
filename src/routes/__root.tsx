@@ -94,8 +94,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content:
           "Automate quotes, follow-ups & writing in 10 minutes. Built for South African SMEs.",
       },
-      { property: "og:url", content: "https://biz-buddy-za.lovable.app" },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/0e056a17-f6a5-4524-9d94-f08bae05ab15/id-preview-71c17db4--73382aa4-c3b2-40ab-9e93-3f335115e53a.lovable.app-1781707903270.png" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "WinStream SA — AI Automation for SA Businesses" },
       {
@@ -103,7 +101,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content:
           "Automate quotes, follow-ups & writing in 10 minutes. Built for South African SMEs.",
       },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/0e056a17-f6a5-4524-9d94-f08bae05ab15/id-preview-71c17db4--73382aa4-c3b2-40ab-9e93-3f335115e53a.lovable.app-1781707903270.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
