@@ -1,6 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Check } from "lucide-react";
+import { Check, Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { SiteNav, SiteFooter } from "@/components/site-nav";
+import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
+import { usePaddleCheckout } from "@/hooks/usePaddleCheckout";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/pricing")({
   head: () => ({
@@ -40,7 +44,18 @@ export const Route = createFileRoute("/pricing")({
   component: PricingPage,
 });
 
-const plans = [
+type Plan = {
+  name: string;
+  price: string;
+  period: string;
+  description: string;
+  features: string[];
+  cta: string;
+  priceId?: string;
+  featured?: boolean;
+};
+
+const plans: Plan[] = [
   {
     name: "Starter",
     price: "R0",
@@ -61,7 +76,8 @@ const plans = [
       "Priority support",
       "VAT-compliant PDF export",
     ],
-    cta: "Start 14-day trial",
+    cta: "Subscribe to Growth",
+    priceId: "growth_monthly",
     featured: true,
   },
   {
@@ -76,13 +92,42 @@ const plans = [
       "Dedicated onboarding",
       "API access",
     ],
-    cta: "Contact sales",
+    cta: "Subscribe to Scale",
+    priceId: "scale_monthly",
   },
 ];
 
+const creditPacks = [
+  { name: "100 Credits", price: "R99", priceId: "credits_100" },
+  { name: "500 Credits", price: "R399", priceId: "credits_500", popular: true },
+  { name: "2,000 Credits", price: "R1,299", priceId: "credits_2000" },
+];
+
 function PricingPage() {
+  const { openCheckout, loading } = usePaddleCheckout();
+  const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user) setUser({ id: data.user.id, email: data.user.email ?? undefined });
+    });
+  }, []);
+
+  const buy = (priceId: string) => {
+    if (!user) {
+      window.location.href = `/auth?redirect=/pricing`;
+      return;
+    }
+    openCheckout({
+      priceId,
+      customerEmail: user.email,
+      customData: { userId: user.id },
+    });
+  };
+
   return (
     <div className="min-h-screen bg-[#04121a] text-white">
+      <PaymentTestModeBanner />
       <SiteNav />
       <main className="mx-auto max-w-6xl px-6 py-16">
         <div className="text-center">
@@ -115,16 +160,27 @@ function PricingPage() {
                 <span className="text-4xl font-extrabold">{p.price}</span>
                 <span className="text-sm text-white/50">/ {p.period}</span>
               </div>
-              <Link
-                to="/auth"
-                className={`mt-6 block rounded-xl px-4 py-2.5 text-center text-sm font-semibold ${
-                  p.featured
-                    ? "bg-teal-400 text-[#04121a] hover:bg-teal-300"
-                    : "border border-white/15 bg-white/5 hover:bg-white/10"
-                }`}
-              >
-                {p.cta}
-              </Link>
+              {p.priceId ? (
+                <button
+                  onClick={() => buy(p.priceId!)}
+                  disabled={loading}
+                  className={`mt-6 flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold disabled:opacity-60 ${
+                    p.featured
+                      ? "bg-teal-400 text-[#04121a] hover:bg-teal-300"
+                      : "border border-white/15 bg-white/5 hover:bg-white/10"
+                  }`}
+                >
+                  {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+                  {p.cta}
+                </button>
+              ) : (
+                <Link
+                  to="/auth"
+                  className="mt-6 block rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-center text-sm font-semibold hover:bg-white/10"
+                >
+                  {p.cta}
+                </Link>
+              )}
               <ul className="mt-6 space-y-2 text-sm">
                 {p.features.map((f) => (
                   <li key={f} className="flex items-start gap-2 text-white/80">
@@ -136,6 +192,39 @@ function PricingPage() {
             </div>
           ))}
         </div>
+
+        <section className="mt-20">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold sm:text-3xl">Need more credits?</h2>
+            <p className="mt-2 text-white/60">
+              One-time top-ups. Credits never expire and stack on top of your monthly allowance.
+            </p>
+          </div>
+          <div className="mt-8 grid gap-4 sm:grid-cols-3">
+            {creditPacks.map((pack) => (
+              <div
+                key={pack.priceId}
+                className={`rounded-2xl border p-6 text-center ${
+                  pack.popular
+                    ? "border-teal-400/40 bg-white/[0.07]"
+                    : "border-white/10 bg-white/[0.03]"
+                }`}
+              >
+                <h3 className="text-lg font-semibold">{pack.name}</h3>
+                <div className="mt-3 text-3xl font-extrabold">{pack.price}</div>
+                <p className="mt-1 text-xs text-white/50">one-time</p>
+                <button
+                  onClick={() => buy(pack.priceId)}
+                  disabled={loading}
+                  className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-white/10 px-4 py-2.5 text-sm font-semibold hover:bg-white/15 disabled:opacity-60"
+                >
+                  {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+                  Buy now
+                </button>
+              </div>
+            ))}
+          </div>
+        </section>
 
         <p className="mt-12 text-center text-sm text-white/50">
           Need a custom plan? <Link to="/contact" className="underline">Get in touch</Link>.
