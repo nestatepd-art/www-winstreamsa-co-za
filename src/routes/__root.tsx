@@ -122,6 +122,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     ],
     scripts: [
       {
+        type: "text/javascript",
+        async: true,
+        src: "https://www.googletagmanager.com/gtag/js?id=G-YN6M1Z7HZ1",
+      },
+      {
+        type: "text/javascript",
+        children: `window.dataLayer = window.dataLayer || [];\nfunction gtag(){dataLayer.push(arguments);}\ngtag('js', new Date());\ngtag('config', 'G-YN6M1Z7HZ1');`,
+      },
+      {
         children: `(function(){var l=document.getElementById('ws-inter-font');if(l){l.addEventListener('load',function(){l.rel='stylesheet';l.media='all';});}var ls=document.querySelectorAll('link[rel="stylesheet"][media="print"]');ls.forEach(function(x){x.media='all';});})();`,
       },
       {

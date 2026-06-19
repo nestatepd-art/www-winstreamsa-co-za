@@ -32,12 +32,11 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [businessName, setBusinessName] = useState("");
+  const [inIframe, setInIframe] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (data.user) navigate({ to: "/dashboard" });
-    });
-  }, [navigate]);
+    setInIframe(window.self !== window.top);
+  }, []);
 
   const signIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,8 +71,6 @@ function AuthPage() {
     toast.success("Account created — let's set up your business");
     navigate({ to: "/settings" });
   };
-
-  const inIframe = typeof window !== "undefined" && window.self !== window.top;
 
   const signInGoogle = async () => {
     // Lovable preview runs inside an iframe — OAuth popups/redirects can be blocked
@@ -212,12 +209,12 @@ function AuthPage() {
             </div>
 
             <Button variant="outline" type="button" disabled={loading} onClick={signInGoogle} className="w-full">
-              <span suppressHydrationWarning>
+              <span>
                 {inIframe ? "Continue with Google (opens new tab)" : "Continue with Google"}
               </span>
             </Button>
             {inIframe && (
-              <p className="mt-2 text-xs text-muted-foreground text-center" suppressHydrationWarning>
+              <p className="mt-2 text-xs text-muted-foreground text-center">
                 You're in the Lovable preview. Google sign-in needs a top-level window — we'll open it for you.
               </p>
             )}
