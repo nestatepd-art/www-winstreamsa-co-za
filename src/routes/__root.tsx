@@ -106,10 +106,21 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "stylesheet", href: appCss },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+      // Non-blocking font load: fetched with low priority, applied via onload swap below.
+      {
+        rel: "preload",
+        as: "style",
+        href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap",
+      },
       {
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap",
-      },
+        media: "print",
+        // Flip to all media once loaded so it stops blocking render.
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore - onLoad is valid on link elements
+        onLoad: "this.media='all'",
+      } as never,
     ],
     scripts: [
       {
@@ -133,6 +144,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         }),
       },
     ],
+
   }),
   shellComponent: RootShell,
   component: RootComponent,
