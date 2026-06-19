@@ -72,8 +72,6 @@ function AuthPage() {
     navigate({ to: "/settings" });
   };
 
-  const inIframe = typeof window !== "undefined" && window.self !== window.top;
-
   const signInGoogle = async () => {
     // Lovable preview runs inside an iframe — OAuth popups/redirects can be blocked
     // by third-party cookie policies, leaving the user on a white page after Google.
