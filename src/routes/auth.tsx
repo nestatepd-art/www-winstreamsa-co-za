@@ -32,12 +32,11 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [businessName, setBusinessName] = useState("");
+  const [inIframe, setInIframe] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (data.user) navigate({ to: "/dashboard" });
-    });
-  }, [navigate]);
+    setInIframe(window.self !== window.top);
+  }, []);
 
   const signIn = async (e: React.FormEvent) => {
     e.preventDefault();
