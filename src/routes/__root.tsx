@@ -106,12 +106,24 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "stylesheet", href: appCss },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+      // Non-blocking font load: fetched as a preload then swapped to a stylesheet
+      // by the inline script below. System font fallback renders immediately.
+      {
+        rel: "preload",
+        as: "style",
+        href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap",
+        id: "ws-inter-font",
+      },
       {
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap",
+        media: "print",
       },
     ],
     scripts: [
+      {
+        children: `(function(){var l=document.getElementById('ws-inter-font');if(l){l.addEventListener('load',function(){l.rel='stylesheet';l.media='all';});}var ls=document.querySelectorAll('link[rel="stylesheet"][media="print"]');ls.forEach(function(x){x.media='all';});})();`,
+      },
       {
         type: "application/ld+json",
         children: JSON.stringify({
@@ -133,6 +145,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         }),
       },
     ],
+
+
   }),
   shellComponent: RootShell,
   component: RootComponent,
