@@ -1,3 +1,11 @@
 User-agent: *
 Allow: /
-Sitemap: https://biz-buddy-za.lovable.app/sitemap.xml
+Disallow: /auth
+Disallow: /dashboard
+Disallow: /clients
+Disallow: /quotes
+Disallow: /proposals
+Disallow: /billing
+Disallow: /settings
+
+Sitemap: https://winstreamsa.co.za/sitemap.xml
