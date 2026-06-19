@@ -127,7 +127,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
             priceSpecification: "per month",
           },
           areaServed: "ZA",
-          url: "https://biz-buddy-za.lovable.app",
+          url: "https://winstreamsa.co.za",
         }),
       },
     ],
