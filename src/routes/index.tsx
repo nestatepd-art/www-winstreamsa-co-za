@@ -1,6 +1,7 @@
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { Zap, Bell, MessageCircle, ArrowRight } from "lucide-react";
+import { SiteNav, SiteFooter } from "@/components/site-nav";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -41,10 +42,11 @@ const DEEP = "oklch(0.10 0.04 264)";
 
 function LandingPage() {
   return (
-    <main
+    <div
       className="relative min-h-screen overflow-hidden text-white"
       style={{ background: DEEP }}
     >
+      <SiteNav />
       {/* Ambient glow orbs */}
       <div
         aria-hidden
@@ -185,6 +187,7 @@ function LandingPage() {
           <span className="h-px w-12 bg-white/15" />
         </div>
       </section>
-    </main>
+      <SiteFooter />
+    </div>
   );
 }
