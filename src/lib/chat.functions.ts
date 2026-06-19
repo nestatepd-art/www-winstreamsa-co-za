@@ -1,7 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
-import type { UIMessage } from "ai";
 
 export type ChatThreadRow = {
   id: string;
@@ -81,10 +80,10 @@ export const getChatThreadMessages = createServerFn({ method: "GET" })
       .order("created_at", { ascending: true });
     if (error) throw new Error(error.message);
 
-    const messages: UIMessage[] = (rows ?? []).map((r: { id: string; role: string; parts: unknown }) => ({
+    const messages = (rows ?? []).map((r: { id: string; role: string; parts: unknown }) => ({
       id: r.id,
-      role: r.role as UIMessage["role"],
-      parts: Array.isArray(r.parts) ? (r.parts as UIMessage["parts"]) : [],
+      role: r.role,
+      parts: Array.isArray(r.parts) ? r.parts : [],
     }));
 
     return { thread: thread as ChatThreadRow, messages };
