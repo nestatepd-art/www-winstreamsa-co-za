@@ -134,7 +134,7 @@ function ChatThreadInner({
               const textParts = m.parts.filter((p) => p.type === "text");
               return (
                 <Message from={m.role} key={m.id}>
-                  <MessageContent variant={m.role === "user" ? "contained" : "flat"}>
+                  <MessageContent >
                     {textParts.map((p, i) =>
                       m.role === "assistant" ? (
                         <MessageResponse key={i}>{p.type === "text" ? p.text : ""}</MessageResponse>
@@ -151,7 +151,7 @@ function ChatThreadInner({
           )}
           {status === "submitted" && (
             <Message from="assistant">
-              <MessageContent variant="flat">
+              <MessageContent>
                 <Shimmer>Thinking…</Shimmer>
               </MessageContent>
             </Message>
