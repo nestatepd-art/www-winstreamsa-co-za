@@ -106,22 +106,25 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "stylesheet", href: appCss },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      // Non-blocking font load: fetched with low priority, applied via onload swap below.
+      // Non-blocking font load: fetched as a preload then swapped to a stylesheet
+      // by the inline script below. System font fallback renders immediately.
       {
         rel: "preload",
         as: "style",
         href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap",
+        id: "ws-inter-font",
       },
       {
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap",
         media: "print",
-        // Flip to all media once loaded so it stops blocking render.
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore - onLoad is valid on link elements
-        onLoad: "this.media='all'",
-      } as never,
+      },
     ],
+    scripts: [
+      {
+        children: `(function(){var l=document.getElementById('ws-inter-font');if(l){l.addEventListener('load',function(){l.rel='stylesheet';l.media='all';});}var ls=document.querySelectorAll('link[rel="stylesheet"][media="print"]');ls.forEach(function(x){x.media='all';});})();`,
+      },
+
     scripts: [
       {
         type: "application/ld+json",
