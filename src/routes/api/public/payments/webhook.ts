@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
+import type { Database } from "@/integrations/supabase/types";
 import { verifyWebhook, EventName, type PaddleEnv } from "@/lib/paddle.server";
 
 // Plan tier mapping — keep in sync with batch_create_product IDs.
