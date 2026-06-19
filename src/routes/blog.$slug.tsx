@@ -106,9 +106,7 @@ function BlogPost() {
           />
         )}
         <p className="mt-8 text-lg text-white/80">{post.excerpt}</p>
-        <article
-          className="prose prose-invert prose-headings:font-bold prose-a:text-teal-300 mt-8 max-w-none whitespace-pre-wrap text-white/85"
-        >
+        <article className="mt-8 max-w-none whitespace-pre-wrap text-base leading-relaxed text-white/85">
           {post.content_md}
         </article>
       </main>
