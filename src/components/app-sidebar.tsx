@@ -8,6 +8,7 @@ import {
   LogOut,
   CreditCard,
   MessageSquare,
+  Newspaper,
 } from "lucide-react";
 import winstreamLogo from "@/assets/winstream-logo.png.asset.json";
 import { toast } from "sonner";
@@ -26,6 +27,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { CreditMeter } from "@/components/credit-meter";
+import { useEffect, useState } from "react";
 
 const items = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
@@ -43,6 +45,27 @@ export function AppSidebar() {
   const currentPath = useRouterState({ select: (r) => r.location.pathname });
   const isActive = (path: string) =>
     currentPath === path || currentPath.startsWith(path + "/");
+
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    supabase.auth.getUser().then(({ data }) => {
+      if (!data.user || cancelled) return;
+      supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", data.user.id)
+        .eq("role", "admin")
+        .maybeSingle()
+        .then(({ data: roleData }) => {
+          if (!cancelled) setIsAdmin(!!roleData);
+        });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -85,6 +108,16 @@ export function AppSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+              {isAdmin && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild isActive={isActive("/admin/blog")}>
+                    <Link to="/admin/blog" className="flex items-center gap-2">
+                      <Newspaper className="h-4 w-4" />
+                      {!collapsed && <span>Blog Admin</span>}
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
