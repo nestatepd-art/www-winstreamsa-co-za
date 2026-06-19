@@ -101,7 +101,15 @@ async function handleSubscriptionUpdated(data: any, env: PaddleEnv) {
   const priceId = item?.price?.importMeta?.externalId;
   const productId = item?.product?.importMeta?.externalId;
 
-  const update: Record<string, unknown> = {
+  const update: {
+    status: string;
+    current_period_start?: string;
+    current_period_end?: string;
+    cancel_at_period_end: boolean;
+    updated_at: string;
+    price_id?: string;
+    product_id?: string;
+  } = {
     status: data.status,
     current_period_start: data.currentBillingPeriod?.startsAt,
     current_period_end: data.currentBillingPeriod?.endsAt,
