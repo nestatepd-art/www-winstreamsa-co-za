@@ -52,7 +52,11 @@ export function SiteFooter() {
           <Link to="/about" className="hover:text-white">About</Link>
           <Link to="/contact" className="hover:text-white">Contact</Link>
           <Link to="/trust" className="hover:text-white">Trust</Link>
+          <Link to="/terms" className="hover:text-white">Terms</Link>
+          <Link to="/refund" className="hover:text-white">Refund</Link>
+          <Link to="/privacy" className="hover:text-white">Privacy</Link>
         </div>
+
       </div>
     </footer>
   );
