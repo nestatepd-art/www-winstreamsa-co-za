@@ -1,0 +1,1 @@
+UPDATE public.blog_posts SET slug = 'how-to-send-a-vat-compliant-quote-in-south-africa-free-template' WHERE slug = '-how-to-send-a-vat-compliant-quote-in-south-africa-free-template';
