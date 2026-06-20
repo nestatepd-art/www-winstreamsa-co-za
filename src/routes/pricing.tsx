@@ -114,14 +114,10 @@ function PricingPage() {
   }, []);
 
   const buy = (priceId: string) => {
-    if (!user) {
-      window.location.href = `/auth?redirect=/pricing`;
-      return;
-    }
     openCheckout({
       priceId,
-      customerEmail: user.email,
-      customData: { userId: user.id },
+      customerEmail: user?.email,
+      customData: user ? { userId: user.id } : undefined,
     });
   };
 
