@@ -168,15 +168,16 @@ function PricingPage() {
               {p.priceId ? (
                 <button
                   onClick={() => buy(p.priceId!)}
-                  disabled={loading}
-                  className={`mt-6 flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold disabled:opacity-60 ${
+                  disabled={loading || !checkoutOpen}
+                  title={!checkoutOpen ? "Checkout opens soon" : undefined}
+                  className={`mt-6 flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold disabled:opacity-60 disabled:cursor-not-allowed ${
                     p.featured
                       ? "bg-teal-400 text-[#04121a] hover:bg-teal-300"
                       : "border border-white/15 bg-white/5 hover:bg-white/10"
                   }`}
                 >
                   {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-                  {p.cta}
+                  {!checkoutOpen ? "Coming soon" : p.cta}
                 </button>
               ) : (
                 <Link
