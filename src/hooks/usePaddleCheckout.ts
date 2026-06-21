@@ -14,6 +14,13 @@ export function usePaddleCheckout() {
   }) => {
     setLoading(true);
     try {
+      if (!isCheckoutAvailable()) {
+        toast.info("Checkout opens soon", {
+          description:
+            "We're finalising payment verification with our provider. Purchases will be enabled within the next few business days — thanks for your patience.",
+        });
+        return;
+      }
       await initializePaddle();
       const paddlePriceId = await getPaddlePriceId(options.priceId);
       window.Paddle.Checkout.open({
