@@ -122,11 +122,19 @@ function PricingPage() {
     });
   };
 
+  const checkoutOpen = isCheckoutAvailable();
+
   return (
     <div className="min-h-screen bg-[#04121a] text-white">
       <PaymentTestModeBanner />
       <SiteNav />
       <main className="mx-auto max-w-6xl px-6 py-16">
+        {!checkoutOpen && (
+          <div className="mb-8 rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-center text-sm text-amber-200">
+            Online checkout is being finalised with our payment provider and will be enabled within the next few business days.
+            In the meantime, <Link to="/contact" className="underline font-medium">contact us</Link> to get started.
+          </div>
+        )}
         <div className="text-center">
           <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl">
             Simple pricing in ZAR
