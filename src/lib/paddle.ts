@@ -12,6 +12,17 @@ export function getPaddleEnvironment(): "sandbox" | "live" {
   return clientToken?.startsWith("test_") ? "sandbox" : "live";
 }
 
+/**
+ * Live checkout is disabled until Paddle finishes verifying the business
+ * (business identification + identity verification + final review). Sandbox
+ * checkout in preview is unaffected. Flip to `true` once go-live is complete.
+ */
+export const LIVE_CHECKOUT_ENABLED = false;
+
+export function isCheckoutAvailable(): boolean {
+  return getPaddleEnvironment() === "sandbox" || LIVE_CHECKOUT_ENABLED;
+}
+
 let paddleInitialized = false;
 
 export async function initializePaddle() {
