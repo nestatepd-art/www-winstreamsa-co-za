@@ -4,7 +4,20 @@ import { renderErrorPage } from "./lib/error-page";
 import { attachSupabaseAuth } from "@/integrations/supabase/auth-attacher";
 
 function isStaleServerFunctionError(error: unknown) {
-  return error instanceof Error && error.message.includes("Invalid server function ID");
+  const seen = new Set<unknown>();
+  let current: unknown = error;
+  while (current && typeof current === "object" && !seen.has(current)) {
+    seen.add(current);
+    const text = [
+      current instanceof Error ? current.message : "",
+      current instanceof Error ? current.stack : "",
+      "message" in current ? String((current as { message?: unknown }).message ?? "") : "",
+      "stack" in current ? String((current as { stack?: unknown }).stack ?? "") : "",
+    ].join("\n");
+    if (text.includes("Invalid server function ID")) return true;
+    current = "cause" in current ? (current as { cause?: unknown }).cause : undefined;
+  }
+  return String(error).includes("Invalid server function ID");
 }
 
 const errorMiddleware = createMiddleware().server(async ({ next }) => {
