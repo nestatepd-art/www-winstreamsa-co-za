@@ -221,11 +221,12 @@ function PricingPage() {
                 <p className="mt-1 text-xs text-white/50">one-time</p>
                 <button
                   onClick={() => buy(pack.priceId)}
-                  disabled={loading}
-                  className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-white/10 px-4 py-2.5 text-sm font-semibold hover:bg-white/15 disabled:opacity-60"
+                  disabled={loading || !checkoutOpen}
+                  title={!checkoutOpen ? "Checkout opens soon" : undefined}
+                  className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-white/10 px-4 py-2.5 text-sm font-semibold hover:bg-white/15 disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-                  Buy now
+                  {!checkoutOpen ? "Coming soon" : "Buy now"}
                 </button>
               </div>
             ))}
