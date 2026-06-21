@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { SiteNav, SiteFooter } from "@/components/site-nav";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { usePaddleCheckout } from "@/hooks/usePaddleCheckout";
+import { isCheckoutAvailable } from "@/lib/paddle";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/pricing")({
@@ -121,11 +122,19 @@ function PricingPage() {
     });
   };
 
+  const checkoutOpen = isCheckoutAvailable();
+
   return (
     <div className="min-h-screen bg-[#04121a] text-white">
       <PaymentTestModeBanner />
       <SiteNav />
       <main className="mx-auto max-w-6xl px-6 py-16">
+        {!checkoutOpen && (
+          <div className="mb-8 rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-center text-sm text-amber-200">
+            Online checkout is being finalised with our payment provider and will be enabled within the next few business days.
+            In the meantime, <Link to="/contact" className="underline font-medium">contact us</Link> to get started.
+          </div>
+        )}
         <div className="text-center">
           <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl">
             Simple pricing in ZAR
@@ -159,15 +168,16 @@ function PricingPage() {
               {p.priceId ? (
                 <button
                   onClick={() => buy(p.priceId!)}
-                  disabled={loading}
-                  className={`mt-6 flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold disabled:opacity-60 ${
+                  disabled={loading || !checkoutOpen}
+                  title={!checkoutOpen ? "Checkout opens soon" : undefined}
+                  className={`mt-6 flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold disabled:opacity-60 disabled:cursor-not-allowed ${
                     p.featured
                       ? "bg-teal-400 text-[#04121a] hover:bg-teal-300"
                       : "border border-white/15 bg-white/5 hover:bg-white/10"
                   }`}
                 >
                   {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-                  {p.cta}
+                  {!checkoutOpen ? "Coming soon" : p.cta}
                 </button>
               ) : (
                 <Link
@@ -211,11 +221,12 @@ function PricingPage() {
                 <p className="mt-1 text-xs text-white/50">one-time</p>
                 <button
                   onClick={() => buy(pack.priceId)}
-                  disabled={loading}
-                  className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-white/10 px-4 py-2.5 text-sm font-semibold hover:bg-white/15 disabled:opacity-60"
+                  disabled={loading || !checkoutOpen}
+                  title={!checkoutOpen ? "Checkout opens soon" : undefined}
+                  className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-white/10 px-4 py-2.5 text-sm font-semibold hover:bg-white/15 disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-                  Buy now
+                  {!checkoutOpen ? "Coming soon" : "Buy now"}
                 </button>
               </div>
             ))}
