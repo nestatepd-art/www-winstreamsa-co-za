@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { SiteNav, SiteFooter } from "@/components/site-nav";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { usePaddleCheckout } from "@/hooks/usePaddleCheckout";
+import { isCheckoutAvailable } from "@/lib/paddle";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/pricing")({
