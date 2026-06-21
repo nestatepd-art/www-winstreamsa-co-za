@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { initializePaddle, getPaddlePriceId } from "@/lib/paddle";
+import { toast } from "sonner";
+import { initializePaddle, getPaddlePriceId, isCheckoutAvailable } from "@/lib/paddle";
 
 export function usePaddleCheckout() {
   const [loading, setLoading] = useState(false);
