@@ -20,7 +20,11 @@ async function shouldReloadForResponse(input: Parameters<typeof fetch>[0], respo
   if (response.headers.get("x-winstream-reload") === "1") return true;
 
   const body = await response.clone().text().catch(() => "");
-  return body.includes("Invalid server function ID") || body.includes("STALE_CLIENT_BUNDLE");
+  return (
+    body.includes("Invalid server function ID") ||
+    body.includes("STALE_CLIENT_BUNDLE") ||
+    body.includes("This page didn't load")
+  );
 }
 
 export function installStaleServerFunctionReloadGuard() {

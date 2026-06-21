@@ -20,11 +20,11 @@ function isStaleServerFunctionError(error: unknown) {
   return String(error).includes("Invalid server function ID");
 }
 
-const errorMiddleware = createMiddleware().server(async ({ next }) => {
+const errorMiddleware = createMiddleware().server(async ({ next, request }) => {
   try {
     return await next();
   } catch (error) {
-    if (isStaleServerFunctionError(error)) {
+    if (isStaleServerFunctionError(error) || new URL(request.url).pathname.startsWith("/_serverFn/")) {
       console.error(error);
       return Response.json(
         { code: "STALE_CLIENT_BUNDLE", reload: true },
