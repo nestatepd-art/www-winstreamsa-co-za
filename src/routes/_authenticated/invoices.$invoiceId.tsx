@@ -73,6 +73,29 @@ function InvoiceViewPage() {
   if (isLoading) return <div className="p-10 text-center text-muted-foreground">Loading…</div>;
   if (!data?.invoice) return <div className="p-10 text-center">Invoice not found.</div>;
   const { invoice, items, profile } = data;
+  const client = invoice.clients as any;
+  const nudgeEmail = extractEmailAddress(client?.email);
+  const sendNudgeEmail = () => {
+    if (!nudgeEmail) {
+      toast.error("This client has no email address on file.");
+      return;
+    }
+    const due = invoice.due_date ? formatDate(invoice.due_date) : "the agreed date";
+    const biz = profile?.business_name || "our team";
+    const extraNote = nudgeNote.trim();
+    const subject = `Reminder: Invoice ${invoice.invoice_number} is overdue`;
+    const body = [
+      `Hi ${client?.contact_person || client?.name || "there"},`,
+      `This is a friendly reminder that invoice ${invoice.invoice_number} (${invoice.title}) for ${formatZAR(invoice.total)} was due on ${due} and is now overdue.`,
+      extraNote || null,
+      "Please let us know if payment has already been made, or arrange settlement at your earliest convenience.",
+      `Thank you,\n${biz}`,
+    ].filter(Boolean).join("\n\n");
+    window.location.href = `mailto:${encodeURIComponent(nudgeEmail)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    statusMut.mutate("sent");
+    setNudgeOpen(false);
+    toast.success(`Opening email to ${nudgeEmail}`);
+  };
 
   return (
     <div className="p-6 lg:p-10 max-w-4xl mx-auto space-y-6">
