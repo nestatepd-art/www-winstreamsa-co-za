@@ -104,6 +104,14 @@ function ProposalDetail() {
     if (!to.trim() || !body.trim()) return toast.error("Recipient and message are required");
     setBusy("send");
     try {
+      if (channel === "email") {
+        const url = `mailto:${encodeURIComponent(to.trim())}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        window.location.href = url;
+      } else {
+        const phone = to.trim().replace(/[^\d+]/g, "").replace(/^\+/, "");
+        const url = `https://wa.me/${phone}?text=${encodeURIComponent(body)}`;
+        window.open(url, "_blank", "noopener,noreferrer");
+      }
       await sendMsg({
         data: {
           channel,
@@ -114,9 +122,7 @@ function ProposalDetail() {
           clientId: client?.id ?? null,
         },
       });
-      toast.success(`${channel === "email" ? "Email" : "WhatsApp"} sent (simulated)`, {
-        description: "Real Gmail / WhatsApp Cloud API delivery activates once you connect those integrations.",
-      });
+      toast.success(`${channel === "email" ? "Email" : "WhatsApp"} opened — review and hit send in your ${channel === "email" ? "mail client" : "WhatsApp"}.`);
       setOpen(false);
       qc.invalidateQueries({ queryKey: ["proposal", proposalId] });
       qc.invalidateQueries({ queryKey: ["proposal-comms", proposalId] });
@@ -174,7 +180,7 @@ function ProposalDetail() {
                   Send via {channel === "email" ? "Email" : "WhatsApp"}
                 </DialogTitle>
                 <DialogDescription>
-                  Simulated send — message is logged to the proposal timeline. Connect Gmail / WhatsApp Cloud API later for real delivery.
+                  Opens your {channel === "email" ? "mail client" : "WhatsApp"} with the message prefilled. The send is also logged to this proposal's timeline.
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-3">
