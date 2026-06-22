@@ -79,6 +79,13 @@ function InvoiceViewPage() {
               <SelectItem value="cancelled">Cancelled</SelectItem>
             </SelectContent>
           </Select>
+          {invoice.status === "draft" && (
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/invoices/$invoiceId/edit" params={{ invoiceId }}>
+                <Pencil className="h-4 w-4 mr-1" /> Edit
+              </Link>
+            </Button>
+          )}
           <Button variant="outline" size="sm" onClick={() => window.print()}>
             <Printer className="h-4 w-4 mr-1" /> Print / PDF
           </Button>
