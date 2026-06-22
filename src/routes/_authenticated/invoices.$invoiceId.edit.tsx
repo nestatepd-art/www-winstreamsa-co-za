@@ -197,9 +197,33 @@ function EditInvoicePage() {
       <Card>
         <CardHeader><CardTitle className="text-base">Header</CardTitle></CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-3">
-          <div className="space-y-2 sm:col-span-2">
+          <div className="space-y-2">
+            <Label>Invoice number</Label>
+            <Input value={invoiceNumber} onChange={(e) => setInvoiceNumber(e.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <Label>Status</Label>
+            <Select value={status} onValueChange={setStatus}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {["draft","sent","viewed","paid","overdue","cancelled"].map((s) => (
+                  <SelectItem key={s} value={s}>{s}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label>VAT rate (%)</Label>
+            <Input type="number" min={0} step="0.01" value={vatRate}
+              onChange={(e) => setVatRate(Number(e.target.value))} />
+          </div>
+          <div className="space-y-2 sm:col-span-3">
             <Label>Title</Label>
             <Input value={title} onChange={(e) => setTitle(e.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <Label>Issue date</Label>
+            <Input type="date" value={issueDate} onChange={(e) => setIssueDate(e.target.value)} />
           </div>
           <div className="space-y-2">
             <Label>Due date</Label>
