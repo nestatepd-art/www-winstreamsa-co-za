@@ -49,6 +49,10 @@ function EditInvoicePage() {
 
   const [clientId, setClientId] = useState<string>("");
   const [title, setTitle] = useState("");
+  const [invoiceNumber, setInvoiceNumber] = useState("");
+  const [status, setStatus] = useState<string>("draft");
+  const [issueDate, setIssueDate] = useState<string>("");
+  const [vatRate, setVatRate] = useState<number>(15);
   const [items, setItems] = useState<Item[]>([{ description: "", quantity: 1, unit_price: 0 }]);
   const [notes, setNotes] = useState("");
   const [terms, setTerms] = useState("");
@@ -80,6 +84,10 @@ function EditInvoicePage() {
     if (data?.invoice && !loaded) {
       setClientId(data.invoice.client_id ?? "");
       setTitle(data.invoice.title ?? "");
+      setInvoiceNumber(data.invoice.invoice_number ?? "");
+      setStatus(data.invoice.status ?? "draft");
+      setIssueDate(data.invoice.issue_date ?? "");
+      setVatRate(Number(data.invoice.vat_rate ?? 15));
       setNotes(data.invoice.notes ?? "");
       setTerms(data.invoice.terms ?? "");
       setDueDate(data.invoice.due_date ?? "");
@@ -100,7 +108,7 @@ function EditInvoicePage() {
     }
   }, [data, loaded]);
 
-  const totals = useMemo(() => computeQuoteTotals(items, 15), [items]);
+  const totals = useMemo(() => computeQuoteTotals(items, vatRate), [items, vatRate]);
 
   const updateItem = (i: number, patch: Partial<Item>) =>
     setItems((arr) => arr.map((it, idx) => (idx === i ? { ...it, ...patch } : it)));
@@ -117,9 +125,13 @@ function EditInvoicePage() {
         .update({
           client_id: clientId || null,
           title,
+          invoice_number: invoiceNumber,
+          status: status as any,
+          issue_date: issueDate || new Date().toISOString().slice(0, 10),
           notes,
-          terms: terms || null,
+          terms: terms || undefined,
           due_date: dueDate || null,
+          vat_rate: vatRate,
           subtotal: totals.subtotal,
           vat_amount: totals.vat_amount,
           total: totals.total,
@@ -185,9 +197,33 @@ function EditInvoicePage() {
       <Card>
         <CardHeader><CardTitle className="text-base">Header</CardTitle></CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-3">
-          <div className="space-y-2 sm:col-span-2">
+          <div className="space-y-2">
+            <Label>Invoice number</Label>
+            <Input value={invoiceNumber} onChange={(e) => setInvoiceNumber(e.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <Label>Status</Label>
+            <Select value={status} onValueChange={setStatus}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {["draft","sent","viewed","paid","overdue","cancelled"].map((s) => (
+                  <SelectItem key={s} value={s}>{s}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label>VAT rate (%)</Label>
+            <Input type="number" min={0} step="0.01" value={vatRate}
+              onChange={(e) => setVatRate(Number(e.target.value))} />
+          </div>
+          <div className="space-y-2 sm:col-span-3">
             <Label>Title</Label>
             <Input value={title} onChange={(e) => setTitle(e.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <Label>Issue date</Label>
+            <Input type="date" value={issueDate} onChange={(e) => setIssueDate(e.target.value)} />
           </div>
           <div className="space-y-2">
             <Label>Due date</Label>
