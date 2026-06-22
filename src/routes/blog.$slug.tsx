@@ -3,6 +3,12 @@ import { useServerFn } from "@tanstack/react-start";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { SiteNav, SiteFooter } from "@/components/site-nav";
 import { getPostBySlug } from "@/lib/blog.functions";
+import {
+  DEFAULT_OG_IMAGE,
+  DEFAULT_OG_IMAGE_ALT,
+  DEFAULT_OG_IMAGE_HEIGHT,
+  DEFAULT_OG_IMAGE_WIDTH,
+} from "@/lib/seo";
 
 export const Route = createFileRoute("/blog/$slug")({
   loader: async ({ params, context }) => {
@@ -21,6 +27,7 @@ export const Route = createFileRoute("/blog/$slug")({
       return { meta: [{ title: "Post not found — WinStream SA" }] };
     }
     const url = `https://winstreamsa.co.za/blog/${params.slug}`;
+    const ogImage = post.cover_image_url || DEFAULT_OG_IMAGE;
     return {
       meta: [
         { title: `${post.title} — WinStream SA Blog` },
@@ -29,12 +36,12 @@ export const Route = createFileRoute("/blog/$slug")({
         { property: "og:description", content: post.excerpt },
         { property: "og:url", content: url },
         { property: "og:type", content: "article" },
-        ...(post.cover_image_url
-          ? [
-              { property: "og:image", content: post.cover_image_url },
-              { name: "twitter:image", content: post.cover_image_url },
-            ]
-          : []),
+        { property: "og:image", content: ogImage },
+        { property: "og:image:width", content: String(DEFAULT_OG_IMAGE_WIDTH) },
+        { property: "og:image:height", content: String(DEFAULT_OG_IMAGE_HEIGHT) },
+        { property: "og:image:alt", content: post.title || DEFAULT_OG_IMAGE_ALT },
+        { name: "twitter:card", content: "summary_large_image" },
+        { name: "twitter:image", content: ogImage },
       ],
       links: [{ rel: "canonical", href: url }],
       scripts: [
@@ -47,7 +54,7 @@ export const Route = createFileRoute("/blog/$slug")({
             description: post.excerpt,
             author: { "@type": "Organization", name: post.author_name },
             datePublished: post.published_at,
-            image: post.cover_image_url || undefined,
+            image: ogImage,
             mainEntityOfPage: url,
           }),
         },
