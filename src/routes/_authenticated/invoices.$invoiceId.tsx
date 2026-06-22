@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,8 @@ function InvoiceViewPage() {
   const { invoiceId } = Route.useParams();
   const navigate = useNavigate();
   const qc = useQueryClient();
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
+  const isEditRoute = pathname.endsWith(`/invoices/${invoiceId}/edit`);
 
   const { data, isLoading } = useQuery({
     queryKey: ["invoice", invoiceId],
@@ -56,6 +58,8 @@ function InvoiceViewPage() {
       navigate({ to: "/invoices" });
     },
   });
+
+  if (isEditRoute) return <Outlet />;
 
   if (isLoading) return <div className="p-10 text-center text-muted-foreground">Loading…</div>;
   if (!data?.invoice) return <div className="p-10 text-center">Invoice not found.</div>;
