@@ -35,3 +35,11 @@ export function generateQuoteNumber(): string {
   const rnd = Math.floor(Math.random() * 9000 + 1000);
   return `Q-${y}${m}-${rnd}`;
 }
+
+export function generateInvoiceNumber(): string {
+  const d = new Date();
+  const y = d.getFullYear().toString().slice(-2);
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const rnd = Math.floor(Math.random() * 9000 + 1000);
+  return `INV-${y}${m}-${rnd}`;
+}
