@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Printer, Trash2, Pencil } from "lucide-react";
+import { ArrowLeft, Printer, Trash2, Pencil, Mail } from "lucide-react";
 import { formatZAR, formatDate } from "@/lib/format";
 import { InvoiceStatusBadge } from "./invoices.index";
 import { toast } from "sonner";
@@ -83,6 +83,33 @@ function InvoiceViewPage() {
               <SelectItem value="cancelled">Cancelled</SelectItem>
             </SelectContent>
           </Select>
+          <Button
+            variant="default"
+            size="sm"
+            onClick={() => {
+              const client = data?.invoice?.clients as any;
+              const to = client?.email?.trim();
+              if (!to) {
+                toast.error("This client has no email address on file.");
+                return;
+              }
+              const inv = data!.invoice!;
+              const due = inv.due_date ? formatDate(inv.due_date) : "the agreed date";
+              const biz = data?.profile?.business_name || "our team";
+              const subject = `Reminder: Invoice ${inv.invoice_number} is overdue`;
+              const body =
+                `Hi ${client?.contact_person || client?.name || "there"},%0D%0A%0D%0A` +
+                `This is a friendly reminder that invoice ${inv.invoice_number} (${inv.title}) ` +
+                `for ${formatZAR(inv.total)} was due on ${due} and is now overdue.%0D%0A%0D%0A` +
+                `Please let us know if payment has already been made, or arrange settlement at your earliest convenience.%0D%0A%0D%0A` +
+                `Thank you,%0D%0A${biz}`;
+              window.location.href = `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(subject)}&body=${body}`;
+              statusMut.mutate("sent");
+              toast.success(`Opening email to ${to}`);
+            }}
+          >
+            <Mail className="h-4 w-4 mr-1" /> Email / Resend
+          </Button>
           <Button variant="outline" size="sm" asChild>
             <Link to="/invoices/$invoiceId/edit" params={{ invoiceId }}>
               <Pencil className="h-4 w-4 mr-1" /> Edit
