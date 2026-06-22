@@ -1,9 +1,13 @@
 import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ArrowLeft, Printer, Trash2, Pencil, Mail } from "lucide-react";
 import { formatZAR, formatDate } from "@/lib/format";
 import { InvoiceStatusBadge } from "./invoices.index";
@@ -13,12 +17,17 @@ export const Route = createFileRoute("/_authenticated/invoices/$invoiceId")({
   component: InvoiceViewPage,
 });
 
+const extractEmailAddress = (value?: string | null) =>
+  value?.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i)?.[0] ?? "";
+
 function InvoiceViewPage() {
   const { invoiceId } = Route.useParams();
   const navigate = useNavigate();
   const qc = useQueryClient();
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const isEditRoute = pathname.endsWith(`/invoices/${invoiceId}/edit`);
+  const [nudgeOpen, setNudgeOpen] = useState(false);
+  const [nudgeNote, setNudgeNote] = useState("");
 
   const { data, isLoading } = useQuery({
     queryKey: ["invoice", invoiceId],
@@ -64,6 +73,29 @@ function InvoiceViewPage() {
   if (isLoading) return <div className="p-10 text-center text-muted-foreground">Loading…</div>;
   if (!data?.invoice) return <div className="p-10 text-center">Invoice not found.</div>;
   const { invoice, items, profile } = data;
+  const client = invoice.clients as any;
+  const nudgeEmail = extractEmailAddress(client?.email);
+  const sendNudgeEmail = () => {
+    if (!nudgeEmail) {
+      toast.error("This client has no email address on file.");
+      return;
+    }
+    const due = invoice.due_date ? formatDate(invoice.due_date) : "the agreed date";
+    const biz = profile?.business_name || "our team";
+    const extraNote = nudgeNote.trim();
+    const subject = `Reminder: Invoice ${invoice.invoice_number} is overdue`;
+    const body = [
+      `Hi ${client?.contact_person || client?.name || "there"},`,
+      `This is a friendly reminder that invoice ${invoice.invoice_number} (${invoice.title}) for ${formatZAR(invoice.total)} was due on ${due} and is now overdue.`,
+      extraNote || null,
+      "Please let us know if payment has already been made, or arrange settlement at your earliest convenience.",
+      `Thank you,\n${biz}`,
+    ].filter(Boolean).join("\n\n");
+    window.location.href = `mailto:${encodeURIComponent(nudgeEmail)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    statusMut.mutate("sent");
+    setNudgeOpen(false);
+    toast.success(`Opening email to ${nudgeEmail}`);
+  };
 
   return (
     <div className="p-6 lg:p-10 max-w-4xl mx-auto space-y-6">
@@ -83,31 +115,7 @@ function InvoiceViewPage() {
               <SelectItem value="cancelled">Cancelled</SelectItem>
             </SelectContent>
           </Select>
-          <Button
-            variant="default"
-            size="sm"
-            onClick={() => {
-              const client = data?.invoice?.clients as any;
-              const to = client?.email?.trim();
-              if (!to) {
-                toast.error("This client has no email address on file.");
-                return;
-              }
-              const inv = data!.invoice!;
-              const due = inv.due_date ? formatDate(inv.due_date) : "the agreed date";
-              const biz = data?.profile?.business_name || "our team";
-              const subject = `Reminder: Invoice ${inv.invoice_number} is overdue`;
-              const body =
-                `Hi ${client?.contact_person || client?.name || "there"},%0D%0A%0D%0A` +
-                `This is a friendly reminder that invoice ${inv.invoice_number} (${inv.title}) ` +
-                `for ${formatZAR(inv.total)} was due on ${due} and is now overdue.%0D%0A%0D%0A` +
-                `Please let us know if payment has already been made, or arrange settlement at your earliest convenience.%0D%0A%0D%0A` +
-                `Thank you,%0D%0A${biz}`;
-              window.location.href = `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(subject)}&body=${body}`;
-              statusMut.mutate("sent");
-              toast.success(`Opening email to ${to}`);
-            }}
-          >
+          <Button variant="default" size="sm" onClick={() => setNudgeOpen(true)}>
             <Mail className="h-4 w-4 mr-1" /> Email / Resend
           </Button>
           <Button variant="outline" size="sm" asChild>
@@ -206,6 +214,31 @@ function InvoiceViewPage() {
           )}
         </CardContent>
       </Card>
+
+      <Dialog open={nudgeOpen} onOpenChange={setNudgeOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Email invoice nudge</DialogTitle>
+            <DialogDescription>
+              Add an optional note before opening the reminder email.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label htmlFor="nudge-note">Nudge email note</Label>
+            <Textarea
+              id="nudge-note"
+              rows={4}
+              value={nudgeNote}
+              onChange={(e) => setNudgeNote(e.target.value)}
+              placeholder="Optional message to include in this reminder"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setNudgeOpen(false)}>Cancel</Button>
+            <Button onClick={sendNudgeEmail}>Open email</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

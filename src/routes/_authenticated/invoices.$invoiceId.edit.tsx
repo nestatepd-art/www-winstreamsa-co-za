@@ -120,9 +120,9 @@ function EditInvoicePage() {
       const { data: u } = await supabase.auth.getUser();
       if (!u.user) throw new Error("Not signed in");
 
-      // 1) Upsert company / business profile first. business_name and country
-      //    are NOT NULL — coerce blanks into safe defaults so the upsert never
-      //    fails and silently rolls back the user's perceived save.
+      // 1) Save company / business profile by user_id. The table has a unique
+      //    user_id constraint, so this works whether the profile already exists
+      //    or has not been created yet.
       const NOT_NULL_DEFAULTS: Record<string, string> = {
         business_name: "",
         country: "South Africa",
@@ -136,14 +136,13 @@ function EditInvoicePage() {
           profilePayload[f.key] = v ? v : null;
         }
       });
-      const profileId = data?.profile?.id;
-      const { error: pErr } = profileId
-        ? await supabase.from("business_profiles").update(profilePayload as any).eq("id", profileId)
-        : await supabase.from("business_profiles").insert(profilePayload as any);
+      const { error: pErr } = await supabase
+        .from("business_profiles")
+        .upsert(profilePayload as any, { onConflict: "user_id" });
       if (pErr) throw pErr;
 
       // 2) Update the invoice header.
-      const { error } = await supabase
+      const { data: updatedInvoice, error } = await supabase
         .from("invoices")
         .update({
           client_id: clientId || null,
@@ -159,8 +158,11 @@ function EditInvoicePage() {
           vat_amount: totals.vat_amount,
           total: totals.total,
         })
-        .eq("id", invoiceId);
+        .eq("id", invoiceId)
+        .select("id")
+        .single();
       if (error) throw error;
+      if (!updatedInvoice) throw new Error("Invoice was not updated. Please refresh and try again.");
 
       // 3) Replace line items.
       const { error: delErr } = await supabase.from("invoice_items").delete().eq("invoice_id", invoiceId);
@@ -222,8 +224,8 @@ function EditInvoicePage() {
         <CardHeader><CardTitle className="text-base">Header</CardTitle></CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-3">
           <div className="space-y-2">
-            <Label>Invoice number</Label>
-            <Input value={invoiceNumber} onChange={(e) => setInvoiceNumber(e.target.value)} />
+            <Label htmlFor="invoice-number">Invoice number</Label>
+            <Input id="invoice-number" value={invoiceNumber} onChange={(e) => setInvoiceNumber(e.target.value)} />
           </div>
           <div className="space-y-2">
             <Label>Status</Label>
@@ -237,21 +239,21 @@ function EditInvoicePage() {
             </Select>
           </div>
           <div className="space-y-2">
-            <Label>VAT rate (%)</Label>
-            <Input type="number" min={0} step="0.01" value={vatRate}
+            <Label htmlFor="invoice-vat-rate">VAT rate (%)</Label>
+            <Input id="invoice-vat-rate" type="number" min={0} step="0.01" value={vatRate}
               onChange={(e) => setVatRate(Number(e.target.value))} />
           </div>
           <div className="space-y-2 sm:col-span-3">
-            <Label>Title</Label>
-            <Input value={title} onChange={(e) => setTitle(e.target.value)} />
+            <Label htmlFor="invoice-title">Title</Label>
+            <Input id="invoice-title" value={title} onChange={(e) => setTitle(e.target.value)} />
           </div>
           <div className="space-y-2">
-            <Label>Issue date</Label>
-            <Input type="date" value={issueDate} onChange={(e) => setIssueDate(e.target.value)} />
+            <Label htmlFor="invoice-issue-date">Issue date</Label>
+            <Input id="invoice-issue-date" type="date" value={issueDate} onChange={(e) => setIssueDate(e.target.value)} />
           </div>
           <div className="space-y-2">
-            <Label>Due date</Label>
-            <Input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
+            <Label htmlFor="invoice-due-date">Due date</Label>
+            <Input id="invoice-due-date" type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
           </div>
           <div className="space-y-2 sm:col-span-3">
             <Label>Client</Label>
@@ -318,8 +320,9 @@ function EditInvoicePage() {
         <CardContent className="grid gap-4 sm:grid-cols-2">
           {COMPANY_FIELDS.map((f) => (
             <div key={f.key} className="space-y-2">
-              <Label>{f.label}</Label>
+              <Label htmlFor={`company-${f.key}`}>{f.label}</Label>
               <Input
+                id={`company-${f.key}`}
                 value={company[f.key] ?? ""}
                 onChange={(e) => setCompany((c) => ({ ...c, [f.key]: e.target.value }))}
               />
@@ -332,12 +335,12 @@ function EditInvoicePage() {
         <CardHeader><CardTitle className="text-base">Notes & terms</CardTitle></CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label>Notes (shown on the invoice)</Label>
-            <Textarea rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} />
+            <Label htmlFor="invoice-notes">Notes (shown on the invoice)</Label>
+            <Textarea id="invoice-notes" rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} />
           </div>
           <div className="space-y-2">
-            <Label>Terms</Label>
-            <Textarea rows={3} value={terms} onChange={(e) => setTerms(e.target.value)} />
+            <Label htmlFor="invoice-terms">Terms</Label>
+            <Textarea id="invoice-terms" rows={3} value={terms} onChange={(e) => setTerms(e.target.value)} />
           </div>
         </CardContent>
       </Card>
