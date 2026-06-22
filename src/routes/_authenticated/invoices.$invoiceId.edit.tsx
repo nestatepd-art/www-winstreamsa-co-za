@@ -120,9 +120,9 @@ function EditInvoicePage() {
       const { data: u } = await supabase.auth.getUser();
       if (!u.user) throw new Error("Not signed in");
 
-      // 1) Upsert company / business profile first. business_name and country
-      //    are NOT NULL — coerce blanks into safe defaults so the upsert never
-      //    fails and silently rolls back the user's perceived save.
+      // 1) Save company / business profile by user_id. The table has a unique
+      //    user_id constraint, so this works whether the profile already exists
+      //    or has not been created yet.
       const NOT_NULL_DEFAULTS: Record<string, string> = {
         business_name: "",
         country: "South Africa",
@@ -136,14 +136,13 @@ function EditInvoicePage() {
           profilePayload[f.key] = v ? v : null;
         }
       });
-      const profileId = data?.profile?.id;
-      const { error: pErr } = profileId
-        ? await supabase.from("business_profiles").update(profilePayload as any).eq("id", profileId)
-        : await supabase.from("business_profiles").insert(profilePayload as any);
+      const { error: pErr } = await supabase
+        .from("business_profiles")
+        .upsert(profilePayload as any, { onConflict: "user_id" });
       if (pErr) throw pErr;
 
       // 2) Update the invoice header.
-      const { error } = await supabase
+      const { data: updatedInvoice, error } = await supabase
         .from("invoices")
         .update({
           client_id: clientId || null,
@@ -159,8 +158,11 @@ function EditInvoicePage() {
           vat_amount: totals.vat_amount,
           total: totals.total,
         })
-        .eq("id", invoiceId);
+        .eq("id", invoiceId)
+        .select("id")
+        .single();
       if (error) throw error;
+      if (!updatedInvoice) throw new Error("Invoice was not updated. Please refresh and try again.");
 
       // 3) Replace line items.
       const { error: delErr } = await supabase.from("invoice_items").delete().eq("invoice_id", invoiceId);
