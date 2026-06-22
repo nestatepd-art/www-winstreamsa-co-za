@@ -81,6 +81,40 @@ function QuoteViewPage() {
             </SelectContent>
           </Select>
           <Button variant="outline" size="sm" asChild>
+            <Link to="/quotes/$quoteId/edit" params={{ quoteId }}>
+              <Pencil className="h-4 w-4 mr-1" /> Edit
+            </Link>
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              const email = quote.clients?.email?.trim();
+              if (!email) {
+                toast.error("This client has no email on file. Add one in Clients first.");
+                return;
+              }
+              const subject = `${quote.title || "Quotation"} ${quote.quote_number} — ${formatZAR(quote.total)}`;
+              const lines = [
+                `Hi ${quote.clients?.contact_person || quote.clients?.name || "there"},`,
+                "",
+                `Please find our quotation ${quote.quote_number} for your review.`,
+                ``,
+                `Total: ${formatZAR(quote.total)} (incl. VAT)`,
+                quote.expiry_date ? `Valid until: ${formatDate(quote.expiry_date)}` : "",
+                "",
+                quote.notes || "",
+                "",
+                `Thanks,`,
+                profile?.business_name || "",
+              ].filter(Boolean).join("\n");
+              window.location.href = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(lines)}`;
+              if (quote.status === "draft") statusMut.mutate("sent");
+            }}
+          >
+            <Mail className="h-4 w-4 mr-1" /> Send
+          </Button>
+          <Button variant="outline" size="sm" asChild>
             <Link to="/invoices/new" search={{ fromQuote: quoteId }}>
               <Receipt className="h-4 w-4 mr-1" /> Convert to invoice
             </Link>
