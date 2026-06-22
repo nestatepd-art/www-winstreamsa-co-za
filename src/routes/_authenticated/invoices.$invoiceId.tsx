@@ -91,7 +91,7 @@ function InvoiceViewPage() {
       "Please let us know if payment has already been made, or arrange settlement at your earliest convenience.",
       `Thank you,\n${biz}`,
     ].filter(Boolean).join("\n\n");
-    window.location.href = `mailto:${encodeURIComponent(nudgeEmail)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = `mailto:${nudgeEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     statusMut.mutate("sent");
     setNudgeOpen(false);
     toast.success(`Opening email to ${nudgeEmail}`);
