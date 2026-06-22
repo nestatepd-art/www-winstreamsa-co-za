@@ -136,9 +136,10 @@ function EditInvoicePage() {
           profilePayload[f.key] = v ? v : null;
         }
       });
-      const { error: pErr } = await supabase
-        .from("business_profiles")
-        .upsert(profilePayload, { onConflict: "user_id" });
+      const profileId = data?.profile?.id;
+      const { error: pErr } = profileId
+        ? await supabase.from("business_profiles").update(profilePayload as any).eq("id", profileId)
+        : await supabase.from("business_profiles").insert(profilePayload as any);
       if (pErr) throw pErr;
 
       // 2) Update the invoice header.
