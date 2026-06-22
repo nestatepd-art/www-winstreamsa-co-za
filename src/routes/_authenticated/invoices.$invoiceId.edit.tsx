@@ -84,6 +84,10 @@ function EditInvoicePage() {
     if (data?.invoice && !loaded) {
       setClientId(data.invoice.client_id ?? "");
       setTitle(data.invoice.title ?? "");
+      setInvoiceNumber(data.invoice.invoice_number ?? "");
+      setStatus(data.invoice.status ?? "draft");
+      setIssueDate(data.invoice.issue_date ?? "");
+      setVatRate(Number(data.invoice.vat_rate ?? 15));
       setNotes(data.invoice.notes ?? "");
       setTerms(data.invoice.terms ?? "");
       setDueDate(data.invoice.due_date ?? "");
@@ -104,7 +108,7 @@ function EditInvoicePage() {
     }
   }, [data, loaded]);
 
-  const totals = useMemo(() => computeQuoteTotals(items, 15), [items]);
+  const totals = useMemo(() => computeQuoteTotals(items, vatRate), [items, vatRate]);
 
   const updateItem = (i: number, patch: Partial<Item>) =>
     setItems((arr) => arr.map((it, idx) => (idx === i ? { ...it, ...patch } : it)));
