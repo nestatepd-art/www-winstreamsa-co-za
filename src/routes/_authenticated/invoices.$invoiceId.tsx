@@ -220,7 +220,9 @@ function InvoiceViewPage() {
           <DialogHeader>
             <DialogTitle>Email invoice nudge</DialogTitle>
             <DialogDescription>
-              Add an optional note before opening the reminder email.
+              {nudgeEmail
+                ? <>Sending to <span className="font-medium text-foreground">{nudgeEmail}</span> (from client record).</>
+                : "This client has no email address on file. Add one in Clients to send a nudge."}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-2">
