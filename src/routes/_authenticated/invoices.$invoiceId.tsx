@@ -214,6 +214,31 @@ function InvoiceViewPage() {
           )}
         </CardContent>
       </Card>
+
+      <Dialog open={nudgeOpen} onOpenChange={setNudgeOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Email invoice nudge</DialogTitle>
+            <DialogDescription>
+              Add an optional note before opening the reminder email.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label htmlFor="nudge-note">Nudge email note</Label>
+            <Textarea
+              id="nudge-note"
+              rows={4}
+              value={nudgeNote}
+              onChange={(e) => setNudgeNote(e.target.value)}
+              placeholder="Optional message to include in this reminder"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setNudgeOpen(false)}>Cancel</Button>
+            <Button onClick={sendNudgeEmail}>Open email</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
