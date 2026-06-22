@@ -14,7 +14,7 @@ import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Mail, MessageCircle, Sparkles, Loader2, Send, ArrowLeft, Check } from "lucide-react";
+import { Mail, MessageCircle, Sparkles, Loader2, Send, ArrowLeft, Check, Trash2 } from "lucide-react";
 import { formatDate } from "@/lib/format";
 import { toast } from "sonner";
 
@@ -219,6 +219,21 @@ function ProposalDetail() {
               <Check className="h-4 w-4 mr-2" /> Mark accepted
             </Button>
           )}
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="Delete proposal"
+            onClick={async () => {
+              if (!confirm(`Delete proposal "${proposal.title}"? This cannot be undone.`)) return;
+              const { error } = await supabase.from("proposals").delete().eq("id", proposalId);
+              if (error) { toast.error(error.message); return; }
+              toast.success("Proposal deleted");
+              qc.invalidateQueries({ queryKey: ["proposals"] });
+              navigate({ to: "/proposals" });
+            }}
+          >
+            <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
+          </Button>
         </div>
       </header>
 
