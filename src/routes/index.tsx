@@ -2,6 +2,12 @@ import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { Zap, Bell, MessageCircle, ArrowRight } from "lucide-react";
 import { SiteNav, SiteFooter } from "@/components/site-nav";
+import {
+  DEFAULT_OG_IMAGE,
+  DEFAULT_OG_IMAGE_ALT,
+  DEFAULT_OG_IMAGE_HEIGHT,
+  DEFAULT_OG_IMAGE_WIDTH,
+} from "@/lib/seo";
 
 export const Route = createFileRoute("/")({
   head: () => ({
