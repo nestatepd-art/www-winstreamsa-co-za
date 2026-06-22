@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Printer, Trash2 } from "lucide-react";
+import { ArrowLeft, Printer, Trash2, Pencil } from "lucide-react";
 import { formatZAR, formatDate } from "@/lib/format";
 import { InvoiceStatusBadge } from "./invoices.index";
 import { toast } from "sonner";
@@ -79,6 +79,13 @@ function InvoiceViewPage() {
               <SelectItem value="cancelled">Cancelled</SelectItem>
             </SelectContent>
           </Select>
+          {invoice.status === "draft" && (
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/invoices/$invoiceId/edit" params={{ invoiceId }}>
+                <Pencil className="h-4 w-4 mr-1" /> Edit
+              </Link>
+            </Button>
+          )}
           <Button variant="outline" size="sm" onClick={() => window.print()}>
             <Printer className="h-4 w-4 mr-1" /> Print / PDF
           </Button>
