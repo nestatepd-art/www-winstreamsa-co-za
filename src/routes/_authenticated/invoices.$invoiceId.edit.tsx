@@ -145,11 +145,22 @@ function EditInvoicePage() {
         const { error: e2 } = await supabase.from("invoice_items").insert(rows);
         if (e2) throw e2;
       }
+
+      // Upsert company / business profile
+      const profilePayload: Record<string, any> = { user_id: u.user.id };
+      COMPANY_FIELDS.forEach((f) => {
+        profilePayload[f.key] = company[f.key]?.trim() ? company[f.key] : null;
+      });
+      const { error: pErr } = await supabase
+        .from("business_profiles")
+        .upsert(profilePayload, { onConflict: "user_id" });
+      if (pErr) throw pErr;
     },
     onSuccess: () => {
       toast.success("Invoice updated");
       qc.invalidateQueries({ queryKey: ["invoice", invoiceId] });
       qc.invalidateQueries({ queryKey: ["invoices"] });
+      qc.invalidateQueries({ queryKey: ["business-profile"] });
       navigate({ to: "/invoices/$invoiceId", params: { invoiceId } });
     },
     onError: (e: any) => toast.error(e.message),
@@ -157,16 +168,7 @@ function EditInvoicePage() {
 
   if (isLoading) return <div className="p-10 text-center text-muted-foreground">Loading…</div>;
   if (!data?.invoice) return <div className="p-10 text-center">Invoice not found.</div>;
-  if (data.invoice.status !== "draft") {
-    return (
-      <div className="p-10 text-center space-y-3">
-        <p>Only draft invoices can be edited.</p>
-        <Button asChild variant="outline" size="sm">
-          <Link to="/invoices/$invoiceId" params={{ invoiceId }}>Back to invoice</Link>
-        </Button>
-      </div>
-    );
-  }
+
 
   return (
     <div className="p-6 lg:p-10 max-w-5xl mx-auto space-y-6">
