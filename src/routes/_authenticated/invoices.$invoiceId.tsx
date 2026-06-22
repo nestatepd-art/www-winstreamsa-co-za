@@ -28,7 +28,8 @@ function InvoiceViewPage() {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const isEditRoute = pathname.endsWith(`/invoices/${invoiceId}/edit`);
   const [nudgeOpen, setNudgeOpen] = useState(false);
-  const [nudgeNote, setNudgeNote] = useState("");
+  const [nudgeSubject, setNudgeSubject] = useState("");
+  const [nudgeBody, setNudgeBody] = useState("");
 
   const { data, isLoading } = useQuery({
     queryKey: ["invoice", invoiceId],
