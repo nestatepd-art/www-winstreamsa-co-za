@@ -120,6 +120,28 @@ function EditInvoicePage() {
       const { data: u } = await supabase.auth.getUser();
       if (!u.user) throw new Error("Not signed in");
 
+      // 1) Upsert company / business profile first. business_name and country
+      //    are NOT NULL — coerce blanks into safe defaults so the upsert never
+      //    fails and silently rolls back the user's perceived save.
+      const NOT_NULL_DEFAULTS: Record<string, string> = {
+        business_name: "",
+        country: "South Africa",
+      };
+      const profilePayload: Record<string, any> = { user_id: u.user.id };
+      COMPANY_FIELDS.forEach((f) => {
+        const v = (company[f.key] ?? "").trim();
+        if (f.key in NOT_NULL_DEFAULTS) {
+          profilePayload[f.key] = v || NOT_NULL_DEFAULTS[f.key];
+        } else {
+          profilePayload[f.key] = v ? v : null;
+        }
+      });
+      const { error: pErr } = await supabase
+        .from("business_profiles")
+        .upsert(profilePayload, { onConflict: "user_id" });
+      if (pErr) throw pErr;
+
+      // 2) Update the invoice header.
       const { error } = await supabase
         .from("invoices")
         .update({
@@ -128,8 +150,8 @@ function EditInvoicePage() {
           invoice_number: invoiceNumber,
           status: status as any,
           issue_date: issueDate || new Date().toISOString().slice(0, 10),
-          notes,
-          terms: terms || undefined,
+          notes: notes?.trim() ? notes : null,
+          terms: terms?.trim() ? terms : null,
           due_date: dueDate || null,
           vat_rate: vatRate,
           subtotal: totals.subtotal,
@@ -139,7 +161,7 @@ function EditInvoicePage() {
         .eq("id", invoiceId);
       if (error) throw error;
 
-      // Replace line items
+      // 3) Replace line items.
       const { error: delErr } = await supabase.from("invoice_items").delete().eq("invoice_id", invoiceId);
       if (delErr) throw delErr;
 
@@ -157,16 +179,6 @@ function EditInvoicePage() {
         const { error: e2 } = await supabase.from("invoice_items").insert(rows);
         if (e2) throw e2;
       }
-
-      // Upsert company / business profile
-      const profilePayload: Record<string, any> = { user_id: u.user.id };
-      COMPANY_FIELDS.forEach((f) => {
-        profilePayload[f.key] = company[f.key]?.trim() ? company[f.key] : null;
-      });
-      const { error: pErr } = await supabase
-        .from("business_profiles")
-        .upsert(profilePayload, { onConflict: "user_id" });
-      if (pErr) throw pErr;
     },
     onSuccess: () => {
       toast.success("Invoice updated");
