@@ -180,7 +180,7 @@ function ProposalDetail() {
                   Send via {channel === "email" ? "Email" : "WhatsApp"}
                 </DialogTitle>
                 <DialogDescription>
-                  Simulated send — message is logged to the proposal timeline. Connect Gmail / WhatsApp Cloud API later for real delivery.
+                  Opens your {channel === "email" ? "mail client" : "WhatsApp"} with the message prefilled. The send is also logged to this proposal's timeline.
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-3">
