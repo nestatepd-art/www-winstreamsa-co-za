@@ -49,6 +49,10 @@ function EditInvoicePage() {
 
   const [clientId, setClientId] = useState<string>("");
   const [title, setTitle] = useState("");
+  const [invoiceNumber, setInvoiceNumber] = useState("");
+  const [status, setStatus] = useState<string>("draft");
+  const [issueDate, setIssueDate] = useState<string>("");
+  const [vatRate, setVatRate] = useState<number>(15);
   const [items, setItems] = useState<Item[]>([{ description: "", quantity: 1, unit_price: 0 }]);
   const [notes, setNotes] = useState("");
   const [terms, setTerms] = useState("");
