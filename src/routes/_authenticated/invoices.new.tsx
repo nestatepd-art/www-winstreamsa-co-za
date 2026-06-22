@@ -166,8 +166,8 @@ function NewInvoicePage() {
             <Input value={title} onChange={(e) => setTitle(e.target.value)} />
           </div>
           <div className="space-y-2">
-            <Label>Payment due (days)</Label>
-            <Input type="number" min={0} value={dueDays} onChange={(e) => setDueDays(Number(e.target.value))} />
+            <Label htmlFor="invoice-due-date">Due date</Label>
+            <Input id="invoice-due-date" type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
           </div>
           <div className="space-y-2 sm:col-span-3">
             <Label>Client</Label>
