@@ -320,8 +320,9 @@ function EditInvoicePage() {
         <CardContent className="grid gap-4 sm:grid-cols-2">
           {COMPANY_FIELDS.map((f) => (
             <div key={f.key} className="space-y-2">
-              <Label>{f.label}</Label>
+              <Label htmlFor={`company-${f.key}`}>{f.label}</Label>
               <Input
+                id={`company-${f.key}`}
                 value={company[f.key] ?? ""}
                 onChange={(e) => setCompany((c) => ({ ...c, [f.key]: e.target.value }))}
               />
@@ -334,12 +335,12 @@ function EditInvoicePage() {
         <CardHeader><CardTitle className="text-base">Notes & terms</CardTitle></CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label>Notes (shown on the invoice)</Label>
-            <Textarea rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} />
+            <Label htmlFor="invoice-notes">Notes (shown on the invoice)</Label>
+            <Textarea id="invoice-notes" rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} />
           </div>
           <div className="space-y-2">
-            <Label>Terms</Label>
-            <Textarea rows={3} value={terms} onChange={(e) => setTerms(e.target.value)} />
+            <Label htmlFor="invoice-terms">Terms</Label>
+            <Textarea id="invoice-terms" rows={3} value={terms} onChange={(e) => setTerms(e.target.value)} />
           </div>
         </CardContent>
       </Card>
