@@ -197,6 +197,23 @@ function AuthPage() {
                   <Button type="submit" disabled={loading} className="w-full">
                     {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Sign in"}
                   </Button>
+                  <button
+                    type="button"
+                    onClick={() => setForgotOpen((v) => !v)}
+                    className="block w-full text-center text-sm text-muted-foreground hover:text-foreground underline-offset-4 hover:underline"
+                  >
+                    Forgot password?
+                  </button>
+                  {forgotOpen && (
+                    <div className="rounded-md border border-border bg-muted/30 p-3 text-sm space-y-2">
+                      <p className="text-muted-foreground">
+                        We'll email a reset link to <span className="font-medium text-foreground">{email || "the address above"}</span>.
+                      </p>
+                      <Button type="button" size="sm" variant="secondary" disabled={loading} onClick={sendReset} className="w-full">
+                        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Send reset link"}
+                      </Button>
+                    </div>
+                  )}
                 </form>
               </TabsContent>
 
