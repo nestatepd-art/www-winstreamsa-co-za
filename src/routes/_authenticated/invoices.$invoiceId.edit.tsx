@@ -251,6 +251,24 @@ function EditInvoicePage() {
       </Card>
 
       <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Company details</CardTitle>
+          <p className="text-xs text-muted-foreground mt-1">Shown on this and future invoices. Saved to your business profile.</p>
+        </CardHeader>
+        <CardContent className="grid gap-4 sm:grid-cols-2">
+          {COMPANY_FIELDS.map((f) => (
+            <div key={f.key} className="space-y-2">
+              <Label>{f.label}</Label>
+              <Input
+                value={company[f.key] ?? ""}
+                onChange={(e) => setCompany((c) => ({ ...c, [f.key]: e.target.value }))}
+              />
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+
+      <Card>
         <CardHeader><CardTitle className="text-base">Notes & terms</CardTitle></CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
