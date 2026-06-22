@@ -224,8 +224,8 @@ function EditInvoicePage() {
         <CardHeader><CardTitle className="text-base">Header</CardTitle></CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-3">
           <div className="space-y-2">
-            <Label>Invoice number</Label>
-            <Input value={invoiceNumber} onChange={(e) => setInvoiceNumber(e.target.value)} />
+            <Label htmlFor="invoice-number">Invoice number</Label>
+            <Input id="invoice-number" value={invoiceNumber} onChange={(e) => setInvoiceNumber(e.target.value)} />
           </div>
           <div className="space-y-2">
             <Label>Status</Label>
@@ -239,21 +239,21 @@ function EditInvoicePage() {
             </Select>
           </div>
           <div className="space-y-2">
-            <Label>VAT rate (%)</Label>
-            <Input type="number" min={0} step="0.01" value={vatRate}
+            <Label htmlFor="invoice-vat-rate">VAT rate (%)</Label>
+            <Input id="invoice-vat-rate" type="number" min={0} step="0.01" value={vatRate}
               onChange={(e) => setVatRate(Number(e.target.value))} />
           </div>
           <div className="space-y-2 sm:col-span-3">
-            <Label>Title</Label>
-            <Input value={title} onChange={(e) => setTitle(e.target.value)} />
+            <Label htmlFor="invoice-title">Title</Label>
+            <Input id="invoice-title" value={title} onChange={(e) => setTitle(e.target.value)} />
           </div>
           <div className="space-y-2">
-            <Label>Issue date</Label>
-            <Input type="date" value={issueDate} onChange={(e) => setIssueDate(e.target.value)} />
+            <Label htmlFor="invoice-issue-date">Issue date</Label>
+            <Input id="invoice-issue-date" type="date" value={issueDate} onChange={(e) => setIssueDate(e.target.value)} />
           </div>
           <div className="space-y-2">
-            <Label>Due date</Label>
-            <Input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
+            <Label htmlFor="invoice-due-date">Due date</Label>
+            <Input id="invoice-due-date" type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
           </div>
           <div className="space-y-2 sm:col-span-3">
             <Label>Client</Label>
