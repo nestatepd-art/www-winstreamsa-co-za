@@ -33,6 +33,7 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [businessName, setBusinessName] = useState("");
   const [inIframe, setInIframe] = useState(false);
+  const [forgotOpen, setForgotOpen] = useState(false);
 
   useEffect(() => {
     setInIframe(window.self !== window.top);
@@ -41,11 +42,28 @@ function AuthPage() {
   const signIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
     setLoading(false);
-    if (error) return toast.error(error.message);
+    if (error) {
+      const msg = /invalid login/i.test(error.message)
+        ? "Email or password is incorrect. If you signed up with Google, use 'Continue with Google'. Otherwise use 'Forgot password' below."
+        : error.message;
+      return toast.error(msg);
+    }
     toast.success("Welcome back");
     navigate({ to: "/dashboard" });
+  };
+
+  const sendReset = async () => {
+    if (!email.trim()) return toast.error("Enter your email above first");
+    setLoading(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setLoading(false);
+    if (error) return toast.error(error.message);
+    toast.success("Password reset email sent", { description: "Check your inbox for the link." });
+    setForgotOpen(false);
   };
 
   const signUp = async (e: React.FormEvent) => {
@@ -179,6 +197,23 @@ function AuthPage() {
                   <Button type="submit" disabled={loading} className="w-full">
                     {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Sign in"}
                   </Button>
+                  <button
+                    type="button"
+                    onClick={() => setForgotOpen((v) => !v)}
+                    className="block w-full text-center text-sm text-muted-foreground hover:text-foreground underline-offset-4 hover:underline"
+                  >
+                    Forgot password?
+                  </button>
+                  {forgotOpen && (
+                    <div className="rounded-md border border-border bg-muted/30 p-3 text-sm space-y-2">
+                      <p className="text-muted-foreground">
+                        We'll email a reset link to <span className="font-medium text-foreground">{email || "the address above"}</span>.
+                      </p>
+                      <Button type="button" size="sm" variant="secondary" disabled={loading} onClick={sendReset} className="w-full">
+                        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Send reset link"}
+                      </Button>
+                    </div>
+                  )}
                 </form>
               </TabsContent>
 
