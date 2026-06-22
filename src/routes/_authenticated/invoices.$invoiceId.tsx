@@ -1,6 +1,7 @@
 import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -27,7 +28,8 @@ function InvoiceViewPage() {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const isEditRoute = pathname.endsWith(`/invoices/${invoiceId}/edit`);
   const [nudgeOpen, setNudgeOpen] = useState(false);
-  const [nudgeNote, setNudgeNote] = useState("");
+  const [nudgeSubject, setNudgeSubject] = useState("");
+  const [nudgeBody, setNudgeBody] = useState("");
 
   const { data, isLoading } = useQuery({
     queryKey: ["invoice", invoiceId],
@@ -75,23 +77,65 @@ function InvoiceViewPage() {
   const { invoice, items, profile } = data;
   const client = invoice.clients as any;
   const nudgeEmail = extractEmailAddress(client?.email);
+  const defaultSubject = `Reminder: Invoice ${invoice.invoice_number} – ${formatZAR(invoice.total)} outstanding`;
+  const defaultBody = useMemo(() => {
+    const due = invoice.due_date ? formatDate(invoice.due_date) : "the agreed date";
+    const biz = profile?.business_name || "our team";
+    const lines: string[] = [];
+    lines.push(`Hi ${client?.contact_person || client?.name || "there"},`, "");
+    lines.push(
+      `This is a friendly reminder that invoice ${invoice.invoice_number} (${invoice.title}) for ${formatZAR(invoice.total)} was due on ${due} and is currently outstanding.`,
+      "",
+      "For your convenience, the full invoice is included below.",
+      "",
+      "──────────  INVOICE  ──────────",
+      `Invoice:    ${invoice.invoice_number}`,
+      `Title:      ${invoice.title}`,
+      `Issued:     ${formatDate(invoice.issue_date)}`,
+      `Due:        ${due}`,
+      `Billed to:  ${client?.name ?? "—"}${client?.contact_person ? ` (${client.contact_person})` : ""}`,
+      "",
+      "Items:",
+      ...items.map((it: any) => `  • ${it.description} — ${Number(it.quantity)} × ${formatZAR(it.unit_price)} = ${formatZAR(it.line_total)}`),
+      "",
+      `Subtotal:   ${formatZAR(invoice.subtotal)}`,
+      `VAT (${Number(invoice.vat_rate)}%):  ${formatZAR(invoice.vat_amount)}`,
+      `TOTAL DUE:  ${formatZAR(invoice.total)}`,
+    );
+    if (profile?.bank_name || profile?.bank_account_number) {
+      lines.push(
+        "",
+        "Banking details:",
+        profile?.bank_account_holder ? `  ${profile.bank_account_holder}` : "",
+        profile?.bank_name ? `  ${profile.bank_name}` : "",
+        profile?.bank_account_number ? `  Acc: ${profile.bank_account_number}` : "",
+        profile?.bank_branch_code ? `  Branch: ${profile.bank_branch_code}` : "",
+      );
+    }
+    lines.push(
+      "─────────────────────────────",
+      "",
+      "Please let us know if payment has already been made, or arrange settlement at your earliest convenience.",
+      "",
+      "Thank you,",
+      biz,
+    );
+    return lines.filter((l) => l !== undefined).join("\n");
+  }, [invoice, items, profile, client]);
+
+  useEffect(() => {
+    if (nudgeOpen) {
+      setNudgeSubject(defaultSubject);
+      setNudgeBody(defaultBody);
+    }
+  }, [nudgeOpen, defaultSubject, defaultBody]);
+
   const sendNudgeEmail = () => {
     if (!nudgeEmail) {
       toast.error("This client has no email address on file.");
       return;
     }
-    const due = invoice.due_date ? formatDate(invoice.due_date) : "the agreed date";
-    const biz = profile?.business_name || "our team";
-    const extraNote = nudgeNote.trim();
-    const subject = `Reminder: Invoice ${invoice.invoice_number} is overdue`;
-    const body = [
-      `Hi ${client?.contact_person || client?.name || "there"},`,
-      `This is a friendly reminder that invoice ${invoice.invoice_number} (${invoice.title}) for ${formatZAR(invoice.total)} was due on ${due} and is now overdue.`,
-      extraNote || null,
-      "Please let us know if payment has already been made, or arrange settlement at your earliest convenience.",
-      `Thank you,\n${biz}`,
-    ].filter(Boolean).join("\n\n");
-    window.location.href = `mailto:${nudgeEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = `mailto:${nudgeEmail}?subject=${encodeURIComponent(nudgeSubject)}&body=${encodeURIComponent(nudgeBody)}`;
     statusMut.mutate("sent");
     setNudgeOpen(false);
     toast.success(`Opening email to ${nudgeEmail}`);
@@ -216,28 +260,40 @@ function InvoiceViewPage() {
       </Card>
 
       <Dialog open={nudgeOpen} onOpenChange={setNudgeOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Email invoice nudge</DialogTitle>
+            <DialogTitle>Send invoice reminder</DialogTitle>
             <DialogDescription>
               {nudgeEmail
-                ? <>Sending to <span className="font-medium text-foreground">{nudgeEmail}</span> (from client record).</>
+                ? <>Reminder + full invoice will be sent to <span className="font-medium text-foreground">{nudgeEmail}</span>. Review or edit below, then click Send.</>
                 : "This client has no email address on file. Add one in Clients to send a nudge."}
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-2">
-            <Label htmlFor="nudge-note">Nudge email note</Label>
-            <Textarea
-              id="nudge-note"
-              rows={4}
-              value={nudgeNote}
-              onChange={(e) => setNudgeNote(e.target.value)}
-              placeholder="Optional message to include in this reminder"
-            />
+          <div className="space-y-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="nudge-subject">Subject</Label>
+              <Input
+                id="nudge-subject"
+                value={nudgeSubject}
+                onChange={(e) => setNudgeSubject(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="nudge-body">Message (invoice included)</Label>
+              <Textarea
+                id="nudge-body"
+                rows={16}
+                className="font-mono text-xs"
+                value={nudgeBody}
+                onChange={(e) => setNudgeBody(e.target.value)}
+              />
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setNudgeOpen(false)}>Cancel</Button>
-            <Button onClick={sendNudgeEmail}>Open email</Button>
+            <Button onClick={sendNudgeEmail} disabled={!nudgeEmail}>
+              <Mail className="h-4 w-4 mr-1" /> Send to {nudgeEmail || "client"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
