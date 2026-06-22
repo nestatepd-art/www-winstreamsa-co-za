@@ -125,9 +125,13 @@ function EditInvoicePage() {
         .update({
           client_id: clientId || null,
           title,
+          invoice_number: invoiceNumber,
+          status: status as any,
+          issue_date: issueDate || null,
           notes,
           terms: terms || null,
           due_date: dueDate || null,
+          vat_rate: vatRate,
           subtotal: totals.subtotal,
           vat_amount: totals.vat_amount,
           total: totals.total,
