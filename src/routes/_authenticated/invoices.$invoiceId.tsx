@@ -260,28 +260,40 @@ function InvoiceViewPage() {
       </Card>
 
       <Dialog open={nudgeOpen} onOpenChange={setNudgeOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Email invoice nudge</DialogTitle>
+            <DialogTitle>Send invoice reminder</DialogTitle>
             <DialogDescription>
               {nudgeEmail
-                ? <>Sending to <span className="font-medium text-foreground">{nudgeEmail}</span> (from client record).</>
+                ? <>Reminder + full invoice will be sent to <span className="font-medium text-foreground">{nudgeEmail}</span>. Review or edit below, then click Send.</>
                 : "This client has no email address on file. Add one in Clients to send a nudge."}
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-2">
-            <Label htmlFor="nudge-note">Nudge email note</Label>
-            <Textarea
-              id="nudge-note"
-              rows={4}
-              value={nudgeNote}
-              onChange={(e) => setNudgeNote(e.target.value)}
-              placeholder="Optional message to include in this reminder"
-            />
+          <div className="space-y-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="nudge-subject">Subject</Label>
+              <Input
+                id="nudge-subject"
+                value={nudgeSubject}
+                onChange={(e) => setNudgeSubject(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="nudge-body">Message (invoice included)</Label>
+              <Textarea
+                id="nudge-body"
+                rows={16}
+                className="font-mono text-xs"
+                value={nudgeBody}
+                onChange={(e) => setNudgeBody(e.target.value)}
+              />
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setNudgeOpen(false)}>Cancel</Button>
-            <Button onClick={sendNudgeEmail}>Open email</Button>
+            <Button onClick={sendNudgeEmail} disabled={!nudgeEmail}>
+              <Mail className="h-4 w-4 mr-1" /> Send to {nudgeEmail || "client"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
