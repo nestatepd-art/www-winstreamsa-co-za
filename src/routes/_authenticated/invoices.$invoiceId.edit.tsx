@@ -183,6 +183,7 @@ function EditInvoicePage() {
     onSuccess: () => {
       toast.success("Invoice updated");
       qc.invalidateQueries({ queryKey: ["invoice", invoiceId] });
+      qc.invalidateQueries({ queryKey: ["invoice-edit", invoiceId] });
       qc.invalidateQueries({ queryKey: ["invoices"] });
       qc.invalidateQueries({ queryKey: ["business-profile"] });
       navigate({ to: "/invoices/$invoiceId", params: { invoiceId } });
@@ -196,14 +197,24 @@ function EditInvoicePage() {
 
   return (
     <div className="p-6 lg:p-10 max-w-5xl mx-auto space-y-6">
-      <div>
-        <Button variant="ghost" size="sm" asChild className="-ml-2">
-          <Link to="/invoices/$invoiceId" params={{ invoiceId }}>
-            <ArrowLeft className="h-4 w-4 mr-1" /> Back to invoice
-          </Link>
-        </Button>
-        <h1 className="text-3xl font-semibold tracking-tight mt-2">Edit invoice</h1>
-        <p className="text-muted-foreground text-sm mt-1">{data.invoice.invoice_number}</p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <Button variant="ghost" size="sm" asChild className="-ml-2">
+            <Link to="/invoices/$invoiceId" params={{ invoiceId }}>
+              <ArrowLeft className="h-4 w-4 mr-1" /> Back to invoice
+            </Link>
+          </Button>
+          <h1 className="text-3xl font-semibold tracking-tight mt-2">Edit invoice</h1>
+          <p className="text-muted-foreground text-sm mt-1">{data.invoice.invoice_number}</p>
+        </div>
+        <div className="flex gap-2 sm:pt-8">
+          <Button variant="outline" asChild>
+            <Link to="/invoices/$invoiceId" params={{ invoiceId }}>Cancel</Link>
+          </Button>
+          <Button disabled={saveMut.isPending} onClick={() => saveMut.mutate()}>
+            {saveMut.isPending ? "Saving…" : "Save changes"}
+          </Button>
+        </div>
       </div>
 
       <Card>
@@ -291,7 +302,7 @@ function EditInvoicePage() {
           <div className="flex justify-end pt-4 border-t">
             <div className="w-full max-w-xs space-y-1 text-sm">
               <div className="flex justify-between text-muted-foreground"><span>Subtotal</span><span className="tabular-nums">{formatZAR(totals.subtotal)}</span></div>
-              <div className="flex justify-between text-muted-foreground"><span>VAT (15%)</span><span className="tabular-nums">{formatZAR(totals.vat_amount)}</span></div>
+              <div className="flex justify-between text-muted-foreground"><span>VAT ({vatRate || 0}%)</span><span className="tabular-nums">{formatZAR(totals.vat_amount)}</span></div>
               <div className="flex justify-between font-semibold text-base pt-2 border-t"><span>Total due</span><span className="tabular-nums">{formatZAR(totals.total)}</span></div>
             </div>
           </div>
