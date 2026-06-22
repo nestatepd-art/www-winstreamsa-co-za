@@ -32,11 +32,14 @@ import { Route as AuthenticatedChatRouteImport } from './routes/_authenticated/c
 import { Route as AuthenticatedBillingRouteImport } from './routes/_authenticated/billing'
 import { Route as AuthenticatedQuotesIndexRouteImport } from './routes/_authenticated/quotes.index'
 import { Route as AuthenticatedProposalsIndexRouteImport } from './routes/_authenticated/proposals.index'
+import { Route as AuthenticatedInvoicesIndexRouteImport } from './routes/_authenticated/invoices.index'
 import { Route as AuthenticatedChatIndexRouteImport } from './routes/_authenticated/chat.index'
 import { Route as AuthenticatedQuotesNewRouteImport } from './routes/_authenticated/quotes.new'
 import { Route as AuthenticatedQuotesQuoteIdRouteImport } from './routes/_authenticated/quotes.$quoteId'
 import { Route as AuthenticatedProposalsNewRouteImport } from './routes/_authenticated/proposals.new'
 import { Route as AuthenticatedProposalsProposalIdRouteImport } from './routes/_authenticated/proposals.$proposalId'
+import { Route as AuthenticatedInvoicesNewRouteImport } from './routes/_authenticated/invoices.new'
+import { Route as AuthenticatedInvoicesInvoiceIdRouteImport } from './routes/_authenticated/invoices.$invoiceId'
 import { Route as AuthenticatedChatThreadIdRouteImport } from './routes/_authenticated/chat.$threadId'
 import { Route as AuthenticatedAdminBlogRouteImport } from './routes/_authenticated/admin.blog'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
@@ -157,6 +160,12 @@ const AuthenticatedProposalsIndexRoute =
     path: '/proposals/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedInvoicesIndexRoute =
+  AuthenticatedInvoicesIndexRouteImport.update({
+    id: '/invoices/',
+    path: '/invoices/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedChatIndexRoute = AuthenticatedChatIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -183,6 +192,18 @@ const AuthenticatedProposalsProposalIdRoute =
   AuthenticatedProposalsProposalIdRouteImport.update({
     id: '/proposals/$proposalId',
     path: '/proposals/$proposalId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedInvoicesNewRoute =
+  AuthenticatedInvoicesNewRouteImport.update({
+    id: '/invoices/new',
+    path: '/invoices/new',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedInvoicesInvoiceIdRoute =
+  AuthenticatedInvoicesInvoiceIdRouteImport.update({
+    id: '/invoices/$invoiceId',
+    path: '/invoices/$invoiceId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedChatThreadIdRoute =
@@ -226,11 +247,14 @@ export interface FileRoutesByFullPath {
   '/blog/': typeof BlogIndexRoute
   '/admin/blog': typeof AuthenticatedAdminBlogRoute
   '/chat/$threadId': typeof AuthenticatedChatThreadIdRoute
+  '/invoices/$invoiceId': typeof AuthenticatedInvoicesInvoiceIdRoute
+  '/invoices/new': typeof AuthenticatedInvoicesNewRoute
   '/proposals/$proposalId': typeof AuthenticatedProposalsProposalIdRoute
   '/proposals/new': typeof AuthenticatedProposalsNewRoute
   '/quotes/$quoteId': typeof AuthenticatedQuotesQuoteIdRoute
   '/quotes/new': typeof AuthenticatedQuotesNewRoute
   '/chat/': typeof AuthenticatedChatIndexRoute
+  '/invoices/': typeof AuthenticatedInvoicesIndexRoute
   '/proposals/': typeof AuthenticatedProposalsIndexRoute
   '/quotes/': typeof AuthenticatedQuotesIndexRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -257,11 +281,14 @@ export interface FileRoutesByTo {
   '/blog': typeof BlogIndexRoute
   '/admin/blog': typeof AuthenticatedAdminBlogRoute
   '/chat/$threadId': typeof AuthenticatedChatThreadIdRoute
+  '/invoices/$invoiceId': typeof AuthenticatedInvoicesInvoiceIdRoute
+  '/invoices/new': typeof AuthenticatedInvoicesNewRoute
   '/proposals/$proposalId': typeof AuthenticatedProposalsProposalIdRoute
   '/proposals/new': typeof AuthenticatedProposalsNewRoute
   '/quotes/$quoteId': typeof AuthenticatedQuotesQuoteIdRoute
   '/quotes/new': typeof AuthenticatedQuotesNewRoute
   '/chat': typeof AuthenticatedChatIndexRoute
+  '/invoices': typeof AuthenticatedInvoicesIndexRoute
   '/proposals': typeof AuthenticatedProposalsIndexRoute
   '/quotes': typeof AuthenticatedQuotesIndexRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -291,11 +318,14 @@ export interface FileRoutesById {
   '/blog/': typeof BlogIndexRoute
   '/_authenticated/admin/blog': typeof AuthenticatedAdminBlogRoute
   '/_authenticated/chat/$threadId': typeof AuthenticatedChatThreadIdRoute
+  '/_authenticated/invoices/$invoiceId': typeof AuthenticatedInvoicesInvoiceIdRoute
+  '/_authenticated/invoices/new': typeof AuthenticatedInvoicesNewRoute
   '/_authenticated/proposals/$proposalId': typeof AuthenticatedProposalsProposalIdRoute
   '/_authenticated/proposals/new': typeof AuthenticatedProposalsNewRoute
   '/_authenticated/quotes/$quoteId': typeof AuthenticatedQuotesQuoteIdRoute
   '/_authenticated/quotes/new': typeof AuthenticatedQuotesNewRoute
   '/_authenticated/chat/': typeof AuthenticatedChatIndexRoute
+  '/_authenticated/invoices/': typeof AuthenticatedInvoicesIndexRoute
   '/_authenticated/proposals/': typeof AuthenticatedProposalsIndexRoute
   '/_authenticated/quotes/': typeof AuthenticatedQuotesIndexRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -325,11 +355,14 @@ export interface FileRouteTypes {
     | '/blog/'
     | '/admin/blog'
     | '/chat/$threadId'
+    | '/invoices/$invoiceId'
+    | '/invoices/new'
     | '/proposals/$proposalId'
     | '/proposals/new'
     | '/quotes/$quoteId'
     | '/quotes/new'
     | '/chat/'
+    | '/invoices/'
     | '/proposals/'
     | '/quotes/'
     | '/api/public/payments/webhook'
@@ -356,11 +389,14 @@ export interface FileRouteTypes {
     | '/blog'
     | '/admin/blog'
     | '/chat/$threadId'
+    | '/invoices/$invoiceId'
+    | '/invoices/new'
     | '/proposals/$proposalId'
     | '/proposals/new'
     | '/quotes/$quoteId'
     | '/quotes/new'
     | '/chat'
+    | '/invoices'
     | '/proposals'
     | '/quotes'
     | '/api/public/payments/webhook'
@@ -389,11 +425,14 @@ export interface FileRouteTypes {
     | '/blog/'
     | '/_authenticated/admin/blog'
     | '/_authenticated/chat/$threadId'
+    | '/_authenticated/invoices/$invoiceId'
+    | '/_authenticated/invoices/new'
     | '/_authenticated/proposals/$proposalId'
     | '/_authenticated/proposals/new'
     | '/_authenticated/quotes/$quoteId'
     | '/_authenticated/quotes/new'
     | '/_authenticated/chat/'
+    | '/_authenticated/invoices/'
     | '/_authenticated/proposals/'
     | '/_authenticated/quotes/'
     | '/api/public/payments/webhook'
@@ -582,6 +621,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProposalsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/invoices/': {
+      id: '/_authenticated/invoices/'
+      path: '/invoices'
+      fullPath: '/invoices/'
+      preLoaderRoute: typeof AuthenticatedInvoicesIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/chat/': {
       id: '/_authenticated/chat/'
       path: '/'
@@ -615,6 +661,20 @@ declare module '@tanstack/react-router' {
       path: '/proposals/$proposalId'
       fullPath: '/proposals/$proposalId'
       preLoaderRoute: typeof AuthenticatedProposalsProposalIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/invoices/new': {
+      id: '/_authenticated/invoices/new'
+      path: '/invoices/new'
+      fullPath: '/invoices/new'
+      preLoaderRoute: typeof AuthenticatedInvoicesNewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/invoices/$invoiceId': {
+      id: '/_authenticated/invoices/$invoiceId'
+      path: '/invoices/$invoiceId'
+      fullPath: '/invoices/$invoiceId'
+      preLoaderRoute: typeof AuthenticatedInvoicesInvoiceIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/chat/$threadId': {
@@ -661,10 +721,13 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedAdminBlogRoute: typeof AuthenticatedAdminBlogRoute
+  AuthenticatedInvoicesInvoiceIdRoute: typeof AuthenticatedInvoicesInvoiceIdRoute
+  AuthenticatedInvoicesNewRoute: typeof AuthenticatedInvoicesNewRoute
   AuthenticatedProposalsProposalIdRoute: typeof AuthenticatedProposalsProposalIdRoute
   AuthenticatedProposalsNewRoute: typeof AuthenticatedProposalsNewRoute
   AuthenticatedQuotesQuoteIdRoute: typeof AuthenticatedQuotesQuoteIdRoute
   AuthenticatedQuotesNewRoute: typeof AuthenticatedQuotesNewRoute
+  AuthenticatedInvoicesIndexRoute: typeof AuthenticatedInvoicesIndexRoute
   AuthenticatedProposalsIndexRoute: typeof AuthenticatedProposalsIndexRoute
   AuthenticatedQuotesIndexRoute: typeof AuthenticatedQuotesIndexRoute
 }
@@ -676,10 +739,13 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedAdminBlogRoute: AuthenticatedAdminBlogRoute,
+  AuthenticatedInvoicesInvoiceIdRoute: AuthenticatedInvoicesInvoiceIdRoute,
+  AuthenticatedInvoicesNewRoute: AuthenticatedInvoicesNewRoute,
   AuthenticatedProposalsProposalIdRoute: AuthenticatedProposalsProposalIdRoute,
   AuthenticatedProposalsNewRoute: AuthenticatedProposalsNewRoute,
   AuthenticatedQuotesQuoteIdRoute: AuthenticatedQuotesQuoteIdRoute,
   AuthenticatedQuotesNewRoute: AuthenticatedQuotesNewRoute,
+  AuthenticatedInvoicesIndexRoute: AuthenticatedInvoicesIndexRoute,
   AuthenticatedProposalsIndexRoute: AuthenticatedProposalsIndexRoute,
   AuthenticatedQuotesIndexRoute: AuthenticatedQuotesIndexRoute,
 }

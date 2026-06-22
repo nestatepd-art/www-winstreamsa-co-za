@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Printer, Trash2 } from "lucide-react";
+import { ArrowLeft, Printer, Trash2, Receipt } from "lucide-react";
 import { formatZAR, formatDate } from "@/lib/format";
 import { QuoteStatusBadge } from "./dashboard";
 import { toast } from "sonner";
@@ -80,6 +80,11 @@ function QuoteViewPage() {
               <SelectItem value="expired">Expired</SelectItem>
             </SelectContent>
           </Select>
+          <Button variant="outline" size="sm" asChild>
+            <Link to="/invoices/new" search={{ fromQuote: quoteId }}>
+              <Receipt className="h-4 w-4 mr-1" /> Convert to invoice
+            </Link>
+          </Button>
           <Button variant="outline" size="sm" onClick={() => window.print()}>
             <Printer className="h-4 w-4 mr-1" /> Print / PDF
           </Button>
