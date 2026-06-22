@@ -12,6 +12,7 @@ import winstreamLogo from "@/assets/winstream-logo.png.asset.json";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/auth")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Sign in — WinStream SA" },
