@@ -158,10 +158,22 @@ function EditInvoicePage() {
         if (e2) throw e2;
       }
 
-      // Upsert company / business profile
+      // Upsert company / business profile.
+      // business_name and country are NOT NULL in the DB, so coerce blanks
+      // into safe defaults instead of sending null (which would fail the upsert
+      // and silently roll back the user's perceived save).
+      const NOT_NULL_DEFAULTS: Record<string, string> = {
+        business_name: "",
+        country: "South Africa",
+      };
       const profilePayload: Record<string, any> = { user_id: u.user.id };
       COMPANY_FIELDS.forEach((f) => {
-        profilePayload[f.key] = company[f.key]?.trim() ? company[f.key] : null;
+        const v = (company[f.key] ?? "").trim();
+        if (f.key in NOT_NULL_DEFAULTS) {
+          profilePayload[f.key] = v || NOT_NULL_DEFAULTS[f.key];
+        } else {
+          profilePayload[f.key] = v ? v : null;
+        }
       });
       const { error: pErr } = await supabase
         .from("business_profiles")
