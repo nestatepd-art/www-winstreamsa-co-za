@@ -129,7 +129,7 @@ function EditInvoicePage() {
           status: status as any,
           issue_date: issueDate || null,
           notes,
-          terms: terms || null,
+          terms: terms || undefined,
           due_date: dueDate || null,
           vat_rate: vatRate,
           subtotal: totals.subtotal,
