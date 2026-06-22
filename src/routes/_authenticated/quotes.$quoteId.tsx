@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Printer, Trash2, Receipt } from "lucide-react";
+import { ArrowLeft, Printer, Trash2, Receipt, Pencil, Mail } from "lucide-react";
 import { formatZAR, formatDate } from "@/lib/format";
 import { QuoteStatusBadge } from "./dashboard";
 import { toast } from "sonner";
