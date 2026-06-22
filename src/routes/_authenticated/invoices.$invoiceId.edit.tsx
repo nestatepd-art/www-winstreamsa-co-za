@@ -127,7 +127,7 @@ function EditInvoicePage() {
           title,
           invoice_number: invoiceNumber,
           status: status as any,
-          issue_date: issueDate || null,
+          issue_date: issueDate || new Date().toISOString().slice(0, 10),
           notes,
           terms: terms || undefined,
           due_date: dueDate || null,
