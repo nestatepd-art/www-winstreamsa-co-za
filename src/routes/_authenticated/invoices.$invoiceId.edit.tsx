@@ -120,48 +120,9 @@ function EditInvoicePage() {
       const { data: u } = await supabase.auth.getUser();
       if (!u.user) throw new Error("Not signed in");
 
-      const { error } = await supabase
-        .from("invoices")
-        .update({
-          client_id: clientId || null,
-          title,
-          invoice_number: invoiceNumber,
-          status: status as any,
-          issue_date: issueDate || new Date().toISOString().slice(0, 10),
-          notes,
-          terms: terms || undefined,
-          due_date: dueDate || null,
-          vat_rate: vatRate,
-          subtotal: totals.subtotal,
-          vat_amount: totals.vat_amount,
-          total: totals.total,
-        })
-        .eq("id", invoiceId);
-      if (error) throw error;
-
-      // Replace line items
-      const { error: delErr } = await supabase.from("invoice_items").delete().eq("invoice_id", invoiceId);
-      if (delErr) throw delErr;
-
-      const cleanItems = items.filter((it) => it.description.trim());
-      if (cleanItems.length) {
-        const rows = cleanItems.map((it, idx) => ({
-          invoice_id: invoiceId,
-          user_id: u.user!.id,
-          position: idx,
-          description: it.description,
-          quantity: it.quantity,
-          unit_price: it.unit_price,
-          line_total: +(it.quantity * it.unit_price).toFixed(2),
-        }));
-        const { error: e2 } = await supabase.from("invoice_items").insert(rows);
-        if (e2) throw e2;
-      }
-
-      // Upsert company / business profile.
-      // business_name and country are NOT NULL in the DB, so coerce blanks
-      // into safe defaults instead of sending null (which would fail the upsert
-      // and silently roll back the user's perceived save).
+      // 1) Upsert company / business profile first. business_name and country
+      //    are NOT NULL — coerce blanks into safe defaults so the upsert never
+      //    fails and silently rolls back the user's perceived save.
       const NOT_NULL_DEFAULTS: Record<string, string> = {
         business_name: "",
         country: "South Africa",
@@ -179,6 +140,45 @@ function EditInvoicePage() {
         .from("business_profiles")
         .upsert(profilePayload, { onConflict: "user_id" });
       if (pErr) throw pErr;
+
+      // 2) Update the invoice header.
+      const { error } = await supabase
+        .from("invoices")
+        .update({
+          client_id: clientId || null,
+          title,
+          invoice_number: invoiceNumber,
+          status: status as any,
+          issue_date: issueDate || new Date().toISOString().slice(0, 10),
+          notes: notes?.trim() ? notes : null,
+          terms: terms?.trim() ? terms : null,
+          due_date: dueDate || null,
+          vat_rate: vatRate,
+          subtotal: totals.subtotal,
+          vat_amount: totals.vat_amount,
+          total: totals.total,
+        })
+        .eq("id", invoiceId);
+      if (error) throw error;
+
+      // 3) Replace line items.
+      const { error: delErr } = await supabase.from("invoice_items").delete().eq("invoice_id", invoiceId);
+      if (delErr) throw delErr;
+
+      const cleanItems = items.filter((it) => it.description.trim());
+      if (cleanItems.length) {
+        const rows = cleanItems.map((it, idx) => ({
+          invoice_id: invoiceId,
+          user_id: u.user!.id,
+          position: idx,
+          description: it.description,
+          quantity: it.quantity,
+          unit_price: it.unit_price,
+          line_total: +(it.quantity * it.unit_price).toFixed(2),
+        }));
+        const { error: e2 } = await supabase.from("invoice_items").insert(rows);
+        if (e2) throw e2;
+      }
     },
     onSuccess: () => {
       toast.success("Invoice updated");
