@@ -91,7 +91,7 @@ function InvoiceViewPage() {
       "Please let us know if payment has already been made, or arrange settlement at your earliest convenience.",
       `Thank you,\n${biz}`,
     ].filter(Boolean).join("\n\n");
-    window.location.href = `mailto:${encodeURIComponent(nudgeEmail)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = `mailto:${nudgeEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     statusMut.mutate("sent");
     setNudgeOpen(false);
     toast.success(`Opening email to ${nudgeEmail}`);
@@ -220,7 +220,9 @@ function InvoiceViewPage() {
           <DialogHeader>
             <DialogTitle>Email invoice nudge</DialogTitle>
             <DialogDescription>
-              Add an optional note before opening the reminder email.
+              {nudgeEmail
+                ? <>Sending to <span className="font-medium text-foreground">{nudgeEmail}</span> (from client record).</>
+                : "This client has no email address on file. Add one in Clients to send a nudge."}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-2">
