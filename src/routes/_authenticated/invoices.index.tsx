@@ -1,12 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { formatZAR, formatDate } from "@/lib/format";
 import { EmptyState } from "./dashboard";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/invoices/")({
   component: InvoicesPage,
@@ -26,6 +27,7 @@ function InvoiceStatusBadge({ status }: { status: string }) {
 }
 
 function InvoicesPage() {
+  const qc = useQueryClient();
   const { data: invoices = [] } = useQuery({
     queryKey: ["invoices"],
     queryFn: async () => {
@@ -37,6 +39,26 @@ function InvoicesPage() {
       return data ?? [];
     },
   });
+
+  const deleteMut = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("invoices").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Invoice deleted");
+      qc.invalidateQueries({ queryKey: ["invoices"] });
+    },
+    onError: (e: any) => toast.error(e.message ?? "Failed to delete"),
+  });
+
+  const handleDelete = (e: React.MouseEvent, inv: any) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (confirm(`Delete invoice ${inv.invoice_number}? This cannot be undone.`)) {
+      deleteMut.mutate(inv.id);
+    }
+  };
 
   return (
     <div className="p-6 lg:p-10 max-w-7xl mx-auto space-y-8">
@@ -68,10 +90,11 @@ function InvoicesPage() {
             <div className="divide-y divide-border">
               <div className="grid grid-cols-12 gap-4 px-6 py-3 text-xs uppercase tracking-wider text-muted-foreground">
                 <div className="col-span-2">Number</div>
-                <div className="col-span-4">Title / Client</div>
+                <div className="col-span-3">Title / Client</div>
                 <div className="col-span-2">Status</div>
                 <div className="col-span-2">Due</div>
                 <div className="col-span-2 text-right">Total</div>
+                <div className="col-span-1" />
               </div>
               {invoices.map((inv: any) => (
                 <Link
@@ -81,13 +104,24 @@ function InvoicesPage() {
                   className="grid grid-cols-12 gap-4 px-6 py-4 hover:bg-muted/40 transition-colors items-center"
                 >
                   <div className="col-span-2 text-sm font-mono text-muted-foreground">{inv.invoice_number}</div>
-                  <div className="col-span-4 min-w-0">
+                  <div className="col-span-3 min-w-0">
                     <div className="font-medium truncate">{inv.title}</div>
                     <div className="text-xs text-muted-foreground truncate">{inv.clients?.name ?? "No client"}</div>
                   </div>
                   <div className="col-span-2"><InvoiceStatusBadge status={inv.status} /></div>
                   <div className="col-span-2 text-sm text-muted-foreground">{formatDate(inv.due_date)}</div>
                   <div className="col-span-2 text-right font-medium tabular-nums">{formatZAR(inv.total)}</div>
+                  <div className="col-span-1 flex justify-end">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label="Delete invoice"
+                      onClick={(e) => handleDelete(e, inv)}
+                      disabled={deleteMut.isPending}
+                    >
+                      <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
+                    </Button>
+                  </div>
                 </Link>
               ))}
             </div>

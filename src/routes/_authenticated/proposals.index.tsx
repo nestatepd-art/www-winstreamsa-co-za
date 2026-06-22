@@ -1,11 +1,12 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, FileText, ArrowRight } from "lucide-react";
+import { Plus, FileText, ArrowRight, Trash2 } from "lucide-react";
 import { formatDate } from "@/lib/format";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/proposals/")({
   component: ProposalsList,
@@ -22,6 +23,7 @@ const statusVariant: Record<string, "default" | "secondary" | "outline"> = {
 
 function ProposalsList() {
   const navigate = useNavigate();
+  const qc = useQueryClient();
   const { data: proposals, isLoading } = useQuery({
     queryKey: ["proposals"],
     queryFn: async () => {
@@ -33,6 +35,26 @@ function ProposalsList() {
       return data ?? [];
     },
   });
+
+  const deleteMut = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("proposals").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Proposal deleted");
+      qc.invalidateQueries({ queryKey: ["proposals"] });
+    },
+    onError: (e: any) => toast.error(e.message ?? "Failed to delete"),
+  });
+
+  const handleDelete = (e: React.MouseEvent, p: { id: string; title: string }) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (confirm(`Delete proposal "${p.title}"? This cannot be undone.`)) {
+      deleteMut.mutate(p.id);
+    }
+  };
 
   return (
     <div className="p-6 lg:p-10 max-w-6xl mx-auto space-y-6">
@@ -83,6 +105,15 @@ function ProposalsList() {
                       <Badge variant={statusVariant[p.status] ?? "outline"} className="capitalize">
                         {p.status}
                       </Badge>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label="Delete proposal"
+                        onClick={(e) => handleDelete(e, { id: p.id, title: p.title })}
+                        disabled={deleteMut.isPending}
+                      >
+                        <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
+                      </Button>
                       <ArrowRight className="h-4 w-4 text-muted-foreground" />
                     </div>
                   </Link>
