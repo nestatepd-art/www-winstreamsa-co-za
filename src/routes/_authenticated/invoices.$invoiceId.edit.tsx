@@ -34,12 +34,16 @@ function EditInvoicePage() {
   const { data, isLoading } = useQuery({
     queryKey: ["invoice-edit", invoiceId],
     queryFn: async () => {
-      const [{ data: invoice, error }, { data: its }] = await Promise.all([
+      const [{ data: invoice, error }, { data: its }, { data: u }] = await Promise.all([
         supabase.from("invoices").select("*").eq("id", invoiceId).maybeSingle(),
         supabase.from("invoice_items").select("*").eq("invoice_id", invoiceId).order("position"),
+        supabase.auth.getUser(),
       ]);
       if (error) throw error;
-      return { invoice, items: its ?? [] };
+      const { data: profile } = u.user
+        ? await supabase.from("business_profiles").select("*").eq("user_id", u.user.id).maybeSingle()
+        : ({ data: null } as any);
+      return { invoice, items: its ?? [], profile };
     },
   });
 
@@ -49,7 +53,28 @@ function EditInvoicePage() {
   const [notes, setNotes] = useState("");
   const [terms, setTerms] = useState("");
   const [dueDate, setDueDate] = useState<string>("");
+  const [company, setCompany] = useState<Record<string, string>>({});
   const [loaded, setLoaded] = useState(false);
+
+  const COMPANY_FIELDS: { key: string; label: string }[] = [
+    { key: "business_name", label: "Business name" },
+    { key: "trading_name", label: "Trading name" },
+    { key: "vat_number", label: "VAT number" },
+    { key: "registration_number", label: "Registration number" },
+    { key: "email", label: "Email" },
+    { key: "phone", label: "Phone" },
+    { key: "website", label: "Website" },
+    { key: "address_line1", label: "Address line 1" },
+    { key: "address_line2", label: "Address line 2" },
+    { key: "city", label: "City" },
+    { key: "province", label: "Province" },
+    { key: "postal_code", label: "Postal code" },
+    { key: "country", label: "Country" },
+    { key: "bank_name", label: "Bank name" },
+    { key: "bank_account_holder", label: "Account holder" },
+    { key: "bank_account_number", label: "Account number" },
+    { key: "bank_branch_code", label: "Branch code" },
+  ];
 
   useEffect(() => {
     if (data?.invoice && !loaded) {
@@ -67,6 +92,10 @@ function EditInvoicePage() {
           })),
         );
       }
+      const p: any = data.profile ?? {};
+      const next: Record<string, string> = {};
+      COMPANY_FIELDS.forEach((f) => { next[f.key] = p[f.key] ?? ""; });
+      setCompany(next);
       setLoaded(true);
     }
   }, [data, loaded]);
