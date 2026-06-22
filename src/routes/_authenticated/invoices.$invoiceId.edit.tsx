@@ -34,12 +34,16 @@ function EditInvoicePage() {
   const { data, isLoading } = useQuery({
     queryKey: ["invoice-edit", invoiceId],
     queryFn: async () => {
-      const [{ data: invoice, error }, { data: its }] = await Promise.all([
+      const [{ data: invoice, error }, { data: its }, { data: u }] = await Promise.all([
         supabase.from("invoices").select("*").eq("id", invoiceId).maybeSingle(),
         supabase.from("invoice_items").select("*").eq("invoice_id", invoiceId).order("position"),
+        supabase.auth.getUser(),
       ]);
       if (error) throw error;
-      return { invoice, items: its ?? [] };
+      const { data: profile } = u.user
+        ? await supabase.from("business_profiles").select("*").eq("user_id", u.user.id).maybeSingle()
+        : ({ data: null } as any);
+      return { invoice, items: its ?? [], profile };
     },
   });
 
@@ -49,7 +53,28 @@ function EditInvoicePage() {
   const [notes, setNotes] = useState("");
   const [terms, setTerms] = useState("");
   const [dueDate, setDueDate] = useState<string>("");
+  const [company, setCompany] = useState<Record<string, string>>({});
   const [loaded, setLoaded] = useState(false);
+
+  const COMPANY_FIELDS: { key: string; label: string }[] = [
+    { key: "business_name", label: "Business name" },
+    { key: "trading_name", label: "Trading name" },
+    { key: "vat_number", label: "VAT number" },
+    { key: "registration_number", label: "Registration number" },
+    { key: "email", label: "Email" },
+    { key: "phone", label: "Phone" },
+    { key: "website", label: "Website" },
+    { key: "address_line1", label: "Address line 1" },
+    { key: "address_line2", label: "Address line 2" },
+    { key: "city", label: "City" },
+    { key: "province", label: "Province" },
+    { key: "postal_code", label: "Postal code" },
+    { key: "country", label: "Country" },
+    { key: "bank_name", label: "Bank name" },
+    { key: "bank_account_holder", label: "Account holder" },
+    { key: "bank_account_number", label: "Account number" },
+    { key: "bank_branch_code", label: "Branch code" },
+  ];
 
   useEffect(() => {
     if (data?.invoice && !loaded) {
@@ -67,6 +92,10 @@ function EditInvoicePage() {
           })),
         );
       }
+      const p: any = data.profile ?? {};
+      const next: Record<string, string> = {};
+      COMPANY_FIELDS.forEach((f) => { next[f.key] = p[f.key] ?? ""; });
+      setCompany(next);
       setLoaded(true);
     }
   }, [data, loaded]);
@@ -116,11 +145,22 @@ function EditInvoicePage() {
         const { error: e2 } = await supabase.from("invoice_items").insert(rows);
         if (e2) throw e2;
       }
+
+      // Upsert company / business profile
+      const profilePayload: Record<string, any> = { user_id: u.user.id };
+      COMPANY_FIELDS.forEach((f) => {
+        profilePayload[f.key] = company[f.key]?.trim() ? company[f.key] : null;
+      });
+      const { error: pErr } = await supabase
+        .from("business_profiles")
+        .upsert(profilePayload, { onConflict: "user_id" });
+      if (pErr) throw pErr;
     },
     onSuccess: () => {
       toast.success("Invoice updated");
       qc.invalidateQueries({ queryKey: ["invoice", invoiceId] });
       qc.invalidateQueries({ queryKey: ["invoices"] });
+      qc.invalidateQueries({ queryKey: ["business-profile"] });
       navigate({ to: "/invoices/$invoiceId", params: { invoiceId } });
     },
     onError: (e: any) => toast.error(e.message),
@@ -128,16 +168,7 @@ function EditInvoicePage() {
 
   if (isLoading) return <div className="p-10 text-center text-muted-foreground">Loading…</div>;
   if (!data?.invoice) return <div className="p-10 text-center">Invoice not found.</div>;
-  if (data.invoice.status !== "draft") {
-    return (
-      <div className="p-10 text-center space-y-3">
-        <p>Only draft invoices can be edited.</p>
-        <Button asChild variant="outline" size="sm">
-          <Link to="/invoices/$invoiceId" params={{ invoiceId }}>Back to invoice</Link>
-        </Button>
-      </div>
-    );
-  }
+
 
   return (
     <div className="p-6 lg:p-10 max-w-5xl mx-auto space-y-6">
@@ -216,6 +247,24 @@ function EditInvoicePage() {
               <div className="flex justify-between font-semibold text-base pt-2 border-t"><span>Total due</span><span className="tabular-nums">{formatZAR(totals.total)}</span></div>
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Company details</CardTitle>
+          <p className="text-xs text-muted-foreground mt-1">Shown on this and future invoices. Saved to your business profile.</p>
+        </CardHeader>
+        <CardContent className="grid gap-4 sm:grid-cols-2">
+          {COMPANY_FIELDS.map((f) => (
+            <div key={f.key} className="space-y-2">
+              <Label>{f.label}</Label>
+              <Input
+                value={company[f.key] ?? ""}
+                onChange={(e) => setCompany((c) => ({ ...c, [f.key]: e.target.value }))}
+              />
+            </div>
+          ))}
         </CardContent>
       </Card>
 
