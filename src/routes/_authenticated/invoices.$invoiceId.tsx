@@ -93,7 +93,7 @@ function InvoiceViewPage() {
                 toast.error("This client has no email address on file.");
                 return;
               }
-              const inv = data!.invoice;
+              const inv = data!.invoice!;
               const due = inv.due_date ? formatDate(inv.due_date) : "the agreed date";
               const biz = data?.profile?.business_name || "our team";
               const subject = `Reminder: Invoice ${inv.invoice_number} is overdue`;
