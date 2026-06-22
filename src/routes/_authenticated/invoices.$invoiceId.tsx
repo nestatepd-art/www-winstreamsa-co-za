@@ -77,23 +77,65 @@ function InvoiceViewPage() {
   const { invoice, items, profile } = data;
   const client = invoice.clients as any;
   const nudgeEmail = extractEmailAddress(client?.email);
+  const defaultSubject = `Reminder: Invoice ${invoice.invoice_number} – ${formatZAR(invoice.total)} outstanding`;
+  const defaultBody = useMemo(() => {
+    const due = invoice.due_date ? formatDate(invoice.due_date) : "the agreed date";
+    const biz = profile?.business_name || "our team";
+    const lines: string[] = [];
+    lines.push(`Hi ${client?.contact_person || client?.name || "there"},`, "");
+    lines.push(
+      `This is a friendly reminder that invoice ${invoice.invoice_number} (${invoice.title}) for ${formatZAR(invoice.total)} was due on ${due} and is currently outstanding.`,
+      "",
+      "For your convenience, the full invoice is included below.",
+      "",
+      "──────────  INVOICE  ──────────",
+      `Invoice:    ${invoice.invoice_number}`,
+      `Title:      ${invoice.title}`,
+      `Issued:     ${formatDate(invoice.issue_date)}`,
+      `Due:        ${due}`,
+      `Billed to:  ${client?.name ?? "—"}${client?.contact_person ? ` (${client.contact_person})` : ""}`,
+      "",
+      "Items:",
+      ...items.map((it: any) => `  • ${it.description} — ${Number(it.quantity)} × ${formatZAR(it.unit_price)} = ${formatZAR(it.line_total)}`),
+      "",
+      `Subtotal:   ${formatZAR(invoice.subtotal)}`,
+      `VAT (${Number(invoice.vat_rate)}%):  ${formatZAR(invoice.vat_amount)}`,
+      `TOTAL DUE:  ${formatZAR(invoice.total)}`,
+    );
+    if (profile?.bank_name || profile?.bank_account_number) {
+      lines.push(
+        "",
+        "Banking details:",
+        profile?.bank_account_holder ? `  ${profile.bank_account_holder}` : "",
+        profile?.bank_name ? `  ${profile.bank_name}` : "",
+        profile?.bank_account_number ? `  Acc: ${profile.bank_account_number}` : "",
+        profile?.bank_branch_code ? `  Branch: ${profile.bank_branch_code}` : "",
+      );
+    }
+    lines.push(
+      "─────────────────────────────",
+      "",
+      "Please let us know if payment has already been made, or arrange settlement at your earliest convenience.",
+      "",
+      "Thank you,",
+      biz,
+    );
+    return lines.filter((l) => l !== undefined).join("\n");
+  }, [invoice, items, profile, client]);
+
+  useEffect(() => {
+    if (nudgeOpen) {
+      setNudgeSubject(defaultSubject);
+      setNudgeBody(defaultBody);
+    }
+  }, [nudgeOpen, defaultSubject, defaultBody]);
+
   const sendNudgeEmail = () => {
     if (!nudgeEmail) {
       toast.error("This client has no email address on file.");
       return;
     }
-    const due = invoice.due_date ? formatDate(invoice.due_date) : "the agreed date";
-    const biz = profile?.business_name || "our team";
-    const extraNote = nudgeNote.trim();
-    const subject = `Reminder: Invoice ${invoice.invoice_number} is overdue`;
-    const body = [
-      `Hi ${client?.contact_person || client?.name || "there"},`,
-      `This is a friendly reminder that invoice ${invoice.invoice_number} (${invoice.title}) for ${formatZAR(invoice.total)} was due on ${due} and is now overdue.`,
-      extraNote || null,
-      "Please let us know if payment has already been made, or arrange settlement at your earliest convenience.",
-      `Thank you,\n${biz}`,
-    ].filter(Boolean).join("\n\n");
-    window.location.href = `mailto:${nudgeEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = `mailto:${nudgeEmail}?subject=${encodeURIComponent(nudgeSubject)}&body=${encodeURIComponent(nudgeBody)}`;
     statusMut.mutate("sent");
     setNudgeOpen(false);
     toast.success(`Opening email to ${nudgeEmail}`);
