@@ -21,6 +21,14 @@ export const Route = createFileRoute("/_authenticated/invoices/new")({
 
 type Item = { description: string; quantity: number; unit_price: number };
 
+const dateInputValue = (date: Date) => date.toISOString().slice(0, 10);
+
+const defaultDueDate = () => {
+  const due = new Date();
+  due.setDate(due.getDate() + 14);
+  return dateInputValue(due);
+};
+
 function NewInvoicePage() {
   const navigate = useNavigate();
   const { fromQuote } = useSearch({ from: "/_authenticated/invoices/new" });
@@ -57,7 +65,7 @@ function NewInvoicePage() {
   const [items, setItems] = useState<Item[]>([{ description: "", quantity: 1, unit_price: 0 }]);
   const [notes, setNotes] = useState("");
   const [terms, setTerms] = useState("");
-  const [dueDays, setDueDays] = useState<number>(14);
+  const [dueDate, setDueDate] = useState<string>(() => defaultDueDate());
 
   useEffect(() => {
     if (sourceQuote?.quote) {
@@ -90,8 +98,6 @@ function NewInvoicePage() {
       const { data: u } = await supabase.auth.getUser();
       if (!u.user) throw new Error("Not signed in");
       const invoiceNumber = generateInvoiceNumber();
-      const due = new Date();
-      due.setDate(due.getDate() + (dueDays || 14));
       const { data: invoice, error } = await supabase
         .from("invoices")
         .insert({
@@ -103,7 +109,7 @@ function NewInvoicePage() {
           status,
           notes,
           terms: terms || profile?.default_quote_terms || null,
-          due_date: due.toISOString().slice(0, 10),
+          due_date: dueDate || null,
           subtotal: totals.subtotal,
           vat_amount: totals.vat_amount,
           total: totals.total,
