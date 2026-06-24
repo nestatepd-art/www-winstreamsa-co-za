@@ -27,7 +27,7 @@ export const Route = createFileRoute("/blog/$slug")({
       return { meta: [{ title: "Post not found — WinStream SA" }] };
     }
     const url = `https://winstreamsa.co.za/blog/${params.slug}`;
-    const ogImage = post.cover_image_url || DEFAULT_OG_IMAGE;
+    const ogImage = resolveOgImage(post.cover_image_url);
     return {
       meta: [
         { title: `${post.title} — WinStream SA Blog` },
