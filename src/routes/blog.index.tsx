@@ -3,6 +3,12 @@ import { useServerFn } from "@tanstack/react-start";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { SiteNav, SiteFooter } from "@/components/site-nav";
 import { listPublishedPosts } from "@/lib/blog.functions";
+import {
+  DEFAULT_OG_IMAGE,
+  DEFAULT_OG_IMAGE_ALT,
+  DEFAULT_OG_IMAGE_HEIGHT,
+  DEFAULT_OG_IMAGE_WIDTH,
+} from "@/lib/seo";
 
 export const Route = createFileRoute("/blog/")({
   head: () => ({
