@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Plus, Trash2 } from "lucide-react";
+import { DEFAULT_OG_IMAGE } from "@/lib/seo";
 
 type Post = {
   id: string;
@@ -45,7 +46,7 @@ const empty: Omit<Post, "id" | "updated_at"> = {
   title: "",
   excerpt: "",
   content_md: "",
-  cover_image_url: "",
+  cover_image_url: DEFAULT_OG_IMAGE,
   author_name: "WinStream SA",
   published: false,
   published_at: null,
@@ -81,7 +82,7 @@ function AdminBlog() {
       title: editing.title,
       excerpt: editing.excerpt,
       content_md: editing.content_md ?? "",
-      cover_image_url: editing.cover_image_url || null,
+      cover_image_url: editing.cover_image_url || DEFAULT_OG_IMAGE,
       author_name: editing.author_name || "WinStream SA",
       published: !!editing.published,
       published_at: editing.published
@@ -170,15 +171,18 @@ function AdminBlog() {
             />
           </label>
           <label className="block text-sm">
-            <span className="font-medium">Cover image URL (optional)</span>
+              <span className="font-medium">Cover image URL</span>
             <input
               value={editing.cover_image_url ?? ""}
               onChange={(e) =>
                 setEditing((s) => ({ ...s!, cover_image_url: e.target.value }))
               }
-              placeholder="https://..."
+                placeholder={DEFAULT_OG_IMAGE}
               className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2"
             />
+              <span className="mt-1 block text-xs text-muted-foreground">
+                Leave this as the branded WinStream image unless you have a custom blog cover.
+              </span>
           </label>
           <label className="block text-sm">
             <span className="font-medium">Content (markdown / plain text)</span>
