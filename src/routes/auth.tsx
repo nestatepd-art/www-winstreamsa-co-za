@@ -113,22 +113,9 @@ function AuthPage() {
         toast.error("Google sign-in failed", { description: String(result.error.message ?? result.error) });
         return;
       }
+      // The OAuth flow redirects away; profile creation and pending-purchase
+      // claiming happen in __root.tsx's onAuthStateChange after redirect.
       if (result.redirected) return;
-      // Make sure a business profile exists for this user (Google sign-up bypasses the form)
-      const { data: userData } = await supabase.auth.getUser();
-      if (userData.user) {
-        const { data: existing } = await supabase
-          .from("business_profiles")
-          .select("id")
-          .eq("user_id", userData.user.id)
-          .maybeSingle();
-        if (!existing) {
-          await supabase.from("business_profiles").insert({
-            user_id: userData.user.id,
-            business_name: userData.user.user_metadata?.full_name || "My Business",
-          });
-        }
-      }
       navigate({ to: "/dashboard" });
     } catch (err) {
       setLoading(false);

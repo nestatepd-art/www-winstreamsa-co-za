@@ -17,12 +17,22 @@ export function usePaddleCheckout() {
       if (!isCheckoutAvailable()) {
         toast.info("Checkout opens soon", {
           description:
-            "We're finalising payment verification with our provider. Purchases will be enabled within the next few business days — thanks for your patience.",
+            "We're finalising payment verification. Purchases will be enabled shortly — thanks for your patience.",
         });
         return;
       }
       await initializePaddle();
-      const paddlePriceId = await getPaddlePriceId(options.priceId);
+      let paddlePriceId: string;
+      try {
+        paddlePriceId = await getPaddlePriceId(options.priceId);
+      } catch (err) {
+        console.error("Paddle price lookup failed:", options.priceId, err);
+        toast.error("Couldn't load that plan", {
+          description:
+            "Our payment provider didn't recognise this product. Please refresh or contact support if it persists.",
+        });
+        return;
+      }
       window.Paddle.Checkout.open({
         items: [{ priceId: paddlePriceId, quantity: options.quantity ?? 1 }],
         customer: options.customerEmail ? { email: options.customerEmail } : undefined,
@@ -33,6 +43,11 @@ export function usePaddleCheckout() {
           allowLogout: false,
           variant: "one-page",
         },
+      });
+    } catch (err) {
+      console.error("Paddle checkout failed to open:", err);
+      toast.error("Checkout failed to open", {
+        description: err instanceof Error ? err.message : "Please try again.",
       });
     } finally {
       setLoading(false);

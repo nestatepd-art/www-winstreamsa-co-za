@@ -483,6 +483,57 @@ export type Database = {
           },
         ]
       }
+      pending_purchases: {
+        Row: {
+          claimed_at: string | null
+          claimed_by: string | null
+          created_at: string
+          credits: number | null
+          email: string
+          environment: string
+          id: string
+          kind: string
+          paddle_customer_id: string | null
+          paddle_subscription_id: string | null
+          paddle_transaction_id: string | null
+          plan: string | null
+          price_id: string | null
+          status: string
+        }
+        Insert: {
+          claimed_at?: string | null
+          claimed_by?: string | null
+          created_at?: string
+          credits?: number | null
+          email: string
+          environment?: string
+          id?: string
+          kind: string
+          paddle_customer_id?: string | null
+          paddle_subscription_id?: string | null
+          paddle_transaction_id?: string | null
+          plan?: string | null
+          price_id?: string | null
+          status?: string
+        }
+        Update: {
+          claimed_at?: string | null
+          claimed_by?: string | null
+          created_at?: string
+          credits?: number | null
+          email?: string
+          environment?: string
+          id?: string
+          kind?: string
+          paddle_customer_id?: string | null
+          paddle_subscription_id?: string | null
+          paddle_transaction_id?: string | null
+          plan?: string | null
+          price_id?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       proposals: {
         Row: {
           accepted_at: string | null
@@ -770,6 +821,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      claim_pending_purchases: { Args: never; Returns: number }
       consume_quota: {
         Args: { _kind: string; _related_id?: string }
         Returns: Json

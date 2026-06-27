@@ -115,10 +115,15 @@ function PricingPage() {
   }, []);
 
   const buy = (priceId: string) => {
+    // Guests can check out — the Paddle webhook stores a pending purchase
+    // by their email, claimed automatically when they sign up afterwards.
     openCheckout({
       priceId,
       customerEmail: user?.email,
       customData: user ? { userId: user.id } : undefined,
+      successUrl: user
+        ? `${window.location.origin}/billing?checkout=success`
+        : `${window.location.origin}/auth?checkout=success`,
     });
   };
 
