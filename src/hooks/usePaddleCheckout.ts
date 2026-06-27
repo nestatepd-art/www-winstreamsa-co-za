@@ -33,6 +33,9 @@ export function usePaddleCheckout() {
         });
         return;
       }
+      import("@/lib/analytics").then(({ track }) =>
+        track("checkout_started", { price_id: options.priceId, quantity: options.quantity ?? 1 }),
+      );
       window.Paddle.Checkout.open({
         items: [{ priceId: paddlePriceId, quantity: options.quantity ?? 1 }],
         customer: options.customerEmail ? { email: options.customerEmail } : undefined,
