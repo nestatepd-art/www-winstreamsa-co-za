@@ -1,5 +1,6 @@
-// Single source of truth for Freemium + Usage Credits.
-// Tweak numbers here; UI & server enforcement read from this file.
+// Single source of truth — must match (a) public pricing page, (b) DB consume_quota.
+// If you change a number here, update the pricing page and the consume_quota
+// migration in the same commit.
 
 export type QuotaKind = "quote" | "proposal" | "ai_draft";
 
@@ -15,17 +16,19 @@ export const QUOTA_LABEL: Record<QuotaKind, string> = {
   ai_draft: "AI drafts",
 };
 
-// 1 credit = 1 overflow action of any kind.
+// 1 credit = 1 overflow action (proposal = 5).
 export const CREDIT_COST: Record<QuotaKind, number> = {
   quote: 1,
   proposal: 5,
   ai_draft: 1,
 };
 
-export const PRO_PRICE_ZAR = 299;
+// Public-pricing-page plan prices.
+export const GROWTH_PRICE_ZAR = 499;
+export const SCALE_PRICE_ZAR = 1499;
 
 export const CREDIT_PACKS = [
-  { credits: 50, price_zar: 100, label: "Starter" },
-  { credits: 150, price_zar: 250, label: "Team", popular: true },
-  { credits: 400, price_zar: 600, label: "Agency" },
+  { credits: 100, price_zar: 99, label: "100 Credits", priceId: "credits_100" },
+  { credits: 500, price_zar: 399, label: "500 Credits", priceId: "credits_500", popular: true },
+  { credits: 2000, price_zar: 1299, label: "2,000 Credits", priceId: "credits_2000" },
 ];

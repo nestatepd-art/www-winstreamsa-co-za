@@ -13,11 +13,10 @@ export function getPaddleEnvironment(): "sandbox" | "live" {
 }
 
 /**
- * Live checkout is disabled until Paddle finishes verifying the business
- * (business identification + identity verification + final review). Sandbox
- * checkout in preview is unaffected. Flip to `true` once go-live is complete.
+ * Live checkout is enabled. Sandbox checkout in preview always works regardless.
+ * If Paddle's "final review" step blocks transactions, set this back to false.
  */
-export const LIVE_CHECKOUT_ENABLED = false;
+export const LIVE_CHECKOUT_ENABLED = true;
 
 export function isCheckoutAvailable(): boolean {
   return getPaddleEnvironment() === "sandbox" || LIVE_CHECKOUT_ENABLED;
