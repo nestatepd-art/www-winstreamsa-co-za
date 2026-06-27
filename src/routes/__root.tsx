@@ -207,7 +207,7 @@ function RootComponent() {
           }
           // Claim any pending purchases made before this account existed.
           const { claimPendingPurchases } = await import("@/lib/portal.functions");
-          await claimPendingPurchases({ data: undefined as never }).catch(() => {});
+          await claimPendingPurchases().catch(() => {});
         } catch (err) {
           console.warn("post-signin hook failed:", err);
         }
