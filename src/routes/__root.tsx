@@ -186,8 +186,18 @@ function RootComponent() {
   const router = useRouter();
 
   useEffect(() => {
+    initAnalytics();
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user) identifyUser(data.user.id, data.user.email);
+    });
     const { data } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
+      router.invalidate();
+      if (event === "SIGNED_OUT") {
+        resetAnalytics();
+        return;
+      }
+      if (session?.user) identifyUser(session.user.id, session.user.email);
       router.invalidate();
       if (event === "SIGNED_OUT") return;
       queryClient.invalidateQueries();
