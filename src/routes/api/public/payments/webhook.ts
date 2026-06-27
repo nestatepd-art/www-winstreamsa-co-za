@@ -200,7 +200,15 @@ async function handleSubscriptionUpdated(data: any, env: PaddleEnv) {
     !!storedStart &&
     new Date(incomingStart).getTime() > new Date(storedStart).getTime();
 
-  const update: Record<string, any> = {
+  const update: {
+    status: string;
+    current_period_start?: string;
+    current_period_end?: string;
+    cancel_at_period_end: boolean;
+    updated_at: string;
+    price_id?: string;
+    product_id?: string;
+  } = {
     status: data.status,
     current_period_start: incomingStart,
     current_period_end: data.currentBillingPeriod?.endsAt,
