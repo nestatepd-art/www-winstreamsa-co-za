@@ -185,10 +185,33 @@ function RootComponent() {
   const router = useRouter();
 
   useEffect(() => {
-    const { data } = supabase.auth.onAuthStateChange((event) => {
+    const { data } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
       router.invalidate();
-      if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
+      if (event === "SIGNED_OUT") return;
+      queryClient.invalidateQueries();
+
+      if (event === "SIGNED_IN" && session?.user) {
+        try {
+          // Ensure a business profile exists (Google sign-ups skip the signup form).
+          const { data: existing } = await supabase
+            .from("business_profiles")
+            .select("id")
+            .eq("user_id", session.user.id)
+            .maybeSingle();
+          if (!existing) {
+            await supabase.from("business_profiles").insert({
+              user_id: session.user.id,
+              business_name: session.user.user_metadata?.full_name || "My Business",
+            });
+          }
+          // Claim any pending purchases made before this account existed.
+          const { claimPendingPurchases } = await import("@/lib/portal.functions");
+          await claimPendingPurchases({ data: undefined as never }).catch(() => {});
+        } catch (err) {
+          console.warn("post-signin hook failed:", err);
+        }
+      }
     });
     return () => data.subscription.unsubscribe();
   }, [router, queryClient]);
