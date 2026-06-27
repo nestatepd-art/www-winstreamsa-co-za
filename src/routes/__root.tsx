@@ -198,8 +198,6 @@ function RootComponent() {
         return;
       }
       if (session?.user) identifyUser(session.user.id, session.user.email);
-      router.invalidate();
-      if (event === "SIGNED_OUT") return;
       queryClient.invalidateQueries();
 
       if (event === "SIGNED_IN" && session?.user) {
