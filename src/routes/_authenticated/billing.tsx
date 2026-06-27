@@ -102,6 +102,7 @@ function BillingPage() {
     const url = new URL(window.location.href);
     if (url.searchParams.get("checkout") === "success") {
       toast.success("Payment received — your account will update in a moment.");
+      import("@/lib/analytics").then(({ track }) => track("credits_purchased"));
       const t = setTimeout(() => {
         qc.invalidateQueries({ queryKey: ["credit-status"] });
         qc.invalidateQueries({ queryKey: ["credit-tx"] });

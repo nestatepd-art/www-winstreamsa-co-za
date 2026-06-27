@@ -123,6 +123,9 @@ function ProposalDetail() {
         },
       });
       toast.success(`${channel === "email" ? "Email" : "WhatsApp"} opened — review and hit send in your ${channel === "email" ? "mail client" : "WhatsApp"}.`);
+      import("@/lib/analytics").then(({ track }) =>
+        track("proposal_sent", { proposal_id: proposalId, channel }),
+      );
       setOpen(false);
       qc.invalidateQueries({ queryKey: ["proposal", proposalId] });
       qc.invalidateQueries({ queryKey: ["proposal-comms", proposalId] });

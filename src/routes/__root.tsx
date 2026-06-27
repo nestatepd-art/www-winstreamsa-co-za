@@ -14,6 +14,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { installStaleServerFunctionReloadGuard } from "../lib/stale-server-function-reload";
 import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { initAnalytics, identifyUser, resetAnalytics } from "@/lib/analytics";
 
 installStaleServerFunctionReloadGuard();
 
@@ -185,10 +186,18 @@ function RootComponent() {
   const router = useRouter();
 
   useEffect(() => {
+    initAnalytics();
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user) identifyUser(data.user.id, data.user.email);
+    });
     const { data } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
       router.invalidate();
-      if (event === "SIGNED_OUT") return;
+      if (event === "SIGNED_OUT") {
+        resetAnalytics();
+        return;
+      }
+      if (session?.user) identifyUser(session.user.id, session.user.email);
       queryClient.invalidateQueries();
 
       if (event === "SIGNED_IN" && session?.user) {

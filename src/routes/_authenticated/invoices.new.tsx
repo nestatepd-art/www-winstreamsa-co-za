@@ -137,6 +137,9 @@ function NewInvoicePage() {
     },
     onSuccess: (inv) => {
       toast.success("Invoice saved");
+      import("@/lib/analytics").then(({ track }) =>
+        track("invoice_created", { invoice_id: inv.id, status: inv.status, total: inv.total }),
+      );
       navigate({ to: "/invoices/$invoiceId", params: { invoiceId: inv.id } });
     },
     onError: (e: any) => toast.error(e.message),

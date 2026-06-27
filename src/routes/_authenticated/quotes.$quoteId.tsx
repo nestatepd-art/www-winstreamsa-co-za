@@ -109,6 +109,9 @@ function QuoteViewPage() {
                 profile?.business_name || "",
               ].filter(Boolean).join("\n");
               window.location.href = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(lines)}`;
+              import("@/lib/analytics").then(({ track }) =>
+                track("quote_sent", { quote_id: quoteId, total: quote.total }),
+              );
               if (quote.status === "draft") statusMut.mutate("sent");
             }}
           >
