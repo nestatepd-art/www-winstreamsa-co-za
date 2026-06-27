@@ -14,6 +14,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { installStaleServerFunctionReloadGuard } from "../lib/stale-server-function-reload";
 import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { initAnalytics, identifyUser, resetAnalytics } from "@/lib/analytics";
 
 installStaleServerFunctionReloadGuard();
 
