@@ -62,20 +62,21 @@ function InvoiceViewPage() {
     },
   });
 
-  if (isEditRoute) return <Outlet />;
-
-  if (isLoading) return <div className="p-10 text-center text-muted-foreground">Loading…</div>;
-  if (!data?.invoice) return <div className="p-10 text-center">Invoice not found.</div>;
   const { invoice, items, profile } = data;
   const client = invoice.clients as any;
   const nudgeEmail = extractEmailAddress(client?.email);
-  const defaultSubject = `Reminder: Invoice ${invoice.invoice_number} – ${formatZAR(invoice.total)} outstanding`;
-  const defaultBody = useMemo(() => {
+
+  const sendNudgeEmail = () => {
+    if (!nudgeEmail) {
+      toast.error("This client has no email address on file.");
+      return;
+    }
     const due = invoice.due_date ? formatDate(invoice.due_date) : "the agreed date";
     const biz = profile?.business_name || "our team";
-    const lines: string[] = [];
-    lines.push(`Hi ${client?.contact_person || client?.name || "there"},`, "");
-    lines.push(
+    const subject = `Reminder: Invoice ${invoice.invoice_number} – ${formatZAR(invoice.total)} outstanding`;
+    const lines: string[] = [
+      `Hi ${client?.contact_person || client?.name || "there"},`,
+      "",
       `This is a friendly reminder that invoice ${invoice.invoice_number} (${invoice.title}) for ${formatZAR(invoice.total)} was due on ${due} and is currently outstanding.`,
       "",
       "For your convenience, the full invoice is included below.",
@@ -93,7 +94,7 @@ function InvoiceViewPage() {
       `Subtotal:   ${formatZAR(invoice.subtotal)}`,
       `VAT (${Number(invoice.vat_rate)}%):  ${formatZAR(invoice.vat_amount)}`,
       `TOTAL DUE:  ${formatZAR(invoice.total)}`,
-    );
+    ];
     if (profile?.bank_name || profile?.bank_account_number) {
       lines.push(
         "",
@@ -112,25 +113,11 @@ function InvoiceViewPage() {
       "Thank you,",
       biz,
     );
-    return lines.filter((l) => l !== undefined).join("\n");
-  }, [invoice, items, profile, client]);
-
-  useEffect(() => {
-    if (nudgeOpen) {
-      setNudgeSubject(defaultSubject);
-      setNudgeBody(defaultBody);
-    }
-  }, [nudgeOpen, defaultSubject, defaultBody]);
-
-  const sendNudgeEmail = () => {
-    if (!nudgeEmail) {
-      toast.error("This client has no email address on file.");
-      return;
-    }
-    window.location.href = `mailto:${nudgeEmail}?subject=${encodeURIComponent(nudgeSubject)}&body=${encodeURIComponent(nudgeBody)}`;
-    statusMut.mutate("sent");
-    setNudgeOpen(false);
-    toast.success(`Opening email to ${nudgeEmail}`);
+    const body = lines.filter((l) => l !== undefined && l !== "").length
+      ? lines.join("\n")
+      : "";
+    window.location.href = `mailto:${nudgeEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body || lines.join("\n"))}`;
+    if (invoice.status === "draft") statusMut.mutate("sent");
   };
 
   return (
