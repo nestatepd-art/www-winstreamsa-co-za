@@ -141,7 +141,7 @@ function InvoiceViewPage() {
               <SelectItem value="cancelled">Cancelled</SelectItem>
             </SelectContent>
           </Select>
-          <Button variant="default" size="sm" onClick={() => setNudgeOpen(true)}>
+          <Button variant="default" size="sm" onClick={sendNudgeEmail} disabled={!nudgeEmail}>
             <Mail className="h-4 w-4 mr-1" /> Email / Resend
           </Button>
           <Button variant="outline" size="sm" asChild>
