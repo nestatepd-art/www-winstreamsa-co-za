@@ -62,6 +62,9 @@ function InvoiceViewPage() {
     },
   });
 
+  if (isEditRoute) return <Outlet />;
+  if (isLoading) return <div className="p-10 text-center text-muted-foreground">Loading…</div>;
+  if (!data?.invoice) return <div className="p-10 text-center">Invoice not found.</div>;
   const { invoice, items, profile } = data;
   const client = invoice.clients as any;
   const nudgeEmail = extractEmailAddress(client?.email);
