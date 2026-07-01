@@ -5,7 +5,7 @@
 export type QuotaKind = "quote" | "proposal" | "ai_draft";
 
 export const FREE_LIMITS: Record<QuotaKind, number> = {
-  quote: 5,
+  quote: 20,
   proposal: 1,
   ai_draft: 20,
 };
@@ -24,8 +24,17 @@ export const CREDIT_COST: Record<QuotaKind, number> = {
 };
 
 // Public-pricing-page plan prices.
-export const GROWTH_PRICE_ZAR = 499;
-export const SCALE_PRICE_ZAR = 1499;
+export const STARTER_PRICE_ZAR = 299;
+export const GROWTH_PRICE_ZAR = 599;
+
+export type PlanTier = "free" | "starter" | "growth";
+
+export const PLAN_BY_PRICE_ID: Record<string, PlanTier> = {
+  starter_monthly: "starter",
+  growth_monthly: "growth",
+  // Legacy — treat as growth (unlimited quotes) for any historical subscriber.
+  scale_monthly: "growth",
+};
 
 export const CREDIT_PACKS = [
   { credits: 100, price_zar: 99, label: "100 Credits", priceId: "credits_100" },
