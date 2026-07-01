@@ -28,6 +28,7 @@ function NewProposal() {
   const [brief, setBrief] = useState("");
   const [content, setContent] = useState("");
   const [busy, setBusy] = useState<"ai" | "save" | null>(null);
+  const [aiUsed, setAiUsed] = useState(false);
 
   const { data: clients } = useQuery({
     queryKey: ["clients-min"],
