@@ -162,6 +162,8 @@ function NewQuotePage() {
         <p className="text-muted-foreground text-sm mt-1">Build your quote. WinStream can draft descriptions and notes for you.</p>
       </div>
 
+      {aiUsed && <AiDraftedBanner />}
+
       <Card>
         <CardHeader><CardTitle className="text-base">Header</CardTitle></CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-2">
