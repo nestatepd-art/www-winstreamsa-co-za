@@ -51,6 +51,7 @@ function NewQuotePage() {
   const [terms, setTerms] = useState("");
   const [scopeBrief, setScopeBrief] = useState("");
   const [draftingNotes, setDraftingNotes] = useState(false);
+  const [aiUsed, setAiUsed] = useState(false);
 
   const totals = useMemo(() => computeQuoteTotals(items, 15), [items]);
 
