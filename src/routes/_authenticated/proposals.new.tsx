@@ -158,6 +158,7 @@ function NewProposal() {
           <CardDescription>Markdown — edit anything before saving.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {aiUsed && <AiDraftedBanner />}
           <Textarea
             rows={20}
             value={content}
