@@ -1,30 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
-
-const GATEWAY_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
-const MODEL = "google/gemini-3-flash-preview";
-
-async function callAI(system: string, user: string): Promise<string> {
-  const key = process.env.LOVABLE_API_KEY;
-  if (!key) throw new Error("AI is not configured");
-  const res = await fetch(GATEWAY_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "Lovable-API-Key": key },
-    body: JSON.stringify({
-      model: MODEL,
-      messages: [
-        { role: "system", content: system },
-        { role: "user", content: user },
-      ],
-    }),
-  });
-  if (res.status === 429) throw new Error("AI rate limit — try again shortly.");
-  if (res.status === 402) throw new Error("AI credits exhausted. Add credits in workspace billing.");
-  if (!res.ok) throw new Error(`AI request failed (${res.status})`);
-  const data = await res.json();
-  return data?.choices?.[0]?.message?.content?.toString().trim() ?? "";
-}
+import { callAIWithFallback } from "./ai-call.server";
 
 /** Generate a full proposal (markdown) from a short brief. */
 export const draftProposal = createServerFn({ method: "POST" })
@@ -39,7 +16,7 @@ export const draftProposal = createServerFn({ method: "POST" })
       })
       .parse(input),
   )
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
     const system = `You write polished business proposals for South African SMEs.
 Output GitHub-flavoured markdown, no preamble. Structure:
 
@@ -72,8 +49,27 @@ Client: ${data.clientName ?? "(unspecified)"}
 Tone: ${data.tone ?? "professional, warm"}
 Brief:
 ${data.brief}`;
-    const content = await callAI(system, body);
-    return { content };
+
+    const res = await callAIWithFallback({
+      kind: "proposal",
+      systemPrompt: system,
+      userPrompt: body,
+      minLength: 400,
+      retryOnce: true,
+      supabase: context.supabase,
+      userId: context.userId,
+    });
+
+    // Sanity-check that required section headings landed.
+    const required = ["## Overview", "## Scope of work"];
+    const missing = required.filter((h) => !res.content.includes(h));
+    if (missing.length) {
+      throw new Error(
+        `AI draft was incomplete (missing ${missing.join(", ")}). Please try again.`,
+      );
+    }
+
+    return { content: res.content, modelUsed: res.modelUsed };
   });
 
 /** Draft a customer-facing message (email or whatsapp) for a proposal. */
@@ -91,7 +87,7 @@ export const draftClientMessage = createServerFn({ method: "POST" })
       })
       .parse(input),
   )
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
     const channelRules =
       data.channel === "whatsapp"
         ? "WhatsApp: 2-4 short sentences, friendly, no subject line. Use line breaks. End with a clear question or CTA."
@@ -109,20 +105,30 @@ Never invent prices or dates that weren't given.`;
 From: ${data.businessName ?? "our team"}
 To: ${data.clientName ?? "the client"}
 Proposal: ${data.proposalTitle ?? "(untitled)"}`;
-    const raw = await callAI(system, user);
+
+    const res = await callAIWithFallback({
+      kind: `client_msg_${data.channel}`,
+      systemPrompt: system,
+      userPrompt: user,
+      minLength: 30,
+      retryOnce: true,
+      supabase: context.supabase,
+      userId: context.userId,
+    });
+
     if (data.channel === "email") {
       try {
-        const cleaned = raw.replace(/^```json|```$/gi, "").trim();
+        const cleaned = res.content.replace(/^```json|```$/gi, "").trim();
         const parsed = JSON.parse(cleaned);
         return {
           subject: String(parsed.subject ?? `Proposal: ${data.proposalTitle ?? ""}`),
-          body: String(parsed.body ?? raw),
+          body: String(parsed.body ?? res.content),
         };
       } catch {
-        return { subject: `Proposal: ${data.proposalTitle ?? ""}`, body: raw };
+        return { subject: `Proposal: ${data.proposalTitle ?? ""}`, body: res.content };
       }
     }
-    return { subject: null, body: raw };
+    return { subject: null, body: res.content };
   });
 
 /**
@@ -166,7 +172,6 @@ export const sendCommunication = createServerFn({ method: "POST" })
       .single();
     if (error) throw new Error(error.message);
 
-    // If tied to a proposal, mark it as sent (first time only).
     if (data.proposalId) {
       await supabase
         .from("proposals")
