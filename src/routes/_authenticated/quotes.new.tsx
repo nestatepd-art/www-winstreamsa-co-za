@@ -67,6 +67,7 @@ function NewQuotePage() {
     try {
       const res = await draftItem({ data: { brief, tone: profile?.brand_tone ?? undefined } });
       updateItem(i, { description: res.description, _drafting: false });
+      setAiUsed(true);
     } catch (e: any) {
       updateItem(i, { _drafting: false });
       toast.error(e.message ?? "AI draft failed");
