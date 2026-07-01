@@ -63,6 +63,7 @@ function NewProposal() {
         },
       });
       setContent(out);
+      setAiUsed(true);
       // Auto-fill title from first H1 if empty
       if (!title) {
         const m = out.match(/^#\s+(.+)$/m);
