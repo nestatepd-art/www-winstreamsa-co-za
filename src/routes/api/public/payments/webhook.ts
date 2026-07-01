@@ -3,11 +3,14 @@ import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import { verifyWebhook, EventName, gatewayFetch, type PaddleEnv } from "@/lib/paddle.server";
 
-// Plan tier mapping — both Growth and Scale map to the "pro" plan; only the
-// monthly credit grant differs.
+// Plan tier mapping — subscription tier grants a monthly credit top-up.
+// The underlying user_credits.plan stays 'pro' for any paid tier; the specific
+// tier (starter vs growth) is inferred from subscriptions.price_id at
+// quota-check time (see consume_quota).
 const PLAN_FOR_PRICE: Record<string, { plan: "pro"; credits: number }> = {
+  starter_monthly: { plan: "pro", credits: 100 },
   growth_monthly: { plan: "pro", credits: 500 },
-  scale_monthly: { plan: "pro", credits: 2000 },
+  scale_monthly: { plan: "pro", credits: 2000 }, // legacy
 };
 
 const CREDITS_FOR_PRICE: Record<string, number> = {

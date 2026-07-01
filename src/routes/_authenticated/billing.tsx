@@ -10,8 +10,8 @@ import {
   FREE_LIMITS,
   CREDIT_COST,
   CREDIT_PACKS,
+  STARTER_PRICE_ZAR,
   GROWTH_PRICE_ZAR,
-  SCALE_PRICE_ZAR,
   QUOTA_LABEL,
   type QuotaKind,
 } from "@/lib/billing.constants";
@@ -129,18 +129,17 @@ function BillingPage() {
   ];
 
   const subActive = subscription && ["active", "trialing", "past_due"].includes(subscription.status);
-  const isScale = subscription?.price_id === "scale_monthly";
+  const isStarter = subscription?.price_id === "starter_monthly";
+  const isGrowth = subscription?.price_id === "growth_monthly" || subscription?.price_id === "scale_monthly";
+  const tierLabel = status.plan === "pro" ? (isGrowth ? "Growth" : isStarter ? "Starter" : "Growth") : "Free";
 
   return (
     <div className="p-6 lg:p-10 max-w-5xl mx-auto space-y-6">
       <header>
         <h1 className="text-3xl font-semibold tracking-tight">Billing & usage</h1>
         <p className="text-muted-foreground text-sm mt-1">
-          You're on the{" "}
-          <strong>
-            {status.plan === "pro" ? (isScale ? "Scale" : "Growth") : "Free"}
-          </strong>{" "}
-          plan. Period started {new Date(status.period_start).toLocaleDateString()}.
+          You're on the <strong>{tierLabel}</strong> plan. Period started{" "}
+          {new Date(status.period_start).toLocaleDateString()}.
         </p>
         {subscription?.cancel_at_period_end && (
           <p className="text-xs text-amber-600 mt-1">
@@ -239,53 +238,53 @@ function BillingPage() {
           </CardContent>
         </Card>
 
-        <Card className={status.plan === "pro" && !isScale ? "border-primary" : "border-primary/40"}>
+        <Card className={isStarter ? "border-primary" : "border-primary/40"}>
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="text-base flex items-center gap-2">
-                <Sparkles className="h-4 w-4 text-primary" /> Growth
+                <Sparkles className="h-4 w-4 text-primary" /> Starter
               </CardTitle>
-              {status.plan === "pro" && !isScale ? <Badge>Current</Badge> : <Badge variant="outline">Popular</Badge>}
+              {isStarter ? <Badge>Current</Badge> : <Badge variant="outline">Popular</Badge>}
             </div>
-            <CardDescription>Active SMEs sending weekly quotes.</CardDescription>
-            <div className="text-3xl font-bold pt-2">{formatZAR(GROWTH_PRICE_ZAR)}<span className="text-sm font-normal text-muted-foreground">/mo</span></div>
+            <CardDescription>SMEs sending quotes weekly.</CardDescription>
+            <div className="text-3xl font-bold pt-2">{formatZAR(STARTER_PRICE_ZAR)}<span className="text-sm font-normal text-muted-foreground">/mo</span></div>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
             <ul className="space-y-2">
-              <li className="flex gap-2"><Check className="h-4 w-4 text-primary mt-0.5" /> 500 AI credits / month</li>
-              <li className="flex gap-2"><Check className="h-4 w-4 text-primary mt-0.5" /> WhatsApp + email follow-ups</li>
-              <li className="flex gap-2"><Check className="h-4 w-4 text-primary mt-0.5" /> 3 users · Priority support</li>
+              <li className="flex gap-2"><Check className="h-4 w-4 text-primary mt-0.5" /> 100 quotes / month</li>
+              <li className="flex gap-2"><Check className="h-4 w-4 text-primary mt-0.5" /> WhatsApp + email quoting</li>
+              <li className="flex gap-2"><Check className="h-4 w-4 text-primary mt-0.5" /> Remove WinStream branding · 3-step follow-ups</li>
             </ul>
             {!subActive && (
-              <Button className="w-full" disabled={checkoutLoading} onClick={() => buy("growth_monthly")}>
+              <Button className="w-full" disabled={checkoutLoading} onClick={() => buy("starter_monthly")}>
                 {checkoutLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                Subscribe to Growth
+                Subscribe to Starter
               </Button>
             )}
           </CardContent>
         </Card>
 
-        <Card className={isScale ? "border-primary" : ""}>
+        <Card className={isGrowth ? "border-primary" : ""}>
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="text-base flex items-center gap-2">
-                <Sparkles className="h-4 w-4 text-primary" /> Scale
+                <Sparkles className="h-4 w-4 text-primary" /> Growth
               </CardTitle>
-              {isScale && <Badge>Current</Badge>}
+              {isGrowth && <Badge>Current</Badge>}
             </div>
-            <CardDescription>Growing teams with custom workflows.</CardDescription>
-            <div className="text-3xl font-bold pt-2">{formatZAR(SCALE_PRICE_ZAR)}<span className="text-sm font-normal text-muted-foreground">/mo</span></div>
+            <CardDescription>Full quote-to-invoice workflow.</CardDescription>
+            <div className="text-3xl font-bold pt-2">{formatZAR(GROWTH_PRICE_ZAR)}<span className="text-sm font-normal text-muted-foreground">/mo</span></div>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
             <ul className="space-y-2">
-              <li className="flex gap-2"><Check className="h-4 w-4 text-primary mt-0.5" /> 2,000 AI credits / month</li>
-              <li className="flex gap-2"><Check className="h-4 w-4 text-primary mt-0.5" /> Unlimited users · API access</li>
-              <li className="flex gap-2"><Check className="h-4 w-4 text-primary mt-0.5" /> Custom branding · Dedicated onboarding</li>
+              <li className="flex gap-2"><Check className="h-4 w-4 text-primary mt-0.5" /> Unlimited quotes</li>
+              <li className="flex gap-2"><Check className="h-4 w-4 text-primary mt-0.5" /> Full quote-to-invoice workflow</li>
+              <li className="flex gap-2"><Check className="h-4 w-4 text-primary mt-0.5" /> POPIA data export · Priority support</li>
             </ul>
             {!subActive && (
-              <Button className="w-full" variant="outline" disabled={checkoutLoading} onClick={() => buy("scale_monthly")}>
+              <Button className="w-full" variant="outline" disabled={checkoutLoading} onClick={() => buy("growth_monthly")}>
                 {checkoutLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                Subscribe to Scale
+                Subscribe to Growth
               </Button>
             )}
           </CardContent>
