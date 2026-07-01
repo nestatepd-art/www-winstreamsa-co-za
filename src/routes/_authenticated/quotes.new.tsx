@@ -15,6 +15,7 @@ import { Sparkles, Trash2, Plus, Loader2, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { formatZAR, computeQuoteTotals, generateQuoteNumber } from "@/lib/format";
 import { Link } from "@tanstack/react-router";
+import { AiDraftedBanner } from "@/components/AiDraftedBanner";
 
 export const Route = createFileRoute("/_authenticated/quotes/new")({
   component: NewQuotePage,
