@@ -90,7 +90,8 @@ function NewQuotePage() {
       });
       setNotes(res.intro);
       setTerms(res.terms);
-      toast.success("Notes drafted");
+      setAiUsed(true);
+      toast.success("Notes drafted — please review before sending");
     } catch (e: any) {
       toast.error(e.message ?? "AI draft failed");
     } finally {
