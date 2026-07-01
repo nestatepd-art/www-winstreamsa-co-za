@@ -15,6 +15,7 @@ import { Sparkles, Trash2, Plus, Loader2, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { formatZAR, computeQuoteTotals, generateQuoteNumber } from "@/lib/format";
 import { Link } from "@tanstack/react-router";
+import { AiDraftedBanner } from "@/components/AiDraftedBanner";
 
 export const Route = createFileRoute("/_authenticated/quotes/new")({
   component: NewQuotePage,
@@ -50,6 +51,7 @@ function NewQuotePage() {
   const [terms, setTerms] = useState("");
   const [scopeBrief, setScopeBrief] = useState("");
   const [draftingNotes, setDraftingNotes] = useState(false);
+  const [aiUsed, setAiUsed] = useState(false);
 
   const totals = useMemo(() => computeQuoteTotals(items, 15), [items]);
 
@@ -65,6 +67,7 @@ function NewQuotePage() {
     try {
       const res = await draftItem({ data: { brief, tone: profile?.brand_tone ?? undefined } });
       updateItem(i, { description: res.description, _drafting: false });
+      setAiUsed(true);
     } catch (e: any) {
       updateItem(i, { _drafting: false });
       toast.error(e.message ?? "AI draft failed");
@@ -87,7 +90,8 @@ function NewQuotePage() {
       });
       setNotes(res.intro);
       setTerms(res.terms);
-      toast.success("Notes drafted");
+      setAiUsed(true);
+      toast.success("Notes drafted — please review before sending");
     } catch (e: any) {
       toast.error(e.message ?? "AI draft failed");
     } finally {
@@ -157,6 +161,8 @@ function NewQuotePage() {
         <h1 className="text-3xl font-semibold tracking-tight mt-2">New quote</h1>
         <p className="text-muted-foreground text-sm mt-1">Build your quote. WinStream can draft descriptions and notes for you.</p>
       </div>
+
+      {aiUsed && <AiDraftedBanner />}
 
       <Card>
         <CardHeader><CardTitle className="text-base">Header</CardTitle></CardHeader>

@@ -13,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sparkles, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { AiDraftedBanner } from "@/components/AiDraftedBanner";
 
 export const Route = createFileRoute("/_authenticated/proposals/new")({
   component: NewProposal,
@@ -27,6 +28,7 @@ function NewProposal() {
   const [brief, setBrief] = useState("");
   const [content, setContent] = useState("");
   const [busy, setBusy] = useState<"ai" | "save" | null>(null);
+  const [aiUsed, setAiUsed] = useState(false);
 
   const { data: clients } = useQuery({
     queryKey: ["clients-min"],
@@ -61,6 +63,7 @@ function NewProposal() {
         },
       });
       setContent(out);
+      setAiUsed(true);
       // Auto-fill title from first H1 if empty
       if (!title) {
         const m = out.match(/^#\s+(.+)$/m);
@@ -155,6 +158,7 @@ function NewProposal() {
           <CardDescription>Markdown — edit anything before saving.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {aiUsed && <AiDraftedBanner />}
           <Textarea
             rows={20}
             value={content}
