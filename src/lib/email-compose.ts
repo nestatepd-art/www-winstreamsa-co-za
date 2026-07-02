@@ -47,51 +47,21 @@ export function buildEmailComposeUrl(options: EmailDraftOptions) {
 }
 
 /**
- * Opens the user's mail client with a prefilled draft. If an attachment is
- * provided, tries the Web Share API first (attaches file directly on mobile
- * + supported desktops). Falls back to downloading the PDF and opening the
- * mailto draft with a note telling the user where the file is.
+ * Opens the user's mail client with a prefilled draft. Mailto cannot attach
+ * files, so when a PDF is provided we download it first, then open the draft
+ * directly without using the browser/Windows share sheet.
  *
  * Returns:
- *  - "shared"     — file was attached via native share sheet
  *  - "downloaded" — file downloaded + mailto opened (user must drag file in)
  *  - "opened"     — mailto opened, no attachment
  *  - false        — nothing could be opened
  */
 export async function openEmailDraft(
   options: EmailDraftOptions,
-): Promise<"shared" | "downloaded" | "opened" | false> {
+): Promise<"downloaded" | "opened" | false> {
   if (typeof window === "undefined" || typeof document === "undefined") return false;
 
-  // 1) Try Web Share API with file attachment
   if (options.attachment) {
-    try {
-      const file = new File([options.attachment.blob], options.attachment.filename, {
-        type: options.attachment.blob.type || "application/pdf",
-      });
-      const nav = navigator as Navigator & {
-        canShare?: (data: { files?: File[] }) => boolean;
-        share?: (data: { files?: File[]; title?: string; text?: string }) => Promise<void>;
-      };
-      if (nav.share && nav.canShare && nav.canShare({ files: [file] })) {
-        const recipients = normalizeList(options.to);
-        await nav.share({
-          files: [file],
-          title: options.subject ?? undefined,
-          text: [
-            recipients.length ? `To: ${recipients.join(", ")}` : "",
-            options.subject ? `Subject: ${options.subject}` : "",
-            "",
-            cleanEmailText(options.body ?? ""),
-          ].filter(Boolean).join("\n"),
-        });
-        return "shared";
-      }
-    } catch (err) {
-      if ((err as Error)?.name === "AbortError") return "shared";
-    }
-
-    // 2) Download the PDF so the user can drag it into the draft
     try {
       const url = URL.createObjectURL(options.attachment.blob);
       const a = document.createElement("a");
@@ -123,7 +93,6 @@ export async function openEmailDraft(
     }
   }
 
-  // 3) No attachment — plain mailto
   const href = buildEmailComposeUrl(options);
   try {
     const link = document.createElement("a");

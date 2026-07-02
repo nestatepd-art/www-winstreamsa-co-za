@@ -116,8 +116,7 @@ function InvoiceViewPage() {
       toast.error("Email draft could not be opened. Please check your default mail app.");
       return;
     }
-    if (result === "shared") toast.success("Invoice PDF attached and shared.");
-    else if (result === "downloaded") toast.success(`PDF downloaded (${filename}). Drag it into the open email draft to attach.`);
+    if (result === "downloaded") toast.success(`PDF downloaded (${filename}). Drag it into the open email draft to attach.`);
     else toast.success("Email draft opened.");
     if (invoice.status === "draft") statusMut.mutate("sent");
   };

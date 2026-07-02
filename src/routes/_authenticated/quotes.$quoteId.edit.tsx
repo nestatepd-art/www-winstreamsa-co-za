@@ -89,7 +89,7 @@ function EditQuotePage() {
     mutationFn: async () => {
       const { data: u } = await supabase.auth.getUser();
       if (!u.user) throw new Error("Not signed in");
-      const { error } = await supabase
+      const { data: updatedQuote, error } = await supabase
         .from("quotes")
         .update({
           client_id: clientId || null,
@@ -105,8 +105,11 @@ function EditQuotePage() {
           vat_amount: totals.vat_amount,
           total: totals.total,
         })
-        .eq("id", quoteId);
+        .eq("id", quoteId)
+        .select("id")
+        .single();
       if (error) throw error;
+      if (!updatedQuote) throw new Error("Quote was not updated. Please refresh and try again.");
 
       const { error: delErr } = await supabase.from("quote_items").delete().eq("quote_id", quoteId);
       if (delErr) throw delErr;
@@ -128,7 +131,7 @@ function EditQuotePage() {
     },
     onSuccess: () => {
       toast.success("Quote updated");
-      qc.invalidateQueries({ queryKey: ["quote", quoteId] });
+      qc.removeQueries({ queryKey: ["quote", quoteId] });
       qc.invalidateQueries({ queryKey: ["quote-edit", quoteId] });
       qc.invalidateQueries({ queryKey: ["quotes"] });
       navigate({ to: "/quotes/$quoteId", params: { quoteId } });
