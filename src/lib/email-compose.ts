@@ -11,31 +11,10 @@ type EmailDraftOptions = {
 export const extractEmailAddress = (value?: string | null) =>
   value?.match(EMAIL_PATTERN)?.[0] ?? "";
 
-const encodeMailtoParam = (value: string) => encodeURIComponent(value).replace(/%20/g, "%20");
-
 const normalizeList = (value?: string | string[] | null) =>
   (Array.isArray(value) ? value : String(value ?? "").split(/[;,]/))
     .map((entry) => extractEmailAddress(entry.trim()) || entry.trim())
     .filter(Boolean);
-
-export function buildMailtoUrl(options: EmailDraftOptions) {
-
-  const recipients = normalizeList(options.to);
-  const params: Array<[string, string]> = [];
-  const cc = normalizeList(options.cc);
-  const bcc = normalizeList(options.bcc);
-
-  if (cc.length) params.push(["cc", cc.join(",")]);
-  if (bcc.length) params.push(["bcc", bcc.join(",")]);
-  if (options.subject?.trim()) params.push(["subject", options.subject.trim()]);
-  if (options.body?.trim()) params.push(["body", options.body.trim()]);
-
-  const query = params
-    .map(([key, value]) => `${key}=${encodeMailtoParam(value)}`)
-    .join("&");
-
-  return `mailto:${recipients.map(encodeURI).join(",")}${query ? `?${query}` : ""}`;
-}
 
 export function buildOutlookComposeUrl(options: EmailDraftOptions) {
   const recipients = normalizeList(options.to);
