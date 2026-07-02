@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import type {} from "@tanstack/react-start";
 import { listAllPublishedSlugs } from "@/lib/blog.functions";
 
-const BASE_URL = "https://winstreamsa.co.za";
+const BASE_URL = "https://www.winstreamsa.co.za";
 
 interface SitemapEntry {
   path: string;
