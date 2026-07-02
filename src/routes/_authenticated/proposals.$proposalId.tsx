@@ -16,6 +16,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Mail, MessageCircle, Sparkles, Loader2, Send, ArrowLeft, Check, Trash2 } from "lucide-react";
 import { formatDate } from "@/lib/format";
+import { extractEmailAddress, openEmailDraft } from "@/lib/email-compose";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/proposals/$proposalId")({
@@ -105,8 +106,12 @@ function ProposalDetail() {
     setBusy("send");
     try {
       if (channel === "email") {
-        const url = `mailto:${encodeURIComponent(to.trim())}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-        window.location.href = url;
+        const email = extractEmailAddress(to);
+        if (!email) {
+          toast.error("Enter a valid recipient email address");
+          return;
+        }
+        openEmailDraft({ to: email, subject, body });
       } else {
         const phone = to.trim().replace(/[^\d+]/g, "").replace(/^\+/, "");
         const url = `https://wa.me/${phone}?text=${encodeURIComponent(body)}`;
