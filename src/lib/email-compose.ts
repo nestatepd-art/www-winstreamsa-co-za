@@ -1,21 +1,24 @@
 const EMAIL_PATTERN = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i;
 
-export const extractEmailAddress = (value?: string | null) =>
-  value?.match(EMAIL_PATTERN)?.[0] ?? "";
-
-const encodeMailtoParam = (value: string) => encodeURIComponent(value).replace(/%20/g, "%20");
-
-export function buildMailtoUrl(options: {
+type EmailDraftOptions = {
   to: string | string[];
   subject?: string | null;
   body?: string | null;
   cc?: string | string[] | null;
   bcc?: string | string[] | null;
-}) {
-  const normalizeList = (value?: string | string[] | null) =>
-    (Array.isArray(value) ? value : String(value ?? "").split(/[;,]/))
-      .map((entry) => extractEmailAddress(entry.trim()) || entry.trim())
-      .filter(Boolean);
+};
+
+export const extractEmailAddress = (value?: string | null) =>
+  value?.match(EMAIL_PATTERN)?.[0] ?? "";
+
+const encodeMailtoParam = (value: string) => encodeURIComponent(value).replace(/%20/g, "%20");
+
+const normalizeList = (value?: string | string[] | null) =>
+  (Array.isArray(value) ? value : String(value ?? "").split(/[;,]/))
+    .map((entry) => extractEmailAddress(entry.trim()) || entry.trim())
+    .filter(Boolean);
+
+export function buildMailtoUrl(options: EmailDraftOptions) {
 
   const recipients = normalizeList(options.to);
   const params: Array<[string, string]> = [];
@@ -34,12 +37,29 @@ export function buildMailtoUrl(options: {
   return `mailto:${recipients.map(encodeURI).join(",")}${query ? `?${query}` : ""}`;
 }
 
-export function openEmailDraft(options: Parameters<typeof buildMailtoUrl>[0]) {
+export function buildOutlookComposeUrl(options: EmailDraftOptions) {
+  const recipients = normalizeList(options.to);
+  const cc = normalizeList(options.cc);
+  const bcc = normalizeList(options.bcc);
+  const params = new URLSearchParams();
+
+  if (recipients.length) params.set("to", recipients.join(","));
+  if (cc.length) params.set("cc", cc.join(","));
+  if (bcc.length) params.set("bcc", bcc.join(","));
+  if (options.subject?.trim()) params.set("subject", options.subject.trim());
+  if (options.body?.trim()) params.set("body", options.body.trim());
+
+  return `https://outlook.office.com/mail/deeplink/compose?${params.toString()}`;
+}
+
+export function openEmailDraft(options: EmailDraftOptions) {
   if (typeof window === "undefined" || typeof document === "undefined") return false;
 
-  const href = buildMailtoUrl(options);
+  const href = buildOutlookComposeUrl(options);
   const link = document.createElement("a");
   link.href = href;
+  link.target = "_blank";
+  link.rel = "noopener noreferrer";
   link.style.display = "none";
   link.setAttribute("aria-hidden", "true");
   document.body.appendChild(link);
