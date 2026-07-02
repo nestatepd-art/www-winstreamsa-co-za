@@ -6,15 +6,13 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, Printer, Trash2, Pencil, Mail } from "lucide-react";
 import { formatZAR, formatDate } from "@/lib/format";
+import { extractEmailAddress, openEmailDraft } from "@/lib/email-compose";
 import { InvoiceStatusBadge } from "./invoices.index";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/invoices/$invoiceId")({
   component: InvoiceViewPage,
 });
-
-const extractEmailAddress = (value?: string | null) =>
-  value?.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i)?.[0] ?? "";
 
 function InvoiceViewPage() {
   const { invoiceId } = Route.useParams();
@@ -116,10 +114,8 @@ function InvoiceViewPage() {
       "Thank you,",
       biz,
     );
-    const body = lines.filter((l) => l !== undefined && l !== "").length
-      ? lines.join("\n")
-      : "";
-    window.location.href = `mailto:${nudgeEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body || lines.join("\n"))}`;
+    const body = lines.join("\n");
+    openEmailDraft({ to: nudgeEmail, subject, body });
     if (invoice.status === "draft") statusMut.mutate("sent");
   };
 

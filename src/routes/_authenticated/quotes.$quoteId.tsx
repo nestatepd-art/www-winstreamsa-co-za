@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, Printer, Trash2, Receipt, Pencil, Mail } from "lucide-react";
 import { formatZAR, formatDate } from "@/lib/format";
+import { extractEmailAddress, openEmailDraft } from "@/lib/email-compose";
 import { QuoteStatusBadge } from "./dashboard";
 import { toast } from "sonner";
 
@@ -89,7 +90,7 @@ function QuoteViewPage() {
             variant="outline"
             size="sm"
             onClick={() => {
-              const email = quote.clients?.email?.trim();
+              const email = extractEmailAddress(quote.clients?.email);
               if (!email) {
                 toast.error("This client has no email on file. Add one in Clients first.");
                 return;
@@ -108,7 +109,7 @@ function QuoteViewPage() {
                 `Thanks,`,
                 profile?.business_name || "",
               ].filter(Boolean).join("\n");
-              window.location.href = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(lines)}`;
+              openEmailDraft({ to: email, subject, body: lines });
               import("@/lib/analytics").then(({ track }) =>
                 track("quote_sent", { quote_id: quoteId, total: quote.total }),
               );
