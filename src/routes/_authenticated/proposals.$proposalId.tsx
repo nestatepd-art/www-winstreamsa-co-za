@@ -111,7 +111,8 @@ function ProposalDetail() {
           toast.error("Enter a valid recipient email address");
           return;
         }
-        openEmailDraft({ to: email, subject, body });
+        const opened = openEmailDraft({ to: email, subject, body });
+        if (!opened) throw new Error("Email draft could not be opened. Please check your default mail app.");
       } else {
         const phone = to.trim().replace(/[^\d+]/g, "").replace(/^\+/, "");
         const url = `https://wa.me/${phone}?text=${encodeURIComponent(body)}`;

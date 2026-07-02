@@ -95,13 +95,19 @@ function QuoteViewPage() {
                 toast.error("This client has no email on file. Add one in Clients first.");
                 return;
               }
-              const subject = `${quote.title || "Quotation"} ${quote.quote_number} — ${formatZAR(quote.total)}`;
+              const subject = `${quote.title || "Quotation"} ${quote.quote_number} - ${formatZAR(quote.total)}`;
               const lines = [
                 `Hi ${quote.clients?.contact_person || quote.clients?.name || "there"},`,
                 "",
                 `Please find our quotation ${quote.quote_number} for your review.`,
-                ``,
-                `Total: ${formatZAR(quote.total)} (incl. VAT)`,
+                "",
+                "QUOTE SUMMARY",
+                "-------------",
+                ...items.map((it: any) => `- ${it.description} | Qty: ${Number(it.quantity)} | Unit: ${formatZAR(it.unit_price)} | Total: ${formatZAR(it.line_total)}`),
+                "",
+                `Subtotal: ${formatZAR(quote.subtotal)}`,
+                `VAT (${Number(quote.vat_rate)}%): ${formatZAR(quote.vat_amount)}`,
+                `Total: ${formatZAR(quote.total)} incl. VAT`,
                 quote.expiry_date ? `Valid until: ${formatDate(quote.expiry_date)}` : "",
                 "",
                 quote.notes || "",
@@ -109,7 +115,12 @@ function QuoteViewPage() {
                 `Thanks,`,
                 profile?.business_name || "",
               ].filter(Boolean).join("\n");
-              openEmailDraft({ to: email, subject, body: lines });
+              const opened = openEmailDraft({ to: email, subject, body: lines });
+              if (!opened) {
+                toast.error("Email draft could not be opened. Please check your default mail app.");
+                return;
+              }
+              toast.success("Email draft opened with the quote details.");
               import("@/lib/analytics").then(({ track }) =>
                 track("quote_sent", { quote_id: quoteId, total: quote.total }),
               );

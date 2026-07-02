@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Trash2, Plus, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
-import { formatZAR, computeQuoteTotals, generateInvoiceNumber } from "@/lib/format";
+import { cleanDocumentText, cleanDocumentTitle, formatZAR, computeQuoteTotals, generateInvoiceNumber } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/invoices/new")({
   component: NewInvoicePage,
@@ -70,14 +70,15 @@ function NewInvoicePage() {
   useEffect(() => {
     if (sourceQuote?.quote) {
       const q = sourceQuote.quote;
+      const sourceTitle = cleanDocumentTitle(q.title, "Services");
       setClientId(q.client_id ?? "");
-      setTitle(`Invoice for ${q.title}`);
-      setNotes(q.notes ?? "");
-      setTerms(q.terms ?? "");
+      setTitle(sourceTitle === "Services" ? "Invoice" : `Invoice - ${sourceTitle}`);
+      setNotes(cleanDocumentText(q.notes));
+      setTerms(cleanDocumentText(q.terms));
       if (sourceQuote.items.length) {
         setItems(
           sourceQuote.items.map((it: any) => ({
-            description: it.description,
+            description: cleanDocumentText(it.description),
             quantity: Number(it.quantity),
             unit_price: Number(it.unit_price),
           })),
@@ -105,10 +106,10 @@ function NewInvoicePage() {
           client_id: clientId || null,
           quote_id: fromQuote ?? null,
           invoice_number: invoiceNumber,
-          title,
+          title: cleanDocumentTitle(title, "Invoice"),
           status,
-          notes,
-          terms: terms || profile?.default_quote_terms || null,
+          notes: cleanDocumentText(notes) || null,
+          terms: cleanDocumentText(terms) || profile?.default_quote_terms || null,
           due_date: dueDate || null,
           subtotal: totals.subtotal,
           vat_amount: totals.vat_amount,
@@ -125,7 +126,7 @@ function NewInvoicePage() {
           invoice_id: invoice.id,
           user_id: u.user!.id,
           position: idx,
-          description: it.description,
+          description: cleanDocumentText(it.description),
           quantity: it.quantity,
           unit_price: it.unit_price,
           line_total: +(it.quantity * it.unit_price).toFixed(2),
