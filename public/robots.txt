@@ -8,4 +8,4 @@ Disallow: /proposals
 Disallow: /billing
 Disallow: /settings
 
-Sitemap: https://winstreamsa.co.za/sitemap.xml
+Sitemap: https://www.winstreamsa.co.za/sitemap.xml
