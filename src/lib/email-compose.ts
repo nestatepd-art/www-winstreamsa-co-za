@@ -16,33 +16,54 @@ const normalizeList = (value?: string | string[] | null) =>
     .map((entry) => extractEmailAddress(entry.trim()) || entry.trim())
     .filter(Boolean);
 
+export const cleanEmailText = (value?: string | null) =>
+  String(value ?? "")
+    .normalize("NFKC")
+    .replace(/\r\n/g, "\n")
+    .replace(/\r/g, "\n")
+    .replace(/\u00a0/g, " ")
+    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, "")
+    .replace(/[ \t]+\n/g, "\n")
+    .replace(/\n{4,}/g, "\n\n\n")
+    .trim();
+
+const encodeMailtoValue = (value?: string | null) =>
+  encodeURIComponent(cleanEmailText(value)).replace(/%0A/g, "%0D%0A");
+
 export function buildEmailComposeUrl(options: EmailDraftOptions) {
   const recipients = normalizeList(options.to);
   const cc = normalizeList(options.cc);
   const bcc = normalizeList(options.bcc);
-  const params = new URLSearchParams();
+  const params: string[] = [];
 
-  if (cc.length) params.set("cc", cc.join(","));
-  if (bcc.length) params.set("bcc", bcc.join(","));
-  if (options.subject?.trim()) params.set("subject", options.subject.trim());
-  if (options.body?.trim()) params.set("body", options.body.trim());
+  if (cc.length) params.push(`cc=${cc.map(encodeURIComponent).join(",")}`);
+  if (bcc.length) params.push(`bcc=${bcc.map(encodeURIComponent).join(",")}`);
+  if (options.subject?.trim()) params.push(`subject=${encodeMailtoValue(options.subject)}`);
+  if (options.body?.trim()) params.push(`body=${encodeMailtoValue(options.body)}`);
 
-  const query = params.toString();
-  return `mailto:${encodeURIComponent(recipients.join(","))}${query ? `?${query}` : ""}`;
+  const query = params.join("&");
+  return `mailto:${recipients.map(encodeURIComponent).join(",")}${query ? `?${query}` : ""}`;
 }
 
 export function openEmailDraft(options: EmailDraftOptions) {
   if (typeof window === "undefined" || typeof document === "undefined") return false;
 
   const href = buildEmailComposeUrl(options);
-  const link = document.createElement("a");
-  link.href = href;
-  link.target = "_blank";
-  link.rel = "noopener noreferrer";
-  link.style.display = "none";
-  link.setAttribute("aria-hidden", "true");
-  document.body.appendChild(link);
-  link.click();
-  window.setTimeout(() => link.remove(), 0);
-  return true;
+  try {
+    const link = document.createElement("a");
+    link.href = href;
+    link.style.display = "none";
+    link.setAttribute("aria-hidden", "true");
+    document.body.appendChild(link);
+    link.click();
+    window.setTimeout(() => link.remove(), 0);
+    return true;
+  } catch {
+    try {
+      window.location.assign(href);
+      return true;
+    } catch {
+      return false;
+    }
+  }
 }
