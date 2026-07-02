@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
+import type { FormEvent } from "react";
 import { Mail, MapPin, Clock } from "lucide-react";
 import { SiteNav, SiteFooter } from "@/components/site-nav";
+import { openEmailDraft } from "@/lib/email-compose";
 
 export const Route = createFileRoute("/contact")({
   head: () => ({
@@ -49,6 +51,21 @@ export const Route = createFileRoute("/contact")({
 });
 
 function ContactPage() {
+  const handleContactSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const data = new FormData(form);
+    const name = String(data.get("name") ?? "").trim();
+    const email = String(data.get("email") ?? "").trim();
+    const message = String(data.get("message") ?? "").trim();
+
+    openEmailDraft({
+      to: "info@winstreamsa.co.za",
+      subject: `WinStream SA enquiry${name ? ` from ${name}` : ""}`,
+      body: [`Name: ${name}`, `Email: ${email}`, "", message].join("\n"),
+    });
+  };
+
   return (
     <div className="min-h-screen bg-[#04121a] text-white">
       <SiteNav />
@@ -62,14 +79,15 @@ function ContactPage() {
         </p>
 
         <div className="mt-10 grid gap-4 sm:grid-cols-2">
-          <a
-            href="mailto:info@winstreamsa.co.za"
-            className="rounded-2xl border border-white/10 bg-white/[0.04] p-6 transition-colors hover:bg-white/[0.08]"
+          <button
+            type="button"
+            onClick={() => openEmailDraft({ to: "info@winstreamsa.co.za", subject: "WinStream SA enquiry" })}
+            className="rounded-2xl border border-white/10 bg-white/[0.04] p-6 text-left transition-colors hover:bg-white/[0.08]"
           >
             <Mail className="h-5 w-5 text-teal-300" />
             <h2 className="mt-3 font-semibold">Email</h2>
             <p className="mt-1 text-sm text-white/70">info@winstreamsa.co.za</p>
-          </a>
+          </button>
           <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-6">
             <Clock className="h-5 w-5 text-teal-300" />
             <h2 className="mt-3 font-semibold">Hours</h2>
@@ -85,9 +103,7 @@ function ContactPage() {
         </div>
 
         <form
-          action="mailto:info@winstreamsa.co.za"
-          method="post"
-          encType="text/plain"
+          onSubmit={handleContactSubmit}
           className="mt-10 space-y-4 rounded-2xl border border-white/10 bg-white/[0.03] p-6"
         >
           <h2 className="text-lg font-bold">Send a message</h2>
