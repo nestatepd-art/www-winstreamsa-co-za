@@ -89,38 +89,52 @@ function QuoteViewPage() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => {
+            onClick={async () => {
               const email = extractEmailAddress(quote.clients?.email);
               if (!email) {
                 toast.error("This client has no email on file. Add one in Clients first.");
                 return;
               }
               const subject = `${quote.title || "Quotation"} ${quote.quote_number} - ${formatZAR(quote.total)}`;
-              const lines = [
+              const body = [
                 `Hi ${quote.clients?.contact_person || quote.clients?.name || "there"},`,
                 "",
-                `Please find our quotation ${quote.quote_number} for your review.`,
+                `Please find attached quotation ${quote.quote_number} for ${formatZAR(quote.total)} incl. VAT${quote.expiry_date ? `, valid until ${formatDate(quote.expiry_date)}` : ""}.`,
                 "",
-                "QUOTE SUMMARY",
-                "-------------",
-                ...items.map((it: any) => `- ${it.description} | Qty: ${Number(it.quantity)} | Unit: ${formatZAR(it.unit_price)} | Total: ${formatZAR(it.line_total)}`),
-                "",
-                `Subtotal: ${formatZAR(quote.subtotal)}`,
-                `VAT (${Number(quote.vat_rate)}%): ${formatZAR(quote.vat_amount)}`,
-                `Total: ${formatZAR(quote.total)} incl. VAT`,
-                quote.expiry_date ? `Valid until: ${formatDate(quote.expiry_date)}` : "",
-                "",
-                quote.notes || "",
+                quote.notes || "Let us know if you'd like to proceed or need any adjustments.",
                 "",
                 `Thanks,`,
                 profile?.business_name || "",
               ].filter(Boolean).join("\n");
-              const opened = openEmailDraft({ to: email, subject, body: lines });
-              if (!opened) {
+
+              const { generateDocumentPdf } = await import("@/lib/pdf-export");
+              const blob = generateDocumentPdf({
+                kind: "Quote",
+                number: quote.quote_number,
+                title: quote.title,
+                status: quote.status,
+                issue_date: quote.issue_date,
+                expiry_date: quote.expiry_date,
+                subtotal: quote.subtotal,
+                vat_rate: quote.vat_rate,
+                vat_amount: quote.vat_amount,
+                total: quote.total,
+                notes: quote.notes,
+                terms: quote.terms,
+                items: items as any,
+                client: quote.clients as any,
+                profile,
+              });
+              const filename = `Quote-${quote.quote_number}.pdf`;
+
+              const result = await openEmailDraft({ to: email, subject, body, attachment: { blob, filename } });
+              if (!result) {
                 toast.error("Email draft could not be opened. Please check your default mail app.");
                 return;
               }
-              toast.success("Email draft opened with the quote details.");
+              if (result === "shared") toast.success("Quote PDF attached and shared.");
+              else if (result === "downloaded") toast.success(`PDF downloaded (${filename}). Drag it into the open email draft to attach.`);
+              else toast.success("Email draft opened.");
               import("@/lib/analytics").then(({ track }) =>
                 track("quote_sent", { quote_id: quoteId, total: quote.total }),
               );
