@@ -16,25 +16,25 @@ const normalizeList = (value?: string | string[] | null) =>
     .map((entry) => extractEmailAddress(entry.trim()) || entry.trim())
     .filter(Boolean);
 
-export function buildOutlookComposeUrl(options: EmailDraftOptions) {
+export function buildEmailComposeUrl(options: EmailDraftOptions) {
   const recipients = normalizeList(options.to);
   const cc = normalizeList(options.cc);
   const bcc = normalizeList(options.bcc);
   const params = new URLSearchParams();
 
-  if (recipients.length) params.set("to", recipients.join(","));
   if (cc.length) params.set("cc", cc.join(","));
   if (bcc.length) params.set("bcc", bcc.join(","));
   if (options.subject?.trim()) params.set("subject", options.subject.trim());
   if (options.body?.trim()) params.set("body", options.body.trim());
 
-  return `https://outlook.office.com/mail/deeplink/compose?${params.toString()}`;
+  const query = params.toString();
+  return `mailto:${encodeURIComponent(recipients.join(","))}${query ? `?${query}` : ""}`;
 }
 
 export function openEmailDraft(options: EmailDraftOptions) {
   if (typeof window === "undefined" || typeof document === "undefined") return false;
 
-  const href = buildOutlookComposeUrl(options);
+  const href = buildEmailComposeUrl(options);
   const link = document.createElement("a");
   link.href = href;
   link.target = "_blank";
