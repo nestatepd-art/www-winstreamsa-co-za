@@ -67,61 +67,58 @@ function InvoiceViewPage() {
   const client = invoice.clients as any;
   const nudgeEmail = extractEmailAddress(client?.email);
 
-  const sendNudgeEmail = () => {
+  const sendNudgeEmail = async () => {
     if (!nudgeEmail) {
       toast.error("This client has no email address on file.");
       return;
     }
     const due = invoice.due_date ? formatDate(invoice.due_date) : "the agreed date";
     const biz = profile?.business_name || "our team";
-    const subject = `Reminder: Invoice ${invoice.invoice_number} - ${formatZAR(invoice.total)} outstanding`;
-    const lines: string[] = [
+    const subject = `Invoice ${invoice.invoice_number} - ${formatZAR(invoice.total)}`;
+    const body = [
       `Hi ${client?.contact_person || client?.name || "there"},`,
       "",
-      `This is a friendly reminder that invoice ${invoice.invoice_number} (${invoice.title}) for ${formatZAR(invoice.total)} was due on ${due} and is currently outstanding.`,
+      `Please find attached invoice ${invoice.invoice_number} (${invoice.title}) for ${formatZAR(invoice.total)}, due on ${due}.`,
       "",
-      "For your convenience, the full invoice is included below.",
-      "",
-      "INVOICE SUMMARY",
-      "---------------",
-      `Invoice number: ${invoice.invoice_number}`,
-      `Title: ${invoice.title}`,
-      `Issued: ${formatDate(invoice.issue_date)}`,
-      `Due: ${due}`,
-      `Billed to: ${client?.name ?? "-"}${client?.contact_person ? ` (${client.contact_person})` : ""}`,
-      "",
-      "Line items:",
-      ...items.map((it: any) => `- ${it.description} | Qty: ${Number(it.quantity)} | Unit: ${formatZAR(it.unit_price)} | Total: ${formatZAR(it.line_total)}`),
-      "",
-      `Subtotal: ${formatZAR(invoice.subtotal)}`,
-      `VAT (${Number(invoice.vat_rate)}%): ${formatZAR(invoice.vat_amount)}`,
-      `Total due: ${formatZAR(invoice.total)}`,
-    ];
-    if (profile?.bank_name || profile?.bank_account_number) {
-      lines.push(
-        "",
-        "Banking details:",
-        profile?.bank_account_holder ? `${profile.bank_account_holder}` : "",
-        profile?.bank_name ? `${profile.bank_name}` : "",
-        profile?.bank_account_number ? `Account: ${profile.bank_account_number}` : "",
-        profile?.bank_branch_code ? `Branch: ${profile.bank_branch_code}` : "",
-      );
-    }
-    lines.push(
-      "---------------",
-      "",
-      "Please let us know if payment has already been made, or arrange settlement at your earliest convenience.",
+      "Let us know if you have any questions, or please arrange settlement at your earliest convenience.",
       "",
       "Thank you,",
       biz,
-    );
-    const body = lines.filter((line) => line !== "").join("\n");
-    const opened = openEmailDraft({ to: nudgeEmail, subject, body });
-    if (!opened) {
+    ].join("\n");
+
+    const { generateDocumentPdf } = await import("@/lib/pdf-export");
+    const blob = generateDocumentPdf({
+      kind: "Invoice",
+      number: invoice.invoice_number,
+      title: invoice.title,
+      status: invoice.status,
+      issue_date: invoice.issue_date,
+      due_date: invoice.due_date,
+      subtotal: invoice.subtotal,
+      vat_rate: invoice.vat_rate,
+      vat_amount: invoice.vat_amount,
+      total: invoice.total,
+      notes: invoice.notes,
+      terms: invoice.terms,
+      items: items as any,
+      client,
+      profile,
+    });
+    const filename = `Invoice-${invoice.invoice_number}.pdf`;
+
+    const result = await openEmailDraft({
+      to: nudgeEmail,
+      subject,
+      body,
+      attachment: { blob, filename },
+    });
+    if (!result) {
       toast.error("Email draft could not be opened. Please check your default mail app.");
       return;
     }
-    toast.success("Email draft opened with the invoice reminder.");
+    if (result === "shared") toast.success("Invoice PDF attached and shared.");
+    else if (result === "downloaded") toast.success(`PDF downloaded (${filename}). Drag it into the open email draft to attach.`);
+    else toast.success("Email draft opened.");
     if (invoice.status === "draft") statusMut.mutate("sent");
   };
 
