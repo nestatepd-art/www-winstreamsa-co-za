@@ -111,8 +111,29 @@ function ProposalDetail() {
           toast.error("Enter a valid recipient email address");
           return;
         }
-        const opened = openEmailDraft({ to: email, subject, body });
-        if (!opened) throw new Error("Email draft could not be opened. Please check your default mail app.");
+        // Generate a simple text-based PDF of the proposal content
+        const { jsPDF } = await import("jspdf");
+        const pdf = new jsPDF({ unit: "pt", format: "a4" });
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(18);
+        pdf.text(proposal?.title ?? "Proposal", 40, 60);
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(10);
+        pdf.setTextColor(90);
+        pdf.text(`Prepared for ${client?.name ?? ""}`, 40, 80);
+        pdf.setTextColor(30);
+        pdf.setFontSize(11);
+        const lines = pdf.splitTextToSize(proposal?.content ?? "", 515);
+        let y = 110;
+        for (const ln of lines) {
+          if (y > 800) { pdf.addPage(); y = 60; }
+          pdf.text(ln, 40, y);
+          y += 15;
+        }
+        const blob = pdf.output("blob");
+        const filename = `Proposal-${(proposal?.title ?? "proposal").replace(/[^a-z0-9]+/gi, "-")}.pdf`;
+        const result = await openEmailDraft({ to: email, subject, body, attachment: { blob, filename } });
+        if (!result) throw new Error("Email draft could not be opened. Please check your default mail app.");
       } else {
         const phone = to.trim().replace(/[^\d+]/g, "").replace(/^\+/, "");
         const url = `https://wa.me/${phone}?text=${encodeURIComponent(body)}`;
