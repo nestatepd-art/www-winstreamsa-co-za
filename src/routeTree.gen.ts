@@ -43,6 +43,7 @@ import { Route as AuthenticatedInvoicesInvoiceIdRouteImport } from './routes/_au
 import { Route as AuthenticatedChatThreadIdRouteImport } from './routes/_authenticated/chat.$threadId'
 import { Route as AuthenticatedAdminBlogRouteImport } from './routes/_authenticated/admin.blog'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
+import { Route as ApiPublicHooksAutoNudgeRouteImport } from './routes/api/public/hooks/auto-nudge'
 import { Route as AuthenticatedQuotesQuoteIdEditRouteImport } from './routes/_authenticated/quotes.$quoteId.edit'
 import { Route as AuthenticatedInvoicesInvoiceIdEditRouteImport } from './routes/_authenticated/invoices.$invoiceId.edit'
 
@@ -225,6 +226,11 @@ const ApiPublicPaymentsWebhookRoute =
     path: '/api/public/payments/webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksAutoNudgeRoute = ApiPublicHooksAutoNudgeRouteImport.update({
+  id: '/api/public/hooks/auto-nudge',
+  path: '/api/public/hooks/auto-nudge',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedQuotesQuoteIdEditRoute =
   AuthenticatedQuotesQuoteIdEditRouteImport.update({
     id: '/edit',
@@ -273,6 +279,7 @@ export interface FileRoutesByFullPath {
   '/quotes/': typeof AuthenticatedQuotesIndexRoute
   '/invoices/$invoiceId/edit': typeof AuthenticatedInvoicesInvoiceIdEditRoute
   '/quotes/$quoteId/edit': typeof AuthenticatedQuotesQuoteIdEditRoute
+  '/api/public/hooks/auto-nudge': typeof ApiPublicHooksAutoNudgeRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRoutesByTo {
@@ -309,6 +316,7 @@ export interface FileRoutesByTo {
   '/quotes': typeof AuthenticatedQuotesIndexRoute
   '/invoices/$invoiceId/edit': typeof AuthenticatedInvoicesInvoiceIdEditRoute
   '/quotes/$quoteId/edit': typeof AuthenticatedQuotesQuoteIdEditRoute
+  '/api/public/hooks/auto-nudge': typeof ApiPublicHooksAutoNudgeRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRoutesById {
@@ -348,6 +356,7 @@ export interface FileRoutesById {
   '/_authenticated/quotes/': typeof AuthenticatedQuotesIndexRoute
   '/_authenticated/invoices/$invoiceId/edit': typeof AuthenticatedInvoicesInvoiceIdEditRoute
   '/_authenticated/quotes/$quoteId/edit': typeof AuthenticatedQuotesQuoteIdEditRoute
+  '/api/public/hooks/auto-nudge': typeof ApiPublicHooksAutoNudgeRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRouteTypes {
@@ -387,6 +396,7 @@ export interface FileRouteTypes {
     | '/quotes/'
     | '/invoices/$invoiceId/edit'
     | '/quotes/$quoteId/edit'
+    | '/api/public/hooks/auto-nudge'
     | '/api/public/payments/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -423,6 +433,7 @@ export interface FileRouteTypes {
     | '/quotes'
     | '/invoices/$invoiceId/edit'
     | '/quotes/$quoteId/edit'
+    | '/api/public/hooks/auto-nudge'
     | '/api/public/payments/webhook'
   id:
     | '__root__'
@@ -461,6 +472,7 @@ export interface FileRouteTypes {
     | '/_authenticated/quotes/'
     | '/_authenticated/invoices/$invoiceId/edit'
     | '/_authenticated/quotes/$quoteId/edit'
+    | '/api/public/hooks/auto-nudge'
     | '/api/public/payments/webhook'
   fileRoutesById: FileRoutesById
 }
@@ -481,6 +493,7 @@ export interface RootRouteChildren {
   ApiChatRoute: typeof ApiChatRoute
   BlogSlugRoute: typeof BlogSlugRoute
   BlogIndexRoute: typeof BlogIndexRoute
+  ApiPublicHooksAutoNudgeRoute: typeof ApiPublicHooksAutoNudgeRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
 }
 
@@ -724,6 +737,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicPaymentsWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/auto-nudge': {
+      id: '/api/public/hooks/auto-nudge'
+      path: '/api/public/hooks/auto-nudge'
+      fullPath: '/api/public/hooks/auto-nudge'
+      preLoaderRoute: typeof ApiPublicHooksAutoNudgeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/quotes/$quoteId/edit': {
       id: '/_authenticated/quotes/$quoteId/edit'
       path: '/edit'
@@ -840,6 +860,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiChatRoute: ApiChatRoute,
   BlogSlugRoute: BlogSlugRoute,
   BlogIndexRoute: BlogIndexRoute,
+  ApiPublicHooksAutoNudgeRoute: ApiPublicHooksAutoNudgeRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
 }
 export const routeTree = rootRouteImport
