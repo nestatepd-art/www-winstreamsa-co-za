@@ -131,6 +131,28 @@ function SettingsPage() {
         </CardContent>
       </Card>
 
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Automatic reminders</CardTitle>
+          <CardDescription>
+            When on, WinStream emails clients daily for overdue invoices (up to 3 nudges, 7 days apart) and quiet quotes (up to 2 nudges).
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <label className="flex items-center gap-3 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              className="h-4 w-4 accent-primary"
+              checked={form.auto_nudge_enabled !== false}
+              onChange={(e) => set("auto_nudge_enabled", e.target.checked)}
+            />
+            <span className="text-sm">
+              {form.auto_nudge_enabled !== false ? "Reminders are on for all your invoices and quotes" : "Reminders are paused"}
+            </span>
+          </label>
+        </CardContent>
+      </Card>
+
       <div className="flex justify-end sticky bottom-0 bg-background/80 backdrop-blur py-4 -mx-6 px-6 border-t border-border">
         <Button onClick={() => saveMut.mutate()} disabled={saveMut.isPending}>
           {saveMut.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save changes"}

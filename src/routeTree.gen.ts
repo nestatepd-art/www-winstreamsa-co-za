@@ -26,6 +26,7 @@ import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedRemindersRouteImport } from './routes/_authenticated/reminders'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedClientsRouteImport } from './routes/_authenticated/clients'
 import { Route as AuthenticatedChatRouteImport } from './routes/_authenticated/chat'
@@ -43,6 +44,7 @@ import { Route as AuthenticatedInvoicesInvoiceIdRouteImport } from './routes/_au
 import { Route as AuthenticatedChatThreadIdRouteImport } from './routes/_authenticated/chat.$threadId'
 import { Route as AuthenticatedAdminBlogRouteImport } from './routes/_authenticated/admin.blog'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
+import { Route as ApiPublicHooksAutoNudgeRouteImport } from './routes/api/public/hooks/auto-nudge'
 import { Route as AuthenticatedQuotesQuoteIdEditRouteImport } from './routes/_authenticated/quotes.$quoteId.edit'
 import { Route as AuthenticatedInvoicesInvoiceIdEditRouteImport } from './routes/_authenticated/invoices.$invoiceId.edit'
 
@@ -128,6 +130,11 @@ const ApiChatRoute = ApiChatRouteImport.update({
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedRemindersRoute = AuthenticatedRemindersRouteImport.update({
+  id: '/reminders',
+  path: '/reminders',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
@@ -225,6 +232,11 @@ const ApiPublicPaymentsWebhookRoute =
     path: '/api/public/payments/webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksAutoNudgeRoute = ApiPublicHooksAutoNudgeRouteImport.update({
+  id: '/api/public/hooks/auto-nudge',
+  path: '/api/public/hooks/auto-nudge',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedQuotesQuoteIdEditRoute =
   AuthenticatedQuotesQuoteIdEditRouteImport.update({
     id: '/edit',
@@ -255,6 +267,7 @@ export interface FileRoutesByFullPath {
   '/chat': typeof AuthenticatedChatRouteWithChildren
   '/clients': typeof AuthenticatedClientsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/reminders': typeof AuthenticatedRemindersRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/api/chat': typeof ApiChatRoute
   '/blog/$slug': typeof BlogSlugRoute
@@ -273,6 +286,7 @@ export interface FileRoutesByFullPath {
   '/quotes/': typeof AuthenticatedQuotesIndexRoute
   '/invoices/$invoiceId/edit': typeof AuthenticatedInvoicesInvoiceIdEditRoute
   '/quotes/$quoteId/edit': typeof AuthenticatedQuotesQuoteIdEditRoute
+  '/api/public/hooks/auto-nudge': typeof ApiPublicHooksAutoNudgeRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRoutesByTo {
@@ -291,6 +305,7 @@ export interface FileRoutesByTo {
   '/billing': typeof AuthenticatedBillingRoute
   '/clients': typeof AuthenticatedClientsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/reminders': typeof AuthenticatedRemindersRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/api/chat': typeof ApiChatRoute
   '/blog/$slug': typeof BlogSlugRoute
@@ -309,6 +324,7 @@ export interface FileRoutesByTo {
   '/quotes': typeof AuthenticatedQuotesIndexRoute
   '/invoices/$invoiceId/edit': typeof AuthenticatedInvoicesInvoiceIdEditRoute
   '/quotes/$quoteId/edit': typeof AuthenticatedQuotesQuoteIdEditRoute
+  '/api/public/hooks/auto-nudge': typeof ApiPublicHooksAutoNudgeRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRoutesById {
@@ -330,6 +346,7 @@ export interface FileRoutesById {
   '/_authenticated/chat': typeof AuthenticatedChatRouteWithChildren
   '/_authenticated/clients': typeof AuthenticatedClientsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/reminders': typeof AuthenticatedRemindersRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/api/chat': typeof ApiChatRoute
   '/blog/$slug': typeof BlogSlugRoute
@@ -348,6 +365,7 @@ export interface FileRoutesById {
   '/_authenticated/quotes/': typeof AuthenticatedQuotesIndexRoute
   '/_authenticated/invoices/$invoiceId/edit': typeof AuthenticatedInvoicesInvoiceIdEditRoute
   '/_authenticated/quotes/$quoteId/edit': typeof AuthenticatedQuotesQuoteIdEditRoute
+  '/api/public/hooks/auto-nudge': typeof ApiPublicHooksAutoNudgeRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRouteTypes {
@@ -369,6 +387,7 @@ export interface FileRouteTypes {
     | '/chat'
     | '/clients'
     | '/dashboard'
+    | '/reminders'
     | '/settings'
     | '/api/chat'
     | '/blog/$slug'
@@ -387,6 +406,7 @@ export interface FileRouteTypes {
     | '/quotes/'
     | '/invoices/$invoiceId/edit'
     | '/quotes/$quoteId/edit'
+    | '/api/public/hooks/auto-nudge'
     | '/api/public/payments/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -405,6 +425,7 @@ export interface FileRouteTypes {
     | '/billing'
     | '/clients'
     | '/dashboard'
+    | '/reminders'
     | '/settings'
     | '/api/chat'
     | '/blog/$slug'
@@ -423,6 +444,7 @@ export interface FileRouteTypes {
     | '/quotes'
     | '/invoices/$invoiceId/edit'
     | '/quotes/$quoteId/edit'
+    | '/api/public/hooks/auto-nudge'
     | '/api/public/payments/webhook'
   id:
     | '__root__'
@@ -443,6 +465,7 @@ export interface FileRouteTypes {
     | '/_authenticated/chat'
     | '/_authenticated/clients'
     | '/_authenticated/dashboard'
+    | '/_authenticated/reminders'
     | '/_authenticated/settings'
     | '/api/chat'
     | '/blog/$slug'
@@ -461,6 +484,7 @@ export interface FileRouteTypes {
     | '/_authenticated/quotes/'
     | '/_authenticated/invoices/$invoiceId/edit'
     | '/_authenticated/quotes/$quoteId/edit'
+    | '/api/public/hooks/auto-nudge'
     | '/api/public/payments/webhook'
   fileRoutesById: FileRoutesById
 }
@@ -481,6 +505,7 @@ export interface RootRouteChildren {
   ApiChatRoute: typeof ApiChatRoute
   BlogSlugRoute: typeof BlogSlugRoute
   BlogIndexRoute: typeof BlogIndexRoute
+  ApiPublicHooksAutoNudgeRoute: typeof ApiPublicHooksAutoNudgeRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
 }
 
@@ -605,6 +630,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/reminders': {
+      id: '/_authenticated/reminders'
+      path: '/reminders'
+      fullPath: '/reminders'
+      preLoaderRoute: typeof AuthenticatedRemindersRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -724,6 +756,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicPaymentsWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/auto-nudge': {
+      id: '/api/public/hooks/auto-nudge'
+      path: '/api/public/hooks/auto-nudge'
+      fullPath: '/api/public/hooks/auto-nudge'
+      preLoaderRoute: typeof ApiPublicHooksAutoNudgeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/quotes/$quoteId/edit': {
       id: '/_authenticated/quotes/$quoteId/edit'
       path: '/edit'
@@ -788,6 +827,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedChatRoute: typeof AuthenticatedChatRouteWithChildren
   AuthenticatedClientsRoute: typeof AuthenticatedClientsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedRemindersRoute: typeof AuthenticatedRemindersRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedAdminBlogRoute: typeof AuthenticatedAdminBlogRoute
   AuthenticatedInvoicesInvoiceIdRoute: typeof AuthenticatedInvoicesInvoiceIdRouteWithChildren
@@ -806,6 +846,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedChatRoute: AuthenticatedChatRouteWithChildren,
   AuthenticatedClientsRoute: AuthenticatedClientsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedRemindersRoute: AuthenticatedRemindersRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedAdminBlogRoute: AuthenticatedAdminBlogRoute,
   AuthenticatedInvoicesInvoiceIdRoute:
@@ -840,6 +881,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiChatRoute: ApiChatRoute,
   BlogSlugRoute: BlogSlugRoute,
   BlogIndexRoute: BlogIndexRoute,
+  ApiPublicHooksAutoNudgeRoute: ApiPublicHooksAutoNudgeRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
 }
 export const routeTree = rootRouteImport

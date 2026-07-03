@@ -105,6 +105,7 @@ export type Database = {
         Row: {
           address_line1: string | null
           address_line2: string | null
+          auto_nudge_enabled: boolean
           bank_account_holder: string | null
           bank_account_number: string | null
           bank_branch_code: string | null
@@ -133,6 +134,7 @@ export type Database = {
         Insert: {
           address_line1?: string | null
           address_line2?: string | null
+          auto_nudge_enabled?: boolean
           bank_account_holder?: string | null
           bank_account_number?: string | null
           bank_branch_code?: string | null
@@ -161,6 +163,7 @@ export type Database = {
         Update: {
           address_line1?: string | null
           address_line2?: string | null
+          auto_nudge_enabled?: boolean
           bank_account_holder?: string | null
           bank_account_number?: string | null
           bank_branch_code?: string | null
@@ -443,6 +446,7 @@ export type Database = {
       }
       invoices: {
         Row: {
+          auto_nudge_enabled: boolean
           client_id: string | null
           created_at: string
           currency: string
@@ -450,7 +454,9 @@ export type Database = {
           id: string
           invoice_number: string
           issue_date: string
+          last_nudged_at: string | null
           notes: string | null
+          nudge_count: number
           paid_at: string | null
           quote_id: string | null
           sent_at: string | null
@@ -465,6 +471,7 @@ export type Database = {
           vat_rate: number
         }
         Insert: {
+          auto_nudge_enabled?: boolean
           client_id?: string | null
           created_at?: string
           currency?: string
@@ -472,7 +479,9 @@ export type Database = {
           id?: string
           invoice_number: string
           issue_date?: string
+          last_nudged_at?: string | null
           notes?: string | null
+          nudge_count?: number
           paid_at?: string | null
           quote_id?: string | null
           sent_at?: string | null
@@ -487,6 +496,7 @@ export type Database = {
           vat_rate?: number
         }
         Update: {
+          auto_nudge_enabled?: boolean
           client_id?: string | null
           created_at?: string
           currency?: string
@@ -494,7 +504,9 @@ export type Database = {
           id?: string
           invoice_number?: string
           issue_date?: string
+          last_nudged_at?: string | null
           notes?: string | null
+          nudge_count?: number
           paid_at?: string | null
           quote_id?: string | null
           sent_at?: string | null
@@ -524,6 +536,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      nudge_log: {
+        Row: {
+          error: string | null
+          id: string
+          record_id: string
+          record_type: string
+          sent_at: string
+          sent_to: string
+          status: string
+          subject: string
+          user_id: string
+        }
+        Insert: {
+          error?: string | null
+          id?: string
+          record_id: string
+          record_type: string
+          sent_at?: string
+          sent_to: string
+          status: string
+          subject: string
+          user_id: string
+        }
+        Update: {
+          error?: string | null
+          id?: string
+          record_id?: string
+          record_type?: string
+          sent_at?: string
+          sent_to?: string
+          status?: string
+          subject?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       pending_purchases: {
         Row: {
@@ -676,6 +724,7 @@ export type Database = {
       quotes: {
         Row: {
           accepted_at: string | null
+          auto_nudge_enabled: boolean
           client_id: string | null
           created_at: string
           currency: string
@@ -683,7 +732,9 @@ export type Database = {
           id: string
           issue_date: string
           language: Database["public"]["Enums"]["app_language"]
+          last_nudged_at: string | null
           notes: string | null
+          nudge_count: number
           quote_number: string
           sent_at: string | null
           status: Database["public"]["Enums"]["quote_status"]
@@ -698,6 +749,7 @@ export type Database = {
         }
         Insert: {
           accepted_at?: string | null
+          auto_nudge_enabled?: boolean
           client_id?: string | null
           created_at?: string
           currency?: string
@@ -705,7 +757,9 @@ export type Database = {
           id?: string
           issue_date?: string
           language?: Database["public"]["Enums"]["app_language"]
+          last_nudged_at?: string | null
           notes?: string | null
+          nudge_count?: number
           quote_number: string
           sent_at?: string | null
           status?: Database["public"]["Enums"]["quote_status"]
@@ -720,6 +774,7 @@ export type Database = {
         }
         Update: {
           accepted_at?: string | null
+          auto_nudge_enabled?: boolean
           client_id?: string | null
           created_at?: string
           currency?: string
@@ -727,7 +782,9 @@ export type Database = {
           id?: string
           issue_date?: string
           language?: Database["public"]["Enums"]["app_language"]
+          last_nudged_at?: string | null
           notes?: string | null
+          nudge_count?: number
           quote_number?: string
           sent_at?: string | null
           status?: Database["public"]["Enums"]["quote_status"]

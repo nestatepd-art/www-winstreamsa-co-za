@@ -10,6 +10,7 @@ import {
   CreditCard,
   MessageSquare,
   Newspaper,
+  BellRing,
 } from "lucide-react";
 import winstreamLogo from "@/assets/winstream-logo.png.asset.json";
 import { toast } from "sonner";
@@ -36,6 +37,7 @@ const items = [
   { title: "Proposals", url: "/proposals", icon: FileSignature },
   { title: "Quotes", url: "/quotes", icon: FileText },
   { title: "Invoices", url: "/invoices", icon: Receipt },
+  { title: "Reminders", url: "/reminders", icon: BellRing },
   { title: "Billing", url: "/billing", icon: CreditCard },
   { title: "Assist", url: "/chat", icon: MessageSquare },
   { title: "Settings", url: "/settings", icon: Settings },
