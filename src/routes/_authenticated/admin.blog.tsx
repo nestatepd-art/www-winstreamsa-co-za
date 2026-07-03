@@ -189,11 +189,15 @@ function AdminBlog() {
             <textarea
               value={editing.content_md ?? ""}
               rows={16}
+              maxLength={100000}
               onChange={(e) =>
                 setEditing((s) => ({ ...s!, content_md: e.target.value }))
               }
               className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm"
             />
+            <span className="mt-1 block text-xs text-muted-foreground">
+              {(editing.content_md ?? "").length.toLocaleString()} / 100,000 characters
+            </span>
           </label>
           <label className="flex items-center gap-2 text-sm">
             <input
