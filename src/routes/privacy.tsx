@@ -14,9 +14,9 @@ export const Route = createFileRoute('/privacy')({
         property: 'og:description',
         content: 'How WinStream SA handles your personal information.',
       },
-      { property: 'og:url', content: 'https://winstreamsa.co.za/privacy' },
+      { property: 'og:url', content: 'https://www.winstreamsa.co.za/privacy' },
     ],
-    links: [{ rel: 'canonical', href: 'https://winstreamsa.co.za/privacy' }],
+    links: [{ rel: 'canonical', href: 'https://www.winstreamsa.co.za/privacy' }],
   }),
   component: PrivacyPage,
 })

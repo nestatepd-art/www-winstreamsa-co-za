@@ -18,9 +18,9 @@ export const Route = createFileRoute("/contact")({
         property: "og:description",
         content: "Reach our team — based in South Africa, replies within 1 business day.",
       },
-      { property: "og:url", content: "https://winstreamsa.co.za/contact" },
+      { property: "og:url", content: "https://www.winstreamsa.co.za/contact" },
     ],
-    links: [{ rel: "canonical", href: "https://winstreamsa.co.za/contact" }],
+    links: [{ rel: "canonical", href: "https://www.winstreamsa.co.za/contact" }],
     scripts: [
       {
         type: "application/ld+json",
@@ -28,11 +28,11 @@ export const Route = createFileRoute("/contact")({
           "@context": "https://schema.org",
           "@type": "ContactPage",
           name: "Contact WinStream SA",
-          url: "https://winstreamsa.co.za/contact",
+          url: "https://www.winstreamsa.co.za/contact",
           mainEntity: {
             "@type": "Organization",
             name: "WinStream SA",
-            url: "https://winstreamsa.co.za",
+            url: "https://www.winstreamsa.co.za",
             email: "info@winstreamsa.co.za",
             areaServed: "ZA",
             contactPoint: {

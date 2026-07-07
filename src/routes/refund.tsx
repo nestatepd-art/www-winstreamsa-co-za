@@ -14,9 +14,9 @@ export const Route = createFileRoute('/refund')({
         property: 'og:description',
         content: '30-day money-back guarantee on WinStream SA, processed through Paddle.',
       },
-      { property: 'og:url', content: 'https://winstreamsa.co.za/refund' },
+      { property: 'og:url', content: 'https://www.winstreamsa.co.za/refund' },
     ],
-    links: [{ rel: 'canonical', href: 'https://winstreamsa.co.za/refund' }],
+    links: [{ rel: 'canonical', href: 'https://www.winstreamsa.co.za/refund' }],
   }),
   component: RefundPage,
 })

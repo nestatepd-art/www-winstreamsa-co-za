@@ -21,9 +21,9 @@ export const Route = createFileRoute("/pricing")({
         property: "og:description",
         content: "Transparent ZAR pricing for SA small businesses. Start free.",
       },
-      { property: "og:url", content: "https://winstreamsa.co.za/pricing" },
+      { property: "og:url", content: "https://www.winstreamsa.co.za/pricing" },
     ],
-    links: [{ rel: "canonical", href: "https://winstreamsa.co.za/pricing" }],
+    links: [{ rel: "canonical", href: "https://www.winstreamsa.co.za/pricing" }],
     scripts: [
       {
         type: "application/ld+json",

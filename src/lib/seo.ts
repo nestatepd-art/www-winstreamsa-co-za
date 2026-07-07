@@ -1,6 +1,6 @@
 import ogAsset from "@/assets/og-winstream-v2.jpg.asset.json";
 
-export const SITE_URL = "https://winstreamsa.co.za";
+export const SITE_URL = "https://www.winstreamsa.co.za";
 
 /**
  * Default branded OG image used as fallback across the site.
