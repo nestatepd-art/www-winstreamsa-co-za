@@ -15,9 +15,9 @@ export const Route = createFileRoute('/trust')({
         content:
           'Overview of the security, privacy, and operational controls used to protect customer data on Winstream SA.',
       },
-      { property: 'og:url', content: 'https://winstreamsa.co.za/trust' },
+      { property: 'og:url', content: 'https://www.winstreamsa.co.za/trust' },
     ],
-    links: [{ rel: 'canonical', href: 'https://winstreamsa.co.za/trust' }],
+    links: [{ rel: 'canonical', href: 'https://www.winstreamsa.co.za/trust' }],
   }),
   component: TrustPage,
 })

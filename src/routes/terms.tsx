@@ -14,9 +14,9 @@ export const Route = createFileRoute('/terms')({
         property: 'og:description',
         content: 'The terms that govern your use of WinStream SA.',
       },
-      { property: 'og:url', content: 'https://winstreamsa.co.za/terms' },
+      { property: 'og:url', content: 'https://www.winstreamsa.co.za/terms' },
     ],
-    links: [{ rel: 'canonical', href: 'https://winstreamsa.co.za/terms' }],
+    links: [{ rel: 'canonical', href: 'https://www.winstreamsa.co.za/terms' }],
   }),
   component: TermsPage,
 })

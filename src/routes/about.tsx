@@ -15,9 +15,9 @@ export const Route = createFileRoute("/about")({
         property: "og:description",
         content: "Built in South Africa for SA small businesses — our story and mission.",
       },
-      { property: "og:url", content: "https://winstreamsa.co.za/about" },
+      { property: "og:url", content: "https://www.winstreamsa.co.za/about" },
     ],
-    links: [{ rel: "canonical", href: "https://winstreamsa.co.za/about" }],
+    links: [{ rel: "canonical", href: "https://www.winstreamsa.co.za/about" }],
     scripts: [
       {
         type: "application/ld+json",
@@ -25,11 +25,11 @@ export const Route = createFileRoute("/about")({
           "@context": "https://schema.org",
           "@type": "AboutPage",
           name: "About WinStream SA",
-          url: "https://winstreamsa.co.za/about",
+          url: "https://www.winstreamsa.co.za/about",
           mainEntity: {
             "@type": "Organization",
             name: "WinStream SA",
-            url: "https://winstreamsa.co.za",
+            url: "https://www.winstreamsa.co.za",
             areaServed: "ZA",
           },
         }),

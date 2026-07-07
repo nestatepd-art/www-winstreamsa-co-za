@@ -154,7 +154,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
             priceSpecification: "per month",
           },
           areaServed: "ZA",
-          url: "https://winstreamsa.co.za",
+          url: "https://www.winstreamsa.co.za",
         }),
       },
     ],

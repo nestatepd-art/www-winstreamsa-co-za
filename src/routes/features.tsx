@@ -23,9 +23,9 @@ export const Route = createFileRoute("/features")({
         property: "og:description",
         content: "Everything an SA small business needs to quote, follow up, and get paid.",
       },
-      { property: "og:url", content: "https://winstreamsa.co.za/features" },
+      { property: "og:url", content: "https://www.winstreamsa.co.za/features" },
     ],
-    links: [{ rel: "canonical", href: "https://winstreamsa.co.za/features" }],
+    links: [{ rel: "canonical", href: "https://www.winstreamsa.co.za/features" }],
     scripts: [
       {
         type: "application/ld+json",

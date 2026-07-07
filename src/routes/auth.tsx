@@ -20,9 +20,9 @@ export const Route = createFileRoute("/auth")({
       { name: "robots", content: "noindex, follow" },
       { property: "og:title", content: "Sign in — WinStream SA" },
       { property: "og:description", content: "Access your WinStream SA workspace." },
-      { property: "og:url", content: "https://winstreamsa.co.za/auth" },
+      { property: "og:url", content: "https://www.winstreamsa.co.za/auth" },
     ],
-    links: [{ rel: "canonical", href: "https://winstreamsa.co.za/auth" }],
+    links: [{ rel: "canonical", href: "https://www.winstreamsa.co.za/auth" }],
   }),
   component: AuthPage,
 });

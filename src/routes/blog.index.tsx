@@ -24,7 +24,7 @@ export const Route = createFileRoute("/blog/")({
         property: "og:description",
         content: "Automation, sales, and ops tips for South African small businesses.",
       },
-      { property: "og:url", content: "https://winstreamsa.co.za/blog" },
+      { property: "og:url", content: "https://www.winstreamsa.co.za/blog" },
       { property: "og:image", content: DEFAULT_OG_IMAGE },
       { property: "og:image:width", content: String(DEFAULT_OG_IMAGE_WIDTH) },
       { property: "og:image:height", content: String(DEFAULT_OG_IMAGE_HEIGHT) },
@@ -32,7 +32,7 @@ export const Route = createFileRoute("/blog/")({
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:image", content: DEFAULT_OG_IMAGE },
     ],
-    links: [{ rel: "canonical", href: "https://winstreamsa.co.za/blog" }],
+    links: [{ rel: "canonical", href: "https://www.winstreamsa.co.za/blog" }],
   }),
   loader: async ({ context }) =>
     context.queryClient.ensureQueryData({

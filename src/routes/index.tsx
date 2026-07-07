@@ -27,7 +27,7 @@ export const Route = createFileRoute("/")({
         content:
           "Automate quotes, follow-ups & writing in 10 minutes. Built for South African SMEs.",
       },
-      { property: "og:url", content: "https://winstreamsa.co.za/" },
+      { property: "og:url", content: "https://www.winstreamsa.co.za/" },
       { property: "og:image", content: DEFAULT_OG_IMAGE },
       { property: "og:image:width", content: String(DEFAULT_OG_IMAGE_WIDTH) },
       { property: "og:image:height", content: String(DEFAULT_OG_IMAGE_HEIGHT) },
@@ -35,7 +35,7 @@ export const Route = createFileRoute("/")({
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:image", content: DEFAULT_OG_IMAGE },
     ],
-    links: [{ rel: "canonical", href: "https://winstreamsa.co.za/" }],
+    links: [{ rel: "canonical", href: "https://www.winstreamsa.co.za/" }],
   }),
   beforeLoad: async () => {
     if (typeof window === "undefined") return;
