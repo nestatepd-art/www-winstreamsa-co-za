@@ -16,32 +16,32 @@ async function blobToBase64(blob: Blob): Promise<string> {
   return btoa(bin);
 }
 
-/**
- * Turns a jsPDF blob into a data: URL for <iframe> preview.
- * Data URLs render reliably across browsers (Edge blocks blob: PDFs in iframes).
- */
+/** Builds the PDF once and exposes Base64 for server-side email attachments. */
 export function usePdfPreviewUrl({ ready, build }: Args) {
-  const [url, setUrl] = useState<string | null>(null);
   const [base64, setBase64] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!ready) return;
+    if (!ready) {
+      setBase64(null);
+      return;
+    }
     let cancelled = false;
     (async () => {
       const b = build();
       const b64 = await blobToBase64(b);
       if (cancelled) return;
       setBase64(b64);
-      setUrl(`data:application/pdf;base64,${b64}`);
     })();
     return () => { cancelled = true; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ready]);
+  }, [ready, build]);
 
   const getBase64 = useMemo(
-    () => async () => base64,
-    [base64],
+    () => async () => {
+      if (base64 || !ready) return base64;
+      return blobToBase64(build());
+    },
+    [base64, build, ready],
   );
 
-  return { url, getBase64 };
+  return { getBase64 };
 }
