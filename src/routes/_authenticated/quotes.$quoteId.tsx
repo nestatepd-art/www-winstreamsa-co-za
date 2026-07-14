@@ -1,14 +1,20 @@
 import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Printer, Trash2, Receipt, Pencil, Mail } from "lucide-react";
+import { ArrowLeft, Printer, Trash2, Receipt, Pencil, Send, Download, Loader2 } from "lucide-react";
 import { formatZAR, formatDate } from "@/lib/format";
-import { extractEmailAddress, openEmailDraft } from "@/lib/email-compose";
+import { extractEmailAddress } from "@/lib/email-compose";
 import { QuoteStatusBadge } from "./dashboard";
 import { toast } from "sonner";
+import { FollowupsPanel } from "@/components/FollowupsPanel";
+import { usePdfPreviewUrl } from "@/hooks/use-pdf-preview";
+import { sendRecordNow } from "@/lib/followups.functions";
+import { generateDocumentPdf, downloadBlob } from "@/lib/pdf-export";
 
 export const Route = createFileRoute("/_authenticated/quotes/$quoteId")({
   component: QuoteViewPage,
