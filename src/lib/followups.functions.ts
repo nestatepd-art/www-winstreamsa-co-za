@@ -18,7 +18,7 @@ export const listFollowups = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { recordType: RecordType; recordId: string }) => d)
   .handler(async ({ data, context }) => {
-    const { data: rows, error } = await context.supabase
+    const { data: rows, error } = await ((context.supabase as any) as any)
       .from(tableFor(data.recordType))
       .select("*")
       .eq(parentFkFor(data.recordType), data.recordId)
@@ -42,7 +42,7 @@ export const updateFollowup = createServerFn({ method: "POST" })
     if (data.subject !== undefined) patch.subject = data.subject;
     if (data.body !== undefined) patch.body = data.body;
     if (data.scheduled_for !== undefined) patch.scheduled_for = data.scheduled_for;
-    const { error } = await context.supabase
+    const { error } = await ((context.supabase as any) as any)
       .from(tableFor(data.recordType))
       .update(patch)
       .eq("id", data.id);
@@ -55,7 +55,7 @@ export const skipFollowup = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { recordType: RecordType; id: string }) => d)
   .handler(async ({ data, context }) => {
-    const { error } = await context.supabase
+    const { error } = await ((context.supabase as any) as any)
       .from(tableFor(data.recordType))
       .update({ status: "skipped" })
       .eq("id", data.id);
@@ -68,7 +68,7 @@ export const setAutoNudge = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { recordType: RecordType; recordId: string; enabled: boolean }) => d)
   .handler(async ({ data, context }) => {
-    const { error } = await context.supabase
+    const { error } = await ((context.supabase as any) as any)
       .from(parentTableFor(data.recordType))
       .update({ auto_nudge_enabled: data.enabled })
       .eq("id", data.recordId);
@@ -89,7 +89,7 @@ export const sendFollowupNow = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { sendViaResend, brandedEmailHtml } = await import("./resend-send.server");
 
-    const { data: fu, error: fuErr } = await context.supabase
+    const { data: fu, error: fuErr } = await ((context.supabase as any) as any)
       .from(tableFor(data.recordType))
       .select("*")
       .eq("id", data.id)
@@ -98,7 +98,7 @@ export const sendFollowupNow = createServerFn({ method: "POST" })
     if (fu.status !== "scheduled") throw new Error(`Follow-up already ${fu.status}`);
 
     const parentTable = parentTableFor(data.recordType);
-    const { data: parent, error: pErr } = await context.supabase
+    const { data: parent, error: pErr } = await ((context.supabase as any) as any)
       .from(parentTable)
       .select("*, clients(name, contact_person, email)")
       .eq("id", (fu as any)[parentFkFor(data.recordType)])
@@ -109,7 +109,7 @@ export const sendFollowupNow = createServerFn({ method: "POST" })
     const toEmail: string | undefined = client?.email;
     if (!toEmail) throw new Error("Client has no email on file");
 
-    const { data: profile } = await context.supabase
+    const { data: profile } = await ((context.supabase as any) as any)
       .from("business_profiles")
       .select("business_name, email")
       .maybeSingle();
@@ -135,12 +135,12 @@ export const sendFollowupNow = createServerFn({ method: "POST" })
           : undefined,
       });
 
-      await context.supabase
+      await ((context.supabase as any) as any)
         .from(tableFor(data.recordType))
         .update({ status: "sent", sent_at: new Date().toISOString(), error: null })
         .eq("id", data.id);
 
-      await context.supabase.from("nudge_log").insert({
+      await (context.supabase as any).from("nudge_log").insert({
         user_id: context.userId,
         record_type: data.recordType,
         record_id: (fu as any)[parentFkFor(data.recordType)],
@@ -151,11 +151,11 @@ export const sendFollowupNow = createServerFn({ method: "POST" })
       return { ok: true };
     } catch (e: any) {
       const msg = String(e?.message ?? e).slice(0, 500);
-      await context.supabase
+      await ((context.supabase as any) as any)
         .from(tableFor(data.recordType))
         .update({ status: "failed", error: msg })
         .eq("id", data.id);
-      await context.supabase.from("nudge_log").insert({
+      await (context.supabase as any).from("nudge_log").insert({
         user_id: context.userId,
         record_type: data.recordType,
         record_id: (fu as any)[parentFkFor(data.recordType)],
@@ -182,7 +182,7 @@ export const sendRecordNow = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { sendViaResend, brandedEmailHtml } = await import("./resend-send.server");
     const parentTable = parentTableFor(data.recordType);
-    const { data: parent, error: pErr } = await context.supabase
+    const { data: parent, error: pErr } = await ((context.supabase as any) as any)
       .from(parentTable)
       .select("*, clients(name, contact_person, email)")
       .eq("id", data.recordId)
@@ -193,7 +193,7 @@ export const sendRecordNow = createServerFn({ method: "POST" })
     const toEmail: string | undefined = client?.email;
     if (!toEmail) throw new Error("Client has no email on file");
 
-    const { data: profile } = await context.supabase
+    const { data: profile } = await ((context.supabase as any) as any)
       .from("business_profiles")
       .select("business_name, email")
       .maybeSingle();
@@ -220,9 +220,9 @@ export const sendRecordNow = createServerFn({ method: "POST" })
     // Mark sent status on parent
     const patch: Record<string, unknown> = { sent_at: new Date().toISOString() };
     if ((parent as any).status === "draft") patch.status = "sent";
-    await context.supabase.from(parentTable).update(patch).eq("id", data.recordId);
+    await (context.supabase as any).from(parentTable).update(patch).eq("id", data.recordId);
 
-    await context.supabase.from("nudge_log").insert({
+    await (context.supabase as any).from("nudge_log").insert({
       user_id: context.userId,
       record_type: data.recordType,
       record_id: data.recordId,
