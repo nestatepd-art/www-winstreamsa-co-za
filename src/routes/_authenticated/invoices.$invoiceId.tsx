@@ -1,14 +1,20 @@
 import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Printer, Trash2, Pencil, Mail } from "lucide-react";
+import { ArrowLeft, Printer, Trash2, Pencil, Send, Download, Loader2 } from "lucide-react";
 import { formatZAR, formatDate } from "@/lib/format";
-import { extractEmailAddress, openEmailDraft } from "@/lib/email-compose";
+import { extractEmailAddress } from "@/lib/email-compose";
 import { InvoiceStatusBadge } from "./invoices.index";
 import { toast } from "sonner";
+import { FollowupsPanel } from "@/components/FollowupsPanel";
+import { usePdfPreviewUrl } from "@/hooks/use-pdf-preview";
+import { sendRecordNow } from "@/lib/followups.functions";
+import { generateDocumentPdf, downloadBlob } from "@/lib/pdf-export";
 
 export const Route = createFileRoute("/_authenticated/invoices/$invoiceId")({
   component: InvoiceViewPage,
@@ -65,60 +71,65 @@ function InvoiceViewPage() {
   if (!data?.invoice) return <div className="p-10 text-center">Invoice not found.</div>;
   const { invoice, items, profile } = data;
   const client = invoice.clients as any;
-  const nudgeEmail = extractEmailAddress(client?.email);
+  const clientEmail = extractEmailAddress(client?.email);
+  const [autoNudge, setAutoNudge] = useState<boolean>(invoice.auto_nudge_enabled);
+  const [sending, setSending] = useState(false);
+  const sendFn = useServerFn(sendRecordNow);
 
-  const sendNudgeEmail = async () => {
-    if (!nudgeEmail) {
-      toast.error("This client has no email address on file.");
-      return;
+  const buildPdf = useMemo(() => () => generateDocumentPdf({
+    kind: "Invoice",
+    number: invoice.invoice_number,
+    title: invoice.title,
+    status: invoice.status,
+    issue_date: invoice.issue_date,
+    due_date: invoice.due_date,
+    subtotal: invoice.subtotal,
+    vat_rate: invoice.vat_rate,
+    vat_amount: invoice.vat_amount,
+    total: invoice.total,
+    notes: invoice.notes,
+    terms: invoice.terms,
+    items: items as any,
+    client,
+    profile,
+  }), [invoice, items, profile, client]);
+
+  const { url: pdfUrl, getBase64 } = usePdfPreviewUrl({ ready: true, build: buildPdf });
+  const filename = `Invoice-${invoice.invoice_number}.pdf`;
+
+  const handleSend = async () => {
+    if (!clientEmail) { toast.error("Client has no email on file."); return; }
+    setSending(true);
+    try {
+      const base64 = await getBase64();
+      const due = invoice.due_date ? formatDate(invoice.due_date) : "the agreed date";
+      const biz = profile?.business_name || "our team";
+      const subject = `Invoice ${invoice.invoice_number} — ${formatZAR(invoice.total)}`;
+      const bodyText = [
+        `Please find attached invoice ${invoice.invoice_number} (${invoice.title}) for ${formatZAR(invoice.total)}, due on ${due}.`,
+        "",
+        "Let us know if you have any questions, or please arrange settlement at your earliest convenience.",
+        "",
+        "Thank you,",
+        biz,
+      ].join("\n\n");
+      const res = await sendFn({
+        data: {
+          recordType: "invoice",
+          recordId: invoiceId,
+          subject,
+          bodyText,
+          pdfBase64: base64 ?? undefined,
+          pdfFilename: base64 ? filename : undefined,
+        },
+      });
+      toast.success(`Sent to ${res.to}`);
+      qc.invalidateQueries({ queryKey: ["invoice", invoiceId] });
+    } catch (e: any) {
+      toast.error(e?.message || "Send failed");
+    } finally {
+      setSending(false);
     }
-    const due = invoice.due_date ? formatDate(invoice.due_date) : "the agreed date";
-    const biz = profile?.business_name || "our team";
-    const subject = `Invoice ${invoice.invoice_number} - ${formatZAR(invoice.total)}`;
-    const body = [
-      `Hi ${client?.contact_person || client?.name || "there"},`,
-      "",
-      `Please find attached invoice ${invoice.invoice_number} (${invoice.title}) for ${formatZAR(invoice.total)}, due on ${due}.`,
-      "",
-      "Let us know if you have any questions, or please arrange settlement at your earliest convenience.",
-      "",
-      "Thank you,",
-      biz,
-    ].join("\n");
-
-    const { generateDocumentPdf } = await import("@/lib/pdf-export");
-    const blob = generateDocumentPdf({
-      kind: "Invoice",
-      number: invoice.invoice_number,
-      title: invoice.title,
-      status: invoice.status,
-      issue_date: invoice.issue_date,
-      due_date: invoice.due_date,
-      subtotal: invoice.subtotal,
-      vat_rate: invoice.vat_rate,
-      vat_amount: invoice.vat_amount,
-      total: invoice.total,
-      notes: invoice.notes,
-      terms: invoice.terms,
-      items: items as any,
-      client,
-      profile,
-    });
-    const filename = `Invoice-${invoice.invoice_number}.pdf`;
-
-    const result = await openEmailDraft({
-      to: nudgeEmail,
-      subject,
-      body,
-      attachment: { blob, filename },
-    });
-    if (!result) {
-      toast.error("Email draft could not be opened. Please check your default mail app.");
-      return;
-    }
-    if (result === "downloaded") toast.success(`PDF downloaded (${filename}). Drag it into the open email draft to attach.`);
-    else toast.success("Email draft opened.");
-    if (invoice.status === "draft") statusMut.mutate("sent");
   };
 
   return (
@@ -127,7 +138,7 @@ function InvoiceViewPage() {
         <Button variant="ghost" size="sm" asChild className="-ml-2">
           <Link to="/invoices"><ArrowLeft className="h-4 w-4 mr-1" /> Back</Link>
         </Button>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <Select value={invoice.status} onValueChange={(v) => statusMut.mutate(v)}>
             <SelectTrigger className="w-36"><SelectValue /></SelectTrigger>
             <SelectContent>
@@ -139,22 +150,27 @@ function InvoiceViewPage() {
               <SelectItem value="cancelled">Cancelled</SelectItem>
             </SelectContent>
           </Select>
-          <Button variant="default" size="sm" onClick={sendNudgeEmail} disabled={!nudgeEmail}>
-            <Mail className="h-4 w-4 mr-1" /> Email / Resend
+          <Button size="sm" onClick={handleSend} disabled={!clientEmail || sending} title={!clientEmail ? "Client has no email on file" : undefined}>
+            {sending ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Send className="h-4 w-4 mr-1" />}
+            Send to client
           </Button>
           <Button variant="outline" size="sm" asChild>
             <Link to="/invoices/$invoiceId/edit" params={{ invoiceId }}>
               <Pencil className="h-4 w-4 mr-1" /> Edit
             </Link>
           </Button>
+          <Button variant="outline" size="sm" onClick={() => downloadBlob(buildPdf(), filename)}>
+            <Download className="h-4 w-4 mr-1" /> PDF
+          </Button>
           <Button variant="outline" size="sm" onClick={() => window.print()}>
-            <Printer className="h-4 w-4 mr-1" /> Print / PDF
+            <Printer className="h-4 w-4 mr-1" /> Print
           </Button>
           <Button variant="ghost" size="icon" onClick={() => confirm("Delete this invoice?") && deleteMut.mutate()}>
             <Trash2 className="h-4 w-4 text-muted-foreground" />
           </Button>
         </div>
       </div>
+
 
       <Card className="print:border-0 print:shadow-none">
         <CardHeader className="border-b border-border">
@@ -239,6 +255,29 @@ function InvoiceViewPage() {
         </CardContent>
       </Card>
 
+      <Card className="print:hidden">
+        <CardHeader className="pb-2"><div className="font-medium">PDF preview</div></CardHeader>
+        <CardContent>
+          {pdfUrl ? (
+            <iframe src={pdfUrl} className="w-full h-[720px] rounded-md border border-border bg-white" title="Invoice PDF preview" />
+          ) : (
+            <div className="text-sm text-muted-foreground">Generating preview…</div>
+          )}
+        </CardContent>
+      </Card>
+
+      <div className="print:hidden">
+        <FollowupsPanel
+          recordType="invoice"
+          recordId={invoiceId}
+          autoNudgeEnabled={autoNudge}
+          onAutoNudgeChange={setAutoNudge}
+          getPdfBase64={async () => {
+            const base64 = await getBase64();
+            return base64 ? { base64, filename } : null;
+          }}
+        />
+      </div>
     </div>
   );
 }

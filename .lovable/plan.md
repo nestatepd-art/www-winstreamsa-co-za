@@ -1,60 +1,87 @@
-# Scheduled Auto-Nudge System
 
-Make the blog's "auto follow-ups on quiet quotes/invoices" claim real. Email-only for now (WhatsApp Cloud API needs Meta Business verification — separate track).
+# Quote & Invoice: Preview + Editable Follow-ups + Server-side Send
 
-## What gets built
+Bringing the screenshot's UX to WinStream. Ships for both quotes and invoices.
 
-### 1. Database (migration)
+## 1. Database (one migration)
 
-- Add columns to `invoices` and `quotes`:
-  - `last_nudged_at timestamptz`
-  - `nudge_count int default 0`
-  - `auto_nudge_enabled boolean default true`
-- New table `nudge_log` (id, record_type, record_id, user_id, sent_to, subject, sent_at, status, error) with RLS + GRANTs so users see their own nudge history.
-- Small helper view or SQL used by the cron endpoint to find due candidates.
+Two new tables (identical shape, one per record type — keeps FKs clean):
 
-### 2. Nudge rules (per record)
+- `quote_followups` — id, quote_id (FK → quotes, ON DELETE CASCADE), user_id, sequence (1|2|3), scheduled_for (timestamptz), subject, body, status (`scheduled` | `sent` | `skipped` | `failed`), sent_at, error, created_at, updated_at
+- `invoice_followups` — id, invoice_id (FK → invoices, ON DELETE CASCADE), user_id, sequence (1|2|3), scheduled_for, subject, body, status, sent_at, error, created_at, updated_at
 
-- **Invoices**: status in (`sent`, `viewed`, `overdue`) AND `due_date` passed by ≥1 day AND (`last_nudged_at` null OR ≥ 7 days ago) AND `nudge_count < 3`.
-- **Quotes**: status in (`sent`, `viewed`) AND `created_at` ≥ 5 days ago AND (`last_nudged_at` null OR ≥ 7 days ago) AND `nudge_count < 2`.
-- Skip if `auto_nudge_enabled = false` or client has no email.
-- On send: mark invoice `overdue` if past due.
+Both:
+- RLS: owner (`user_id = auth.uid()`) full access; `service_role` full.
+- GRANTs to `authenticated` + `service_role`.
+- Unique index on `(record_id, sequence)`.
 
-### 3. Public cron endpoint
+Auto-seed 3 follow-ups whenever a quote/invoice is created (trigger):
+- **Quote**: day 3, 7, 14 after `created_at`. Default subject/body reference the quote number, business name, total.
+- **Invoice**: day 3, 10, 21 after `due_date` (fallback `created_at + 30`). Default templates emphasise "friendly reminder / past due".
 
-`src/routes/api/public/hooks/auto-nudge.ts` (POST):
-- Verify `apikey` header = Supabase anon key.
-- Use `supabaseAdmin` to select due invoices/quotes joined with clients + business_profiles.
-- For each, call Resend via the connector gateway to send a branded reminder email (from the business's name, reply-to their email).
-- Update `last_nudged_at`, `nudge_count`, insert `nudge_log` row.
-- Return JSON summary.
+Trigger uses the business profile's `business_name` for the from-label in the seeded body.
 
-### 4. Scheduling
+## 2. Server functions (`src/lib/followups.functions.ts`)
 
-- `pg_cron` job running daily at 08:00 SAST (06:00 UTC) hitting the endpoint.
-- Enable `pg_cron` + `pg_net` if not already.
+All use `requireSupabaseAuth`; RLS scopes to the caller.
 
-### 5. UI
+- `listFollowups({ recordType, recordId })` → 3 rows
+- `updateFollowup({ recordType, id, subject, body, scheduled_for })`
+- `skipFollowup({ recordType, id })` → status='skipped'
+- `sendFollowupNow({ recordType, id })` → sends via Resend (server-side), sets status='sent', writes `nudge_log` row for the Reminders page.
+- `sendRecordNow({ recordType, id, subject, body })` → for the top "Send now" button (the initial send, not a follow-up). PDF is generated **client-side** and passed as base64 attachment.
 
-- Settings page: master "Send automatic reminders" toggle (writes to `business_profiles.auto_nudge_enabled` — add column).
-- Invoice/Quote detail: small "Auto-nudge: On/Off" toggle + "Last nudged: 3 days ago (2 sent)" line.
-- New "Reminders" page under sidebar showing `nudge_log` history (last 50).
+Resend send helper is extracted from `auto-nudge.ts` into `src/lib/resend-send.server.ts` and reused. Supports attachments (`attachments: [{ filename, content: base64 }]`).
 
-### 6. Email template
+## 3. Update cron endpoint
 
-Simple inline-styled HTML: business name header, "Friendly reminder about {invoice/quote} #X for {amount}", due date, PDF link placeholder (attachments still not supported in cron path — link to hosted view later), signature.
+`/api/public/hooks/auto-nudge` swaps its ad-hoc "which invoices are overdue" logic for:
+- Select `*_followups` where `status='scheduled'` AND `scheduled_for <= now()` AND parent record's `auto_nudge_enabled = true`.
+- Send via the shared Resend helper.
+- Mark row `sent` / `failed`; still writes `nudge_log`.
+- Keeps the 200/run cap.
 
-## Technical notes
+Old `nudge_count` / `last_nudged_at` columns stay for backward compatibility but are no longer the source of truth.
 
-- Resend connector already available (`RESEND_API_KEY` + `LOVABLE_API_KEY`).
-- Uses `from: "WinStream Reminders <onboarding@resend.dev>"` until user configures a verified domain; `reply_to` set to business owner's email so replies go to them.
-- No per-email delivery events yet — `nudge_log.status` = `sent` / `failed` from Resend response.
-- Rate-limit protection: endpoint caps at 200 sends per run.
+## 4. UI
 
-## Out of scope (call out explicitly)
+### Quote detail (`src/routes/_authenticated/quotes.$quoteId.tsx`) and Invoice detail
 
-- WhatsApp sends (needs Meta verification + Cloud API — separate feature).
-- Inbound "customer requests quote via WhatsApp → AI drafts it" (flagship blog claim, next milestone).
-- Custom nudge cadence per user (v2).
+Add three new panels below existing content:
 
-Confirm and I'll build it.
+**PDF preview card**
+- Client-side generates PDF blob via existing `generateDocumentPdf`
+- Renders in an `<iframe src={objectURL}>` (matching screenshot). "PDF" download button remains.
+
+**Automatic follow-ups card (right column)**
+- Toggle switch bound to record's `auto_nudge_enabled`. Same field already exists.
+
+**Follow-up messages section**
+- Renders 3 cards (Follow-up 1/2/3) each with:
+  - Header: "day N" + "Scheduled for {date}" + status badge (Scheduled / Sent / Skipped / Failed)
+  - Editable Subject + Body textarea (auto-save on blur via `updateFollowup`)
+  - Buttons: **Edit** (focus body), **Skip**, **Send now** (calls `sendFollowupNow`)
+  - Sent/skipped rows show timestamp and disable inputs.
+
+### "Send" button on quote/invoice header
+- Replaces current mailto flow with `sendRecordNow`. Shows toast "Sent to client@example.com".
+- Client email required — button disabled + tooltip when missing.
+
+### Reminders page
+- No schema change; already reads `nudge_log`. Will now show both scheduled-cron sends and manual "Send now" sends.
+
+## 5. Out of scope (deliberate)
+
+- WhatsApp send (needs Meta Cloud API verification — separate track).
+- Multi-recipient / CC / BCC (single client email only, matching current data model).
+- Rich-text body editor (plain textarea → wrapped in branded HTML on send).
+- Retroactive backfill of follow-ups for existing quotes/invoices — trigger fires on insert only; existing records get a one-off backfill in the migration.
+
+## 6. Technical notes
+
+- PDF attachment size: base64 payload passes through server fn → Resend. jsPDF quotes are ~40-80 KB, well within Resend's 40 MB limit.
+- Server-side sender stays `WinStream Reminders <onboarding@resend.dev>` with `reply_to` = business owner. Custom sending domains remain a future upgrade (needs per-tenant Resend domain verification).
+- All send events (initial + follow-ups) log to `nudge_log` so the Reminders history stays authoritative.
+- The client-side send helper (`src/lib/email-compose.ts` mailto path) stays available as a fallback but is no longer wired to the Send button.
+
+Reply "go" and I'll ship it.

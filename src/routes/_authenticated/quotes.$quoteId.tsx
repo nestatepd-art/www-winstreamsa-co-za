@@ -1,14 +1,20 @@
 import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Printer, Trash2, Receipt, Pencil, Mail } from "lucide-react";
+import { ArrowLeft, Printer, Trash2, Receipt, Pencil, Send, Download, Loader2 } from "lucide-react";
 import { formatZAR, formatDate } from "@/lib/format";
-import { extractEmailAddress, openEmailDraft } from "@/lib/email-compose";
+import { extractEmailAddress } from "@/lib/email-compose";
 import { QuoteStatusBadge } from "./dashboard";
 import { toast } from "sonner";
+import { FollowupsPanel } from "@/components/FollowupsPanel";
+import { usePdfPreviewUrl } from "@/hooks/use-pdf-preview";
+import { sendRecordNow } from "@/lib/followups.functions";
+import { generateDocumentPdf, downloadBlob } from "@/lib/pdf-export";
 
 export const Route = createFileRoute("/_authenticated/quotes/$quoteId")({
   component: QuoteViewPage,
@@ -65,6 +71,65 @@ function QuoteViewPage() {
   if (!data?.quote) return <div className="p-10 text-center">Quote not found.</div>;
 
   const { quote, items, profile } = data;
+  const clientEmail = extractEmailAddress(quote.clients?.email);
+  const [autoNudge, setAutoNudge] = useState<boolean>(quote.auto_nudge_enabled);
+  const [sending, setSending] = useState(false);
+  const sendFn = useServerFn(sendRecordNow);
+
+  const buildPdf = useMemo(() => () => generateDocumentPdf({
+    kind: "Quote",
+    number: quote.quote_number,
+    title: quote.title,
+    status: quote.status,
+    issue_date: quote.issue_date,
+    expiry_date: quote.expiry_date,
+    subtotal: quote.subtotal,
+    vat_rate: quote.vat_rate,
+    vat_amount: quote.vat_amount,
+    total: quote.total,
+    notes: quote.notes,
+    terms: quote.terms,
+    items: items as any,
+    client: quote.clients as any,
+    profile,
+  }), [quote, items, profile]);
+
+  const { url: pdfUrl, getBase64 } = usePdfPreviewUrl({ ready: true, build: buildPdf });
+  const filename = `Quote-${quote.quote_number}.pdf`;
+
+  const handleSend = async () => {
+    if (!clientEmail) { toast.error("Client has no email on file."); return; }
+    setSending(true);
+    try {
+      const base64 = await getBase64();
+      const subject = `${quote.title || "Quotation"} ${quote.quote_number} — ${formatZAR(quote.total)}`;
+      const bodyText = [
+        `Please find attached quotation ${quote.quote_number} for ${formatZAR(quote.total)} incl. VAT${quote.expiry_date ? `, valid until ${formatDate(quote.expiry_date)}` : ""}.`,
+        "",
+        quote.notes || "Let us know if you'd like to proceed or need any adjustments.",
+        "",
+        "Thanks,",
+        profile?.business_name || "",
+      ].filter(Boolean).join("\n\n");
+      const res = await sendFn({
+        data: {
+          recordType: "quote",
+          recordId: quoteId,
+          subject,
+          bodyText,
+          pdfBase64: base64 ?? undefined,
+          pdfFilename: base64 ? filename : undefined,
+        },
+      });
+      toast.success(`Sent to ${res.to}`);
+      import("@/lib/analytics").then(({ track }) => track("quote_sent", { quote_id: quoteId, total: quote.total }));
+      qc.invalidateQueries({ queryKey: ["quote", quoteId] });
+    } catch (e: any) {
+      toast.error(e?.message || "Send failed");
+    } finally {
+      setSending(false);
+    }
+  };
 
   return (
     <div className="p-6 lg:p-10 max-w-4xl mx-auto space-y-6">
@@ -72,7 +137,7 @@ function QuoteViewPage() {
         <Button variant="ghost" size="sm" asChild className="-ml-2">
           <Link to="/quotes"><ArrowLeft className="h-4 w-4 mr-1" /> Back</Link>
         </Button>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <Select value={quote.status} onValueChange={(v) => statusMut.mutate(v)}>
             <SelectTrigger className="w-36"><SelectValue /></SelectTrigger>
             <SelectContent>
@@ -90,74 +155,31 @@ function QuoteViewPage() {
             </Link>
           </Button>
           <Button
-            variant="outline"
             size="sm"
-            onClick={async () => {
-              const email = extractEmailAddress(quote.clients?.email);
-              if (!email) {
-                toast.error("This client has no email on file. Add one in Clients first.");
-                return;
-              }
-              const subject = `${quote.title || "Quotation"} ${quote.quote_number} - ${formatZAR(quote.total)}`;
-              const body = [
-                `Hi ${quote.clients?.contact_person || quote.clients?.name || "there"},`,
-                "",
-                `Please find attached quotation ${quote.quote_number} for ${formatZAR(quote.total)} incl. VAT${quote.expiry_date ? `, valid until ${formatDate(quote.expiry_date)}` : ""}.`,
-                "",
-                quote.notes || "Let us know if you'd like to proceed or need any adjustments.",
-                "",
-                `Thanks,`,
-                profile?.business_name || "",
-              ].filter(Boolean).join("\n");
-
-              const { generateDocumentPdf } = await import("@/lib/pdf-export");
-              const blob = generateDocumentPdf({
-                kind: "Quote",
-                number: quote.quote_number,
-                title: quote.title,
-                status: quote.status,
-                issue_date: quote.issue_date,
-                expiry_date: quote.expiry_date,
-                subtotal: quote.subtotal,
-                vat_rate: quote.vat_rate,
-                vat_amount: quote.vat_amount,
-                total: quote.total,
-                notes: quote.notes,
-                terms: quote.terms,
-                items: items as any,
-                client: quote.clients as any,
-                profile,
-              });
-              const filename = `Quote-${quote.quote_number}.pdf`;
-
-              const result = await openEmailDraft({ to: email, subject, body, attachment: { blob, filename } });
-              if (!result) {
-                toast.error("Email draft could not be opened. Please check your default mail app.");
-                return;
-              }
-              if (result === "downloaded") toast.success(`PDF downloaded (${filename}). Drag it into the open email draft to attach.`);
-              else toast.success("Email draft opened.");
-              import("@/lib/analytics").then(({ track }) =>
-                track("quote_sent", { quote_id: quoteId, total: quote.total }),
-              );
-              if (quote.status === "draft") statusMut.mutate("sent");
-            }}
+            onClick={handleSend}
+            disabled={!clientEmail || sending}
+            title={!clientEmail ? "Client has no email on file" : undefined}
           >
-            <Mail className="h-4 w-4 mr-1" /> Send
+            {sending ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Send className="h-4 w-4 mr-1" />}
+            Send to client
           </Button>
           <Button variant="outline" size="sm" asChild>
             <Link to="/invoices/new" search={{ fromQuote: quoteId }}>
               <Receipt className="h-4 w-4 mr-1" /> Convert to invoice
             </Link>
           </Button>
+          <Button variant="outline" size="sm" onClick={() => downloadBlob(buildPdf(), filename)}>
+            <Download className="h-4 w-4 mr-1" /> PDF
+          </Button>
           <Button variant="outline" size="sm" onClick={() => window.print()}>
-            <Printer className="h-4 w-4 mr-1" /> Print / PDF
+            <Printer className="h-4 w-4 mr-1" /> Print
           </Button>
           <Button variant="ghost" size="icon" onClick={() => confirm("Delete this quote?") && deleteMut.mutate()}>
             <Trash2 className="h-4 w-4 text-muted-foreground" />
           </Button>
         </div>
       </div>
+
 
       <Card className="print:border-0 print:shadow-none">
         <CardHeader className="border-b border-border">
@@ -241,6 +263,30 @@ function QuoteViewPage() {
           )}
         </CardContent>
       </Card>
+
+      <Card className="print:hidden">
+        <CardHeader className="pb-2"><div className="font-medium">PDF preview</div></CardHeader>
+        <CardContent>
+          {pdfUrl ? (
+            <iframe src={pdfUrl} className="w-full h-[720px] rounded-md border border-border bg-white" title="Quote PDF preview" />
+          ) : (
+            <div className="text-sm text-muted-foreground">Generating preview…</div>
+          )}
+        </CardContent>
+      </Card>
+
+      <div className="print:hidden">
+        <FollowupsPanel
+          recordType="quote"
+          recordId={quoteId}
+          autoNudgeEnabled={autoNudge}
+          onAutoNudgeChange={setAutoNudge}
+          getPdfBase64={async () => {
+            const base64 = await getBase64();
+            return base64 ? { base64, filename } : null;
+          }}
+        />
+      </div>
     </div>
   );
 }
