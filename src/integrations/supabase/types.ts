@@ -400,6 +400,59 @@ export type Database = {
         }
         Relationships: []
       }
+      invoice_followups: {
+        Row: {
+          body: string
+          created_at: string
+          error: string | null
+          id: string
+          invoice_id: string
+          scheduled_for: string
+          sent_at: string | null
+          sequence: number
+          status: string
+          subject: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          error?: string | null
+          id?: string
+          invoice_id: string
+          scheduled_for: string
+          sent_at?: string | null
+          sequence: number
+          status?: string
+          subject: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          error?: string | null
+          id?: string
+          invoice_id?: string
+          scheduled_for?: string
+          sent_at?: string | null
+          sequence?: number
+          status?: string
+          subject?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_followups_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invoice_items: {
         Row: {
           created_at: string
@@ -673,6 +726,59 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quote_followups: {
+        Row: {
+          body: string
+          created_at: string
+          error: string | null
+          id: string
+          quote_id: string
+          scheduled_for: string
+          sent_at: string | null
+          sequence: number
+          status: string
+          subject: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          error?: string | null
+          id?: string
+          quote_id: string
+          scheduled_for: string
+          sent_at?: string | null
+          sequence: number
+          status?: string
+          subject: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          error?: string | null
+          id?: string
+          quote_id?: string
+          scheduled_for?: string
+          sent_at?: string | null
+          sequence?: number
+          status?: string
+          subject?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quote_followups_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "quotes"
             referencedColumns: ["id"]
           },
         ]
