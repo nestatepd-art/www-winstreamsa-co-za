@@ -263,6 +263,30 @@ function QuoteViewPage() {
           )}
         </CardContent>
       </Card>
+
+      <Card className="print:hidden">
+        <CardHeader className="pb-2"><div className="font-medium">PDF preview</div></CardHeader>
+        <CardContent>
+          {pdfUrl ? (
+            <iframe src={pdfUrl} className="w-full h-[720px] rounded-md border border-border bg-white" title="Quote PDF preview" />
+          ) : (
+            <div className="text-sm text-muted-foreground">Generating preview…</div>
+          )}
+        </CardContent>
+      </Card>
+
+      <div className="print:hidden">
+        <FollowupsPanel
+          recordType="quote"
+          recordId={quoteId}
+          autoNudgeEnabled={autoNudge}
+          onAutoNudgeChange={setAutoNudge}
+          getPdfBase64={async () => {
+            const base64 = await getBase64();
+            return base64 ? { base64, filename } : null;
+          }}
+        />
+      </div>
     </div>
   );
 }
