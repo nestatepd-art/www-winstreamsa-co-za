@@ -12,6 +12,7 @@ import { extractEmailAddress } from "@/lib/email-compose";
 import { QuoteStatusBadge } from "./dashboard";
 import { toast } from "sonner";
 import { FollowupsPanel } from "@/components/FollowupsPanel";
+import { DocumentPreview } from "@/components/DocumentPreview";
 import { usePdfPreviewUrl } from "@/hooks/use-pdf-preview";
 import { sendRecordNow } from "@/lib/followups.functions";
 import { generateDocumentPdf, downloadBlob } from "@/lib/pdf-export";
@@ -94,7 +95,7 @@ function QuoteViewPage() {
     profile,
   }), [quote, items, profile]);
 
-  const { url: pdfUrl, getBase64 } = usePdfPreviewUrl({ ready: true, build: buildPdf });
+  const { getBase64 } = usePdfPreviewUrl({ ready: true, build: buildPdf });
   const filename = `Quote-${quote.quote_number}.pdf`;
 
   const handleSend = async () => {
@@ -267,11 +268,23 @@ function QuoteViewPage() {
       <Card className="print:hidden">
         <CardHeader className="pb-2"><div className="font-medium">PDF preview</div></CardHeader>
         <CardContent>
-          {pdfUrl ? (
-            <iframe src={pdfUrl} className="w-full h-[720px] rounded-md border border-border bg-white" title="Quote PDF preview" />
-          ) : (
-            <div className="text-sm text-muted-foreground">Generating preview…</div>
-          )}
+          <DocumentPreview
+            kind="Quote"
+            number={quote.quote_number}
+            title={quote.title}
+            status={quote.status}
+            issueDate={quote.issue_date}
+            expiryDate={quote.expiry_date}
+            subtotal={quote.subtotal}
+            vatRate={quote.vat_rate}
+            vatAmount={quote.vat_amount}
+            total={quote.total}
+            notes={quote.notes}
+            terms={quote.terms}
+            items={items as any}
+            client={quote.clients as any}
+            profile={profile}
+          />
         </CardContent>
       </Card>
 

@@ -12,6 +12,7 @@ import { extractEmailAddress } from "@/lib/email-compose";
 import { InvoiceStatusBadge } from "./invoices.index";
 import { toast } from "sonner";
 import { FollowupsPanel } from "@/components/FollowupsPanel";
+import { DocumentPreview } from "@/components/DocumentPreview";
 import { usePdfPreviewUrl } from "@/hooks/use-pdf-preview";
 import { sendRecordNow } from "@/lib/followups.functions";
 import { generateDocumentPdf, downloadBlob } from "@/lib/pdf-export";
@@ -94,7 +95,7 @@ function InvoiceViewPage() {
     profile,
   }), [invoice, items, profile, client]);
 
-  const { url: pdfUrl, getBase64 } = usePdfPreviewUrl({ ready: true, build: buildPdf });
+  const { getBase64 } = usePdfPreviewUrl({ ready: true, build: buildPdf });
   const filename = `Invoice-${invoice.invoice_number}.pdf`;
 
   const handleSend = async () => {
@@ -258,11 +259,23 @@ function InvoiceViewPage() {
       <Card className="print:hidden">
         <CardHeader className="pb-2"><div className="font-medium">PDF preview</div></CardHeader>
         <CardContent>
-          {pdfUrl ? (
-            <iframe src={pdfUrl} className="w-full h-[720px] rounded-md border border-border bg-white" title="Invoice PDF preview" />
-          ) : (
-            <div className="text-sm text-muted-foreground">Generating preview…</div>
-          )}
+          <DocumentPreview
+            kind="Invoice"
+            number={invoice.invoice_number}
+            title={invoice.title}
+            status={invoice.status}
+            issueDate={invoice.issue_date}
+            dueDate={invoice.due_date}
+            subtotal={invoice.subtotal}
+            vatRate={invoice.vat_rate}
+            vatAmount={invoice.vat_amount}
+            total={invoice.total}
+            notes={invoice.notes}
+            terms={invoice.terms}
+            items={items as any}
+            client={client}
+            profile={profile}
+          />
         </CardContent>
       </Card>
 
