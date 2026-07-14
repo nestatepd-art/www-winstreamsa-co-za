@@ -255,6 +255,29 @@ function InvoiceViewPage() {
         </CardContent>
       </Card>
 
+      <Card className="print:hidden">
+        <CardHeader className="pb-2"><div className="font-medium">PDF preview</div></CardHeader>
+        <CardContent>
+          {pdfUrl ? (
+            <iframe src={pdfUrl} className="w-full h-[720px] rounded-md border border-border bg-white" title="Invoice PDF preview" />
+          ) : (
+            <div className="text-sm text-muted-foreground">Generating preview…</div>
+          )}
+        </CardContent>
+      </Card>
+
+      <div className="print:hidden">
+        <FollowupsPanel
+          recordType="invoice"
+          recordId={invoiceId}
+          autoNudgeEnabled={autoNudge}
+          onAutoNudgeChange={setAutoNudge}
+          getPdfBase64={async () => {
+            const base64 = await getBase64();
+            return base64 ? { base64, filename } : null;
+          }}
+        />
+      </div>
     </div>
   );
 }
