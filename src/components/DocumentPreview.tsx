@@ -74,7 +74,7 @@ export function DocumentPreview({
     profile?.bank_name,
     profile?.bank_account_number ? `Acc: ${profile.bank_account_number}` : null,
     profile?.bank_branch_code ? `Branch: ${profile.bank_branch_code}` : null,
-  ].filter(Boolean);
+  ].filter((line): line is string => Boolean(line));
 
   return (
     <div className="max-h-[760px] overflow-auto rounded-md border border-border bg-muted/30 p-3 sm:p-6">
