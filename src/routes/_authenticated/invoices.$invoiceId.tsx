@@ -16,6 +16,8 @@ import { DocumentPreview } from "@/components/DocumentPreview";
 import { usePdfPreviewUrl } from "@/hooks/use-pdf-preview";
 import { sendRecordNow } from "@/lib/followups.functions";
 import { generateDocumentPdf, downloadBlob } from "@/lib/pdf-export";
+import { useCreditStatus } from "@/hooks/use-credits";
+
 
 export const Route = createFileRoute("/_authenticated/invoices/$invoiceId")({
   component: InvoiceViewPage,
@@ -76,6 +78,8 @@ function InvoiceViewPage() {
   const [autoNudge, setAutoNudge] = useState<boolean>(invoice.auto_nudge_enabled);
   const [sending, setSending] = useState(false);
   const sendFn = useServerFn(sendRecordNow);
+  const { data: creditStatus } = useCreditStatus();
+  const showBranding = (creditStatus?.plan ?? "free") !== "pro";
 
   const buildPdf = useMemo(() => () => generateDocumentPdf({
     kind: "Invoice",
@@ -93,7 +97,9 @@ function InvoiceViewPage() {
     items: items as any,
     client,
     profile,
-  }), [invoice, items, profile, client]);
+    showBranding,
+  }), [invoice, items, profile, client, showBranding]);
+
 
   const { getBase64 } = usePdfPreviewUrl({ ready: true, build: buildPdf });
   const filename = `Invoice-${invoice.invoice_number}.pdf`;
