@@ -78,6 +78,8 @@ function InvoiceViewPage() {
   const [autoNudge, setAutoNudge] = useState<boolean>(invoice.auto_nudge_enabled);
   const [sending, setSending] = useState(false);
   const sendFn = useServerFn(sendRecordNow);
+  const { data: creditStatus } = useCreditStatus();
+  const showBranding = (creditStatus?.plan ?? "free") !== "pro";
 
   const buildPdf = useMemo(() => () => generateDocumentPdf({
     kind: "Invoice",
@@ -95,7 +97,9 @@ function InvoiceViewPage() {
     items: items as any,
     client,
     profile,
-  }), [invoice, items, profile, client]);
+    showBranding,
+  }), [invoice, items, profile, client, showBranding]);
+
 
   const { getBase64 } = usePdfPreviewUrl({ ready: true, build: buildPdf });
   const filename = `Invoice-${invoice.invoice_number}.pdf`;
