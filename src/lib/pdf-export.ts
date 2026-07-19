@@ -43,7 +43,9 @@ type DocumentData = {
   items: LineItem[];
   client?: Client | null;
   profile?: Profile | null;
+  showBranding?: boolean;
 };
+
 
 const MARGIN = 40;
 const PAGE_W = 595; // A4 portrait pt
