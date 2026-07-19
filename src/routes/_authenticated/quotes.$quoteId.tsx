@@ -78,6 +78,8 @@ function QuoteViewPage() {
   const [autoNudge, setAutoNudge] = useState<boolean>(quote.auto_nudge_enabled);
   const [sending, setSending] = useState(false);
   const sendFn = useServerFn(sendRecordNow);
+  const { data: creditStatus } = useCreditStatus();
+  const showBranding = (creditStatus?.plan ?? "free") !== "pro";
 
   const buildPdf = useMemo(() => () => generateDocumentPdf({
     kind: "Quote",
@@ -95,7 +97,9 @@ function QuoteViewPage() {
     items: items as any,
     client: quote.clients as any,
     profile,
-  }), [quote, items, profile]);
+    showBranding,
+  }), [quote, items, profile, showBranding]);
+
 
   const { getBase64 } = usePdfPreviewUrl({ ready: true, build: buildPdf });
   const filename = `Quote-${quote.quote_number}.pdf`;
