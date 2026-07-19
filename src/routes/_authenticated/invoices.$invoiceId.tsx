@@ -16,6 +16,8 @@ import { DocumentPreview } from "@/components/DocumentPreview";
 import { usePdfPreviewUrl } from "@/hooks/use-pdf-preview";
 import { sendRecordNow } from "@/lib/followups.functions";
 import { generateDocumentPdf, downloadBlob } from "@/lib/pdf-export";
+import { useCreditStatus } from "@/hooks/use-credits";
+
 
 export const Route = createFileRoute("/_authenticated/invoices/$invoiceId")({
   component: InvoiceViewPage,
