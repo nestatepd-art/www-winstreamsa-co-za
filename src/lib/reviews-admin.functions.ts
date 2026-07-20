@@ -36,7 +36,7 @@ export const adminModerateReview = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
-    const patch: Record<string, unknown> = {};
+    const patch: { approved?: boolean; featured?: boolean } = {};
     if (typeof data.approved === "boolean") patch.approved = data.approved;
     if (typeof data.featured === "boolean") patch.featured = data.featured;
     const { error } = await context.supabase

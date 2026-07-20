@@ -44,6 +44,7 @@ import { Route as AuthenticatedProposalsProposalIdRouteImport } from './routes/_
 import { Route as AuthenticatedInvoicesNewRouteImport } from './routes/_authenticated/invoices.new'
 import { Route as AuthenticatedInvoicesInvoiceIdRouteImport } from './routes/_authenticated/invoices.$invoiceId'
 import { Route as AuthenticatedChatThreadIdRouteImport } from './routes/_authenticated/chat.$threadId'
+import { Route as AuthenticatedAdminReviewsRouteImport } from './routes/_authenticated/admin.reviews'
 import { Route as AuthenticatedAdminBlogRouteImport } from './routes/_authenticated/admin.blog'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as ApiPublicHooksAutoNudgeRouteImport } from './routes/api/public/hooks/auto-nudge'
@@ -234,6 +235,12 @@ const AuthenticatedChatThreadIdRoute =
     path: '/$threadId',
     getParentRoute: () => AuthenticatedChatRoute,
   } as any)
+const AuthenticatedAdminReviewsRoute =
+  AuthenticatedAdminReviewsRouteImport.update({
+    id: '/admin/reviews',
+    path: '/admin/reviews',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminBlogRoute = AuthenticatedAdminBlogRouteImport.update({
   id: '/admin/blog',
   path: '/admin/blog',
@@ -288,6 +295,7 @@ export interface FileRoutesByFullPath {
   '/blog/$slug': typeof BlogSlugRoute
   '/blog/': typeof BlogIndexRoute
   '/admin/blog': typeof AuthenticatedAdminBlogRoute
+  '/admin/reviews': typeof AuthenticatedAdminReviewsRoute
   '/chat/$threadId': typeof AuthenticatedChatThreadIdRoute
   '/invoices/$invoiceId': typeof AuthenticatedInvoicesInvoiceIdRouteWithChildren
   '/invoices/new': typeof AuthenticatedInvoicesNewRoute
@@ -328,6 +336,7 @@ export interface FileRoutesByTo {
   '/blog/$slug': typeof BlogSlugRoute
   '/blog': typeof BlogIndexRoute
   '/admin/blog': typeof AuthenticatedAdminBlogRoute
+  '/admin/reviews': typeof AuthenticatedAdminReviewsRoute
   '/chat/$threadId': typeof AuthenticatedChatThreadIdRoute
   '/invoices/$invoiceId': typeof AuthenticatedInvoicesInvoiceIdRouteWithChildren
   '/invoices/new': typeof AuthenticatedInvoicesNewRoute
@@ -371,6 +380,7 @@ export interface FileRoutesById {
   '/blog/$slug': typeof BlogSlugRoute
   '/blog/': typeof BlogIndexRoute
   '/_authenticated/admin/blog': typeof AuthenticatedAdminBlogRoute
+  '/_authenticated/admin/reviews': typeof AuthenticatedAdminReviewsRoute
   '/_authenticated/chat/$threadId': typeof AuthenticatedChatThreadIdRoute
   '/_authenticated/invoices/$invoiceId': typeof AuthenticatedInvoicesInvoiceIdRouteWithChildren
   '/_authenticated/invoices/new': typeof AuthenticatedInvoicesNewRoute
@@ -414,6 +424,7 @@ export interface FileRouteTypes {
     | '/blog/$slug'
     | '/blog/'
     | '/admin/blog'
+    | '/admin/reviews'
     | '/chat/$threadId'
     | '/invoices/$invoiceId'
     | '/invoices/new'
@@ -454,6 +465,7 @@ export interface FileRouteTypes {
     | '/blog/$slug'
     | '/blog'
     | '/admin/blog'
+    | '/admin/reviews'
     | '/chat/$threadId'
     | '/invoices/$invoiceId'
     | '/invoices/new'
@@ -496,6 +508,7 @@ export interface FileRouteTypes {
     | '/blog/$slug'
     | '/blog/'
     | '/_authenticated/admin/blog'
+    | '/_authenticated/admin/reviews'
     | '/_authenticated/chat/$threadId'
     | '/_authenticated/invoices/$invoiceId'
     | '/_authenticated/invoices/new'
@@ -782,6 +795,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedChatThreadIdRouteImport
       parentRoute: typeof AuthenticatedChatRoute
     }
+    '/_authenticated/admin/reviews': {
+      id: '/_authenticated/admin/reviews'
+      path: '/admin/reviews'
+      fullPath: '/admin/reviews'
+      preLoaderRoute: typeof AuthenticatedAdminReviewsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin/blog': {
       id: '/_authenticated/admin/blog'
       path: '/admin/blog'
@@ -871,6 +891,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedWriteReviewRoute: typeof AuthenticatedWriteReviewRoute
   AuthenticatedAdminBlogRoute: typeof AuthenticatedAdminBlogRoute
+  AuthenticatedAdminReviewsRoute: typeof AuthenticatedAdminReviewsRoute
   AuthenticatedInvoicesInvoiceIdRoute: typeof AuthenticatedInvoicesInvoiceIdRouteWithChildren
   AuthenticatedInvoicesNewRoute: typeof AuthenticatedInvoicesNewRoute
   AuthenticatedProposalsProposalIdRoute: typeof AuthenticatedProposalsProposalIdRoute
@@ -891,6 +912,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedWriteReviewRoute: AuthenticatedWriteReviewRoute,
   AuthenticatedAdminBlogRoute: AuthenticatedAdminBlogRoute,
+  AuthenticatedAdminReviewsRoute: AuthenticatedAdminReviewsRoute,
   AuthenticatedInvoicesInvoiceIdRoute:
     AuthenticatedInvoicesInvoiceIdRouteWithChildren,
   AuthenticatedInvoicesNewRoute: AuthenticatedInvoicesNewRoute,
