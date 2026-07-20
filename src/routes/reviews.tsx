@@ -157,9 +157,7 @@ function ReviewsPage() {
           )}
           <div className="mt-6">
             <Link
-              to="/_authenticated/settings/review" as="/settings/review"
-              // fallback nav via signed-in area
-              href="/settings/review"
+              to="/write-review"
               className="inline-flex items-center justify-center rounded-lg bg-white px-5 py-2.5 text-sm font-semibold text-[#04121a] hover:bg-white/90"
             >
               Write a review
