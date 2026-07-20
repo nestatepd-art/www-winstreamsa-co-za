@@ -913,6 +913,48 @@ export type Database = {
           },
         ]
       }
+      reviews: {
+        Row: {
+          approved: boolean
+          body: string
+          business_name: string | null
+          created_at: string
+          display_name: string
+          featured: boolean
+          id: string
+          rating: number
+          title: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          approved?: boolean
+          body: string
+          business_name?: string | null
+          created_at?: string
+          display_name: string
+          featured?: boolean
+          id?: string
+          rating: number
+          title?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          approved?: boolean
+          body?: string
+          business_name?: string | null
+          created_at?: string
+          display_name?: string
+          featured?: boolean
+          id?: string
+          rating?: number
+          title?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       subscriptions: {
         Row: {
           cancel_at_period_end: boolean | null

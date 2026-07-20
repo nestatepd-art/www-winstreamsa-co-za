@@ -11,6 +11,7 @@ import {
   MessageSquare,
   Newspaper,
   BellRing,
+  Star,
 } from "lucide-react";
 import winstreamLogo from "@/assets/winstream-logo.png.asset.json";
 import { toast } from "sonner";
@@ -40,6 +41,7 @@ const items = [
   { title: "Reminders", url: "/reminders", icon: BellRing },
   { title: "Billing", url: "/billing", icon: CreditCard },
   { title: "Assist", url: "/chat", icon: MessageSquare },
+  { title: "Leave a Review", url: "/write-review", icon: Star },
   { title: "Settings", url: "/settings", icon: Settings },
 ];
 
@@ -113,14 +115,24 @@ export function AppSidebar() {
                 </SidebarMenuItem>
               ))}
               {isAdmin && (
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild isActive={isActive("/admin/blog")}>
-                    <Link to="/admin/blog" className="flex items-center gap-2">
-                      <Newspaper className="h-4 w-4" />
-                      {!collapsed && <span>Blog Admin</span>}
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
+                <>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild isActive={isActive("/admin/blog")}>
+                      <Link to="/admin/blog" className="flex items-center gap-2">
+                        <Newspaper className="h-4 w-4" />
+                        {!collapsed && <span>Blog Admin</span>}
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild isActive={isActive("/admin/reviews")}>
+                      <Link to="/admin/reviews" className="flex items-center gap-2">
+                        <Star className="h-4 w-4" />
+                        {!collapsed && <span>Reviews Admin</span>}
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </>
               )}
             </SidebarMenu>
           </SidebarGroupContent>

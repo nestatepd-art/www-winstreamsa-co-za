@@ -49,6 +49,7 @@ export function SiteFooter() {
           <Link to="/features" className="hover:text-white">Features</Link>
           <Link to="/pricing" className="hover:text-white">Pricing</Link>
           <Link to="/blog" className="hover:text-white">Blog</Link>
+          <Link to="/reviews" className="hover:text-white">Reviews</Link>
           <Link to="/about" className="hover:text-white">About</Link>
           <Link to="/contact" className="hover:text-white">Contact</Link>
           <Link to="/trust" className="hover:text-white">Trust</Link>
