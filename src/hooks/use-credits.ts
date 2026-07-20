@@ -29,15 +29,14 @@ export function useConsumeQuota() {
         toast.error(
           `${QUOTA_LABEL[kind]} limit reached for this month`,
           {
-            description: `Buy credits or upgrade to Pro to continue. Cost: ${res.cost} credit${res.cost === 1 ? "" : "s"}.`,
-            action: {
-              label: "Open billing",
-              onClick: () => {
-                window.location.href = "/billing";
-              },
-            },
+            description: `Redirecting to billing… Cost: ${res.cost} credit${res.cost === 1 ? "" : "s"}.`,
           },
         );
+        if (typeof window !== "undefined") {
+          setTimeout(() => {
+            window.location.href = "/billing";
+          }, 800);
+        }
         return false;
       }
       if (res.charged && res.charged > 0) {
