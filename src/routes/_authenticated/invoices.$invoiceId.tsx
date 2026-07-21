@@ -82,6 +82,8 @@ function InvoiceViewPage() {
   const { data: creditStatus } = useCreditStatus();
   const showBranding = (creditStatus?.plan ?? "free") !== "pro";
 
+  const { data: logoAsset } = useLogoAsset(profile?.logo_url ?? null);
+
   const buildPdf = useMemo(() => () => generateDocumentPdf({
     kind: "Invoice",
     number: invoice.invoice_number,
@@ -99,7 +101,8 @@ function InvoiceViewPage() {
     client,
     profile,
     showBranding,
-  }), [invoice, items, profile, client, showBranding]);
+    logoDataUrl: logoAsset?.dataUrl ?? null,
+  }), [invoice, items, profile, client, showBranding, logoAsset?.dataUrl]);
 
 
   const { getBase64 } = usePdfPreviewUrl({ ready: true, build: buildPdf });
