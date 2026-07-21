@@ -17,6 +17,7 @@ import { usePdfPreviewUrl } from "@/hooks/use-pdf-preview";
 import { sendRecordNow } from "@/lib/followups.functions";
 import { generateDocumentPdf, downloadBlob } from "@/lib/pdf-export";
 import { useCreditStatus } from "@/hooks/use-credits";
+import { useLogoAsset } from "@/hooks/use-logo-asset";
 
 
 export const Route = createFileRoute("/_authenticated/quotes/$quoteId")({
