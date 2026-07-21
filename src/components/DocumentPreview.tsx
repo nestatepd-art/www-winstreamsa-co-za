@@ -83,12 +83,19 @@ export function DocumentPreview({
       <article className="mx-auto min-h-[720px] w-full max-w-[794px] rounded-sm border border-document-border bg-document-page p-6 text-document-ink shadow-elevated sm:p-10">
         <div className="flex items-start justify-between gap-8 border-b border-document-border pb-5">
           <div className="min-w-0 flex items-start gap-4">
-            {logoUrl && (
+            {logoUrl ? (
               <img
                 src={logoUrl}
                 alt={`${profile?.business_name ?? "Business"} logo`}
                 className="h-14 w-14 shrink-0 rounded-sm object-contain bg-white border border-document-border"
               />
+            ) : (
+              <div
+                aria-hidden="true"
+                className="h-14 w-14 shrink-0 rounded-sm border border-document-border bg-muted/40 flex items-center justify-center text-base font-semibold text-document-muted"
+              >
+                {getBusinessInitials(profile?.business_name)}
+              </div>
             )}
             <div className="min-w-0">
               <div className="text-base font-semibold text-document-ink">
