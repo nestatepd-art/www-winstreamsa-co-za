@@ -50,6 +50,14 @@ function safeQuantity(value: number | string | null | undefined) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+function getBusinessInitials(name?: string | null): string {
+  const clean = (name ?? "").trim();
+  if (!clean) return "B";
+  const parts = clean.split(/\s+/).filter(Boolean);
+  const letters = parts.slice(0, 2).map((p) => p[0]?.toUpperCase() ?? "").join("");
+  return letters || clean[0]!.toUpperCase();
+}
+
 export function DocumentPreview({
   kind,
   number,
