@@ -64,6 +64,14 @@ function wrapText(doc: jsPDF, text: string, maxWidth: number): string[] {
   return doc.splitTextToSize(String(text ?? ""), maxWidth);
 }
 
+function getBusinessInitials(name?: string | null): string {
+  const clean = (name ?? "").trim();
+  if (!clean) return "B";
+  const parts = clean.split(/\s+/).filter(Boolean);
+  const letters = parts.slice(0, 2).map((p) => p[0]?.toUpperCase() ?? "").join("");
+  return letters || clean[0]!.toUpperCase();
+}
+
 export function generateDocumentPdf(data: DocumentData): Blob {
   const doc = new jsPDF({ unit: "pt", format: "a4" });
   let y = MARGIN;
