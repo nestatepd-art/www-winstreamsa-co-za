@@ -44,6 +44,7 @@ type DocumentData = {
   client?: Client | null;
   profile?: Profile | null;
   showBranding?: boolean;
+  logoDataUrl?: string | null;
 };
 
 
