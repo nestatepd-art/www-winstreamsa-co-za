@@ -64,21 +64,46 @@ function wrapText(doc: jsPDF, text: string, maxWidth: number): string[] {
   return doc.splitTextToSize(String(text ?? ""), maxWidth);
 }
 
+function getBusinessInitials(name?: string | null): string {
+  const clean = (name ?? "").trim();
+  if (!clean) return "B";
+  const parts = clean.split(/\s+/).filter(Boolean);
+  const letters = parts.slice(0, 2).map((p) => p[0]?.toUpperCase() ?? "").join("");
+  return letters || clean[0]!.toUpperCase();
+}
+
 export function generateDocumentPdf(data: DocumentData): Blob {
   const doc = new jsPDF({ unit: "pt", format: "a4" });
   let y = MARGIN;
   const contentW = PAGE_W - MARGIN * 2;
 
-  // Header — logo + business
+  // Header — logo (or initials placeholder) + business
   let headerX = MARGIN;
+  let logoDrawn = false;
   if (data.logoDataUrl) {
     try {
       const fmt = data.logoDataUrl.includes("image/jpeg") ? "JPEG" : "PNG";
       doc.addImage(data.logoDataUrl, fmt, MARGIN, y - 4, 44, 44, undefined, "FAST");
       headerX = MARGIN + 54;
+      logoDrawn = true;
     } catch {
       // ignore invalid image
     }
+  }
+  if (!logoDrawn) {
+    // Draw initials placeholder so pre-logo documents stay visually consistent.
+    const boxX = MARGIN;
+    const boxY = y - 4;
+    const boxSize = 44;
+    doc.setDrawColor(220);
+    doc.setFillColor(245, 245, 245);
+    doc.roundedRect(boxX, boxY, boxSize, boxSize, 3, 3, "FD");
+    const initials = getBusinessInitials(data.profile?.business_name);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.setTextColor(130);
+    doc.text(initials, boxX + boxSize / 2, boxY + boxSize / 2 + 6, { align: "center" });
+    headerX = MARGIN + 54;
   }
 
   doc.setFont("helvetica", "bold");
@@ -93,7 +118,7 @@ export function generateDocumentPdf(data: DocumentData): Blob {
   if (data.profile?.vat_number) { doc.text(`VAT: ${data.profile.vat_number}`, headerX, y); y += 12; }
   if (data.profile?.email) { doc.text(data.profile.email, headerX, y); y += 12; }
   if (data.profile?.phone) { doc.text(data.profile.phone, headerX, y); y += 12; }
-  if (data.logoDataUrl) y = Math.max(y, MARGIN + 48);
+  y = Math.max(y, MARGIN + 48);
 
   // Title block — top right
   doc.setFont("helvetica", "bold");
