@@ -80,6 +80,21 @@ function SettingsPage() {
         </CardContent>
       </Card>
 
+      <LogoCard
+        logoRef={form.logo_url ?? null}
+        onChange={(next) => {
+          setForm((f: any) => ({ ...f, logo_url: next }));
+          // Persist immediately so preview updates for existing quotes/invoices
+          if (profile?.id) {
+            supabase.from("business_profiles").update({ logo_url: next }).eq("id", profile.id).then(({ error }) => {
+              if (error) toast.error(error.message);
+              else qc.invalidateQueries({ queryKey: ["business-profile"] });
+            });
+          }
+        }}
+      />
+
+
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Address</CardTitle>
