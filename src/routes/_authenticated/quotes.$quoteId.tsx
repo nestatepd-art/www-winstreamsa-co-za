@@ -294,6 +294,7 @@ function QuoteViewPage() {
             items={items as any}
             client={quote.clients as any}
             profile={profile}
+            logoUrl={logoAsset?.url ?? null}
           />
         </CardContent>
       </Card>
