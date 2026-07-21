@@ -190,11 +190,12 @@ function NewQuotePage() {
         </CardHeader>
         <CardContent className="space-y-3">
           {items.map((it, i) => (
-            <div key={i} className="grid grid-cols-12 gap-3 items-start">
+            <div key={i} className="grid grid-cols-12 gap-3 items-start rounded-lg border border-border/50 p-3 sm:border-0 sm:p-0">
               <div className="col-span-12 sm:col-span-6 space-y-1">
+                <Label className="text-xs uppercase tracking-wider text-muted-foreground">Description</Label>
                 <div className="flex gap-2">
                   <Textarea
-                    placeholder="Description (or type a short brief and hit ✨)"
+                    placeholder="What are you quoting for?"
                     value={it.description}
                     onChange={(e) => updateItem(i, { description: e.target.value })}
                     rows={2}
@@ -212,16 +213,39 @@ function NewQuotePage() {
                   </Button>
                 </div>
               </div>
-              <div className="col-span-4 sm:col-span-2 space-y-1">
-                <Input type="number" min={0} step="0.01" value={it.quantity} onChange={(e) => updateItem(i, { quantity: parseFloat(e.target.value) || 0 })} placeholder="Qty" />
+              <div className="col-span-6 sm:col-span-2 space-y-1">
+                <Label className="text-xs uppercase tracking-wider text-muted-foreground">Qty</Label>
+                <Input
+                  type="number"
+                  inputMode="decimal"
+                  min={0}
+                  step="0.01"
+                  value={it.quantity === 0 ? "" : it.quantity}
+                  onFocus={(e) => e.target.select()}
+                  onChange={(e) => updateItem(i, { quantity: parseFloat(e.target.value) || 0 })}
+                  placeholder="1"
+                />
               </div>
-              <div className="col-span-5 sm:col-span-2 space-y-1">
-                <Input type="number" min={0} step="0.01" value={it.unit_price} onChange={(e) => updateItem(i, { unit_price: parseFloat(e.target.value) || 0 })} placeholder="Unit (R)" />
+              <div className="col-span-6 sm:col-span-2 space-y-1">
+                <Label className="text-xs uppercase tracking-wider text-muted-foreground">Unit price (R)</Label>
+                <Input
+                  type="number"
+                  inputMode="decimal"
+                  min={0}
+                  step="0.01"
+                  value={it.unit_price === 0 ? "" : it.unit_price}
+                  onFocus={(e) => e.target.select()}
+                  onChange={(e) => updateItem(i, { unit_price: parseFloat(e.target.value) || 0 })}
+                  placeholder="0.00"
+                />
               </div>
-              <div className="col-span-2 sm:col-span-1 text-right text-sm font-medium tabular-nums pt-2">
-                {formatZAR(it.quantity * it.unit_price)}
+              <div className="col-span-8 sm:col-span-1 space-y-1">
+                <Label className="text-xs uppercase tracking-wider text-muted-foreground sm:sr-only">Line total</Label>
+                <div className="text-sm font-medium tabular-nums pt-2 sm:text-right">
+                  {formatZAR(it.quantity * it.unit_price)}
+                </div>
               </div>
-              <div className="col-span-1 pt-1">
+              <div className="col-span-4 sm:col-span-1 flex justify-end sm:pt-6">
                 <Button variant="ghost" size="icon" onClick={() => removeItem(i)} aria-label="Remove line">
                   <Trash2 className="h-4 w-4 text-muted-foreground" />
                 </Button>
