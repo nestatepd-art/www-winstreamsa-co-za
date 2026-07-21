@@ -69,19 +69,31 @@ export function generateDocumentPdf(data: DocumentData): Blob {
   let y = MARGIN;
   const contentW = PAGE_W - MARGIN * 2;
 
-  // Header — business
+  // Header — logo + business
+  let headerX = MARGIN;
+  if (data.logoDataUrl) {
+    try {
+      const fmt = data.logoDataUrl.includes("image/jpeg") ? "JPEG" : "PNG";
+      doc.addImage(data.logoDataUrl, fmt, MARGIN, y - 4, 44, 44, undefined, "FAST");
+      headerX = MARGIN + 54;
+    } catch {
+      // ignore invalid image
+    }
+  }
+
   doc.setFont("helvetica", "bold");
   doc.setFontSize(16);
   doc.setTextColor(20);
-  doc.text(data.profile?.business_name || "Your business", MARGIN, y);
+  doc.text(data.profile?.business_name || "Your business", headerX, y);
   y += 18;
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
   doc.setTextColor(110);
-  if (data.profile?.vat_number) { doc.text(`VAT: ${data.profile.vat_number}`, MARGIN, y); y += 12; }
-  if (data.profile?.email) { doc.text(data.profile.email, MARGIN, y); y += 12; }
-  if (data.profile?.phone) { doc.text(data.profile.phone, MARGIN, y); y += 12; }
+  if (data.profile?.vat_number) { doc.text(`VAT: ${data.profile.vat_number}`, headerX, y); y += 12; }
+  if (data.profile?.email) { doc.text(data.profile.email, headerX, y); y += 12; }
+  if (data.profile?.phone) { doc.text(data.profile.phone, headerX, y); y += 12; }
+  if (data.logoDataUrl) y = Math.max(y, MARGIN + 48);
 
   // Title block — top right
   doc.setFont("helvetica", "bold");
