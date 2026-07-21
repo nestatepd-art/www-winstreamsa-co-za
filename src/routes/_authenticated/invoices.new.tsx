@@ -192,34 +192,50 @@ function NewInvoicePage() {
         </CardHeader>
         <CardContent className="space-y-3">
           {items.map((it, i) => (
-            <div key={i} className="grid grid-cols-12 gap-3 items-start">
-              <div className="col-span-12 sm:col-span-6">
+            <div key={i} className="grid grid-cols-12 gap-3 items-start rounded-lg border border-border/50 p-3 sm:border-0 sm:p-0">
+              <div className="col-span-12 sm:col-span-6 space-y-1">
+                <Label className="text-xs uppercase tracking-wider text-muted-foreground">Description</Label>
                 <Textarea
-                  placeholder="Description"
+                  placeholder="What are you invoicing for?"
                   value={it.description}
                   onChange={(e) => updateItem(i, { description: e.target.value })}
                   rows={2}
                   className="resize-none"
                 />
               </div>
-              <div className="col-span-3 sm:col-span-2">
+              <div className="col-span-6 sm:col-span-2 space-y-1">
+                <Label className="text-xs uppercase tracking-wider text-muted-foreground">Qty</Label>
                 <Input
-                  type="number" min={0} step="0.01"
-                  value={it.quantity}
+                  type="number"
+                  inputMode="decimal"
+                  min={0}
+                  step="0.01"
+                  value={it.quantity === 0 ? "" : it.quantity}
+                  onFocus={(e) => e.target.select()}
                   onChange={(e) => updateItem(i, { quantity: Number(e.target.value) })}
+                  placeholder="1"
                 />
               </div>
-              <div className="col-span-6 sm:col-span-2">
+              <div className="col-span-6 sm:col-span-2 space-y-1">
+                <Label className="text-xs uppercase tracking-wider text-muted-foreground">Unit price (R)</Label>
                 <Input
-                  type="number" min={0} step="0.01"
-                  value={it.unit_price}
+                  type="number"
+                  inputMode="decimal"
+                  min={0}
+                  step="0.01"
+                  value={it.unit_price === 0 ? "" : it.unit_price}
+                  onFocus={(e) => e.target.select()}
                   onChange={(e) => updateItem(i, { unit_price: Number(e.target.value) })}
+                  placeholder="0.00"
                 />
               </div>
-              <div className="col-span-2 sm:col-span-1 text-right tabular-nums text-sm pt-2">
-                {formatZAR(it.quantity * it.unit_price)}
+              <div className="col-span-8 sm:col-span-1 space-y-1">
+                <Label className="text-xs uppercase tracking-wider text-muted-foreground sm:sr-only">Line total</Label>
+                <div className="tabular-nums text-sm pt-2 sm:text-right">
+                  {formatZAR(it.quantity * it.unit_price)}
+                </div>
               </div>
-              <div className="col-span-1 text-right">
+              <div className="col-span-4 sm:col-span-1 flex justify-end sm:pt-6">
                 <Button variant="ghost" size="icon" onClick={() => removeItem(i)}>
                   <Trash2 className="h-4 w-4 text-muted-foreground" />
                 </Button>
