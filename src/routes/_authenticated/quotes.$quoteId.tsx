@@ -17,6 +17,7 @@ import { usePdfPreviewUrl } from "@/hooks/use-pdf-preview";
 import { sendRecordNow } from "@/lib/followups.functions";
 import { generateDocumentPdf, downloadBlob } from "@/lib/pdf-export";
 import { useCreditStatus } from "@/hooks/use-credits";
+import { useLogoAsset } from "@/hooks/use-logo-asset";
 
 
 export const Route = createFileRoute("/_authenticated/quotes/$quoteId")({
@@ -81,6 +82,8 @@ function QuoteViewPage() {
   const { data: creditStatus } = useCreditStatus();
   const showBranding = (creditStatus?.plan ?? "free") !== "pro";
 
+  const { data: logoAsset } = useLogoAsset(profile?.logo_url ?? null);
+
   const buildPdf = useMemo(() => () => generateDocumentPdf({
     kind: "Quote",
     number: quote.quote_number,
@@ -98,7 +101,8 @@ function QuoteViewPage() {
     client: quote.clients as any,
     profile,
     showBranding,
-  }), [quote, items, profile, showBranding]);
+    logoDataUrl: logoAsset?.dataUrl ?? null,
+  }), [quote, items, profile, showBranding, logoAsset?.dataUrl]);
 
 
   const { getBase64 } = usePdfPreviewUrl({ ready: true, build: buildPdf });
@@ -290,6 +294,7 @@ function QuoteViewPage() {
             items={items as any}
             client={quote.clients as any}
             profile={profile}
+            logoUrl={logoAsset?.url ?? null}
           />
         </CardContent>
       </Card>

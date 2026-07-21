@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Loader2, Upload, Trash2, ImageIcon } from "lucide-react";
+import { useLogoAsset, LOGO_BUCKET, isStoragePath } from "@/hooks/use-logo-asset";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   component: SettingsPage,
@@ -78,6 +79,21 @@ function SettingsPage() {
           <F label="Website" className="sm:col-span-2"><Input value={form.website ?? ""} onChange={(e) => set("website", e.target.value)} /></F>
         </CardContent>
       </Card>
+
+      <LogoCard
+        logoRef={form.logo_url ?? null}
+        onChange={(next) => {
+          setForm((f: any) => ({ ...f, logo_url: next }));
+          // Persist immediately so preview updates for existing quotes/invoices
+          if (profile?.id) {
+            supabase.from("business_profiles").update({ logo_url: next }).eq("id", profile.id).then(({ error }) => {
+              if (error) toast.error(error.message);
+              else qc.invalidateQueries({ queryKey: ["business-profile"] });
+            });
+          }
+        }}
+      />
+
 
       <Card>
         <CardHeader>
@@ -170,3 +186,95 @@ function F({ label, children, required, className }: { label: string; children: 
     </div>
   );
 }
+
+function LogoCard({ logoRef, onChange }: { logoRef: string | null; onChange: (next: string | null) => void }) {
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const { data: asset } = useLogoAsset(logoRef);
+
+  const handlePick = () => inputRef.current?.click();
+
+  const handleFile = async (file: File) => {
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please pick an image file (PNG, JPG, or SVG).");
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("Logo must be under 2MB.");
+      return;
+    }
+    setUploading(true);
+    try {
+      const { data: u } = await supabase.auth.getUser();
+      if (!u.user) throw new Error("Not signed in");
+      const ext = file.name.split(".").pop()?.toLowerCase() || "png";
+      const path = `${u.user.id}/logo-${Date.now()}.${ext}`;
+      const { error } = await supabase.storage.from(LOGO_BUCKET).upload(path, file, {
+        cacheControl: "3600",
+        upsert: true,
+        contentType: file.type,
+      });
+      if (error) throw error;
+      // Best-effort cleanup of previous logo
+      if (isStoragePath(logoRef) && logoRef !== path) {
+        await supabase.storage.from(LOGO_BUCKET).remove([logoRef]).catch(() => {});
+      }
+      onChange(path);
+      toast.success("Logo uploaded");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Upload failed");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleRemove = async () => {
+    if (isStoragePath(logoRef)) {
+      await supabase.storage.from(LOGO_BUCKET).remove([logoRef]).catch(() => {});
+    }
+    onChange(null);
+    toast.success("Logo removed");
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base">Logo</CardTitle>
+        <CardDescription>Appears on your quote and invoice previews and PDFs. PNG, JPG, or SVG · max 2MB.</CardDescription>
+      </CardHeader>
+      <CardContent className="flex items-center gap-4 flex-wrap">
+        <div className="h-20 w-20 rounded-md border border-border bg-muted/40 flex items-center justify-center overflow-hidden shrink-0">
+          {asset?.url ? (
+            <img src={asset.url} alt="Business logo" className="max-h-full max-w-full object-contain" />
+          ) : (
+            <ImageIcon className="h-6 w-6 text-muted-foreground" />
+          )}
+        </div>
+        <div className="flex gap-2">
+          <input
+            ref={inputRef}
+            type="file"
+            accept="image/png,image/jpeg,image/webp,image/svg+xml"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) handleFile(f);
+              e.target.value = "";
+            }}
+          />
+          <Button type="button" variant="outline" onClick={handlePick} disabled={uploading}>
+            {uploading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Upload className="h-4 w-4 mr-2" />}
+            {logoRef ? "Replace logo" : "Upload logo"}
+          </Button>
+          {logoRef && (
+            <Button type="button" variant="ghost" onClick={handleRemove} disabled={uploading}>
+              <Trash2 className="h-4 w-4 mr-2" />
+              Remove
+            </Button>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+

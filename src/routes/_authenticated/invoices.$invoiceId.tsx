@@ -17,6 +17,7 @@ import { usePdfPreviewUrl } from "@/hooks/use-pdf-preview";
 import { sendRecordNow } from "@/lib/followups.functions";
 import { generateDocumentPdf, downloadBlob } from "@/lib/pdf-export";
 import { useCreditStatus } from "@/hooks/use-credits";
+import { useLogoAsset } from "@/hooks/use-logo-asset";
 
 
 export const Route = createFileRoute("/_authenticated/invoices/$invoiceId")({
@@ -81,6 +82,8 @@ function InvoiceViewPage() {
   const { data: creditStatus } = useCreditStatus();
   const showBranding = (creditStatus?.plan ?? "free") !== "pro";
 
+  const { data: logoAsset } = useLogoAsset(profile?.logo_url ?? null);
+
   const buildPdf = useMemo(() => () => generateDocumentPdf({
     kind: "Invoice",
     number: invoice.invoice_number,
@@ -98,7 +101,8 @@ function InvoiceViewPage() {
     client,
     profile,
     showBranding,
-  }), [invoice, items, profile, client, showBranding]);
+    logoDataUrl: logoAsset?.dataUrl ?? null,
+  }), [invoice, items, profile, client, showBranding, logoAsset?.dataUrl]);
 
 
   const { getBase64 } = usePdfPreviewUrl({ ready: true, build: buildPdf });
@@ -281,6 +285,7 @@ function InvoiceViewPage() {
             items={items as any}
             client={client}
             profile={profile}
+            logoUrl={logoAsset?.url ?? null}
           />
         </CardContent>
       </Card>
