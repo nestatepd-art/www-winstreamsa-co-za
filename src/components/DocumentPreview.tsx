@@ -82,14 +82,23 @@ export function DocumentPreview({
     <div className="max-h-[760px] overflow-auto rounded-md border border-border bg-muted/30 p-3 sm:p-6">
       <article className="mx-auto min-h-[720px] w-full max-w-[794px] rounded-sm border border-document-border bg-document-page p-6 text-document-ink shadow-elevated sm:p-10">
         <div className="flex items-start justify-between gap-8 border-b border-document-border pb-5">
-          <div className="min-w-0">
-            <div className="text-base font-semibold text-document-ink">
-              {profile?.business_name || "Your business"}
-            </div>
-            <div className="mt-2 space-y-1 text-xs text-document-muted">
-              {profile?.vat_number && <div>VAT: {profile.vat_number}</div>}
-              {profile?.email && <div className="break-all">{profile.email}</div>}
-              {profile?.phone && <div>{profile.phone}</div>}
+          <div className="min-w-0 flex items-start gap-4">
+            {logoUrl && (
+              <img
+                src={logoUrl}
+                alt={`${profile?.business_name ?? "Business"} logo`}
+                className="h-14 w-14 shrink-0 rounded-sm object-contain bg-white border border-document-border"
+              />
+            )}
+            <div className="min-w-0">
+              <div className="text-base font-semibold text-document-ink">
+                {profile?.business_name || "Your business"}
+              </div>
+              <div className="mt-2 space-y-1 text-xs text-document-muted">
+                {profile?.vat_number && <div>VAT: {profile.vat_number}</div>}
+                {profile?.email && <div className="break-all">{profile.email}</div>}
+                {profile?.phone && <div>{profile.phone}</div>}
+              </div>
             </div>
           </div>
 
