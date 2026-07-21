@@ -42,6 +42,7 @@ type DocumentPreviewProps = {
   items: LineItem[];
   client?: Client | null;
   profile?: Profile | null;
+  logoUrl?: string | null;
 };
 
 function safeQuantity(value: number | string | null | undefined) {
