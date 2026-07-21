@@ -67,6 +67,7 @@ export function DocumentPreview({
   items,
   client,
   profile,
+  logoUrl,
 }: DocumentPreviewProps) {
   const dateLabel = kind === "Invoice" ? "Due date" : "Valid until";
   const dateValue = kind === "Invoice" ? dueDate : expiryDate;
