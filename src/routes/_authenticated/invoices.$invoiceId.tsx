@@ -285,6 +285,7 @@ function InvoiceViewPage() {
             items={items as any}
             client={client}
             profile={profile}
+            logoUrl={logoAsset?.url ?? null}
           />
         </CardContent>
       </Card>
