@@ -12,13 +12,13 @@ import { COLORS } from "./theme";
 
 loadFont("normal", { weights: ["400", "500", "600", "700", "800"], subsets: ["latin"] });
 
-// 20s @ 30fps = 600 frames; account for 4 x 15f transitions overlap.
-// Scene durations chosen so cumulative + overlaps = ~600.
-const S1 = 90;   // intro 3s
-const S2 = 120;  // login 4s
-const S3 = 150;  // new quote 5s
-const S4 = 180;  // AI draft 6s
-const S5 = 120;  // outro 4s
+// 40s @ 30fps = 1200 frames; account for 4 x 18f transition overlaps (72 frames).
+// Sum of sequences = 1272, net = 1200.
+const S1 = 150;  // intro 5s
+const S2 = 240;  // login 8s
+const S3 = 300;  // new quote 10s
+const S4 = 360;  // AI draft 12s
+const S5 = 222;  // outro ~7.4s
 const T = 18;
 export const TOTAL_FRAMES = S1 + S2 + S3 + S4 + S5 - T * 4;
 
