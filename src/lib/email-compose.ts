@@ -28,6 +28,18 @@ export const cleanEmailText = (value?: string | null) =>
     .replace(/\n{4,}/g, "\n\n\n")
     .trim();
 
+export function base64ToBlob(base64: string, contentType = "application/pdf") {
+  const byteCharacters = atob(base64);
+  const byteArrays: Uint8Array[] = [];
+  for (let offset = 0; offset < byteCharacters.length; offset += 1024) {
+    const slice = byteCharacters.slice(offset, offset + 1024);
+    const bytes = new Uint8Array(slice.length);
+    for (let i = 0; i < slice.length; i += 1) bytes[i] = slice.charCodeAt(i);
+    byteArrays.push(bytes);
+  }
+  return new Blob(byteArrays, { type: contentType });
+}
+
 const encodeMailtoValue = (value?: string | null) =>
   encodeURIComponent(cleanEmailText(value)).replace(/%0A/g, "%0D%0A");
 

@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, Printer, Trash2, Receipt, Pencil, Send, Download, Loader2 } from "lucide-react";
 import { formatZAR, formatDate } from "@/lib/format";
-import { extractEmailAddress } from "@/lib/email-compose";
+import { extractEmailAddress, openEmailDraft } from "@/lib/email-compose";
 import { QuoteStatusBadge } from "./dashboard";
 import { toast } from "sonner";
 import { FollowupsPanel } from "@/components/FollowupsPanel";
@@ -119,18 +119,18 @@ function QuoteViewPage({ quoteId, quote, items, profile }: { quoteId: string; qu
 
   const handleSend = async () => {
     if (!clientEmail) { toast.error("Client has no email on file."); return; }
+    const subject = `${quote.title || "Quotation"} ${quote.quote_number} — ${formatZAR(quote.total)}`;
+    const bodyText = [
+      `Please find attached quotation ${quote.quote_number} for ${formatZAR(quote.total)} incl. VAT${quote.expiry_date ? `, valid until ${formatDate(quote.expiry_date)}` : ""}.`,
+      "",
+      quote.notes || "Let us know if you'd like to proceed or need any adjustments.",
+      "",
+      "Thanks,",
+      profile?.business_name || "",
+    ].filter(Boolean).join("\n\n");
     setSending(true);
     try {
       const base64 = await getBase64();
-      const subject = `${quote.title || "Quotation"} ${quote.quote_number} — ${formatZAR(quote.total)}`;
-      const bodyText = [
-        `Please find attached quotation ${quote.quote_number} for ${formatZAR(quote.total)} incl. VAT${quote.expiry_date ? `, valid until ${formatDate(quote.expiry_date)}` : ""}.`,
-        "",
-        quote.notes || "Let us know if you'd like to proceed or need any adjustments.",
-        "",
-        "Thanks,",
-        profile?.business_name || "",
-      ].filter(Boolean).join("\n\n");
       const res = await sendFn({
         data: {
           recordType: "quote",
@@ -145,7 +145,18 @@ function QuoteViewPage({ quoteId, quote, items, profile }: { quoteId: string; qu
       import("@/lib/analytics").then(({ track }) => track("quote_sent", { quote_id: quoteId, total: quote.total }));
       qc.invalidateQueries({ queryKey: ["quote", quoteId] });
     } catch (e: any) {
-      toast.error(e?.message || "Send failed");
+      try {
+        const result = await openEmailDraft({
+          to: clientEmail,
+          subject,
+          body: bodyText,
+          attachment: { blob: buildPdf(), filename },
+        });
+        if (!result) throw new Error("Email draft could not be opened. Please check your default mail app.");
+        toast.warning("Direct send is still waiting on email verification, so a ready email draft opened with the PDF downloaded.");
+      } catch (fallbackError: any) {
+        toast.error(fallbackError?.message || e?.message || "Send failed");
+      }
     } finally {
       setSending(false);
     }
@@ -314,6 +325,7 @@ function QuoteViewPage({ quoteId, quote, items, profile }: { quoteId: string; qu
           recordId={quoteId}
           autoNudgeEnabled={autoNudge}
           onAutoNudgeChange={setAutoNudge}
+          recipientEmail={clientEmail}
           getPdfBase64={async () => {
             const base64 = await getBase64();
             return base64 ? { base64, filename } : null;
