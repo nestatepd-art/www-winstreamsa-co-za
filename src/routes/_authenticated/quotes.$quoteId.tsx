@@ -21,13 +21,11 @@ import { useLogoAsset } from "@/hooks/use-logo-asset";
 
 
 export const Route = createFileRoute("/_authenticated/quotes/$quoteId")({
-  component: QuoteViewPage,
+  component: QuoteRoute,
 });
 
-function QuoteViewPage() {
+function QuoteRoute() {
   const { quoteId } = Route.useParams();
-  const navigate = useNavigate();
-  const qc = useQueryClient();
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const isEditRoute = pathname.endsWith(`/quotes/${quoteId}/edit`);
 
@@ -43,6 +41,31 @@ function QuoteViewPage() {
       return { quote, items: items ?? [], profile };
     },
   });
+
+  if (isEditRoute) return <Outlet />;
+  if (isLoading) return <div className="p-10 text-center text-muted-foreground">Loading…</div>;
+  if (!data?.quote) return <div className="p-10 text-center">Quote not found.</div>;
+
+  return (
+    <QuoteViewPage
+      quoteId={quoteId}
+      quote={data.quote}
+      items={data.items}
+      profile={data.profile}
+    />
+  );
+}
+
+function QuoteViewPage({ quoteId, quote, items, profile }: { quoteId: string; quote: any; items: any[]; profile: any }) {
+  const navigate = useNavigate();
+  const qc = useQueryClient();
+  const clientEmail = extractEmailAddress(quote.clients?.email);
+  const [autoNudge, setAutoNudge] = useState<boolean>(!!quote.auto_nudge_enabled);
+  const [sending, setSending] = useState(false);
+  const sendFn = useServerFn(sendRecordNow);
+  const { data: creditStatus } = useCreditStatus();
+  const showBranding = (creditStatus?.plan ?? "free") !== "pro";
+  const { data: logoAsset } = useLogoAsset(profile?.logo_url ?? null);
 
   const statusMut = useMutation({
     mutationFn: async (status: string) => {
@@ -69,20 +92,6 @@ function QuoteViewPage() {
       navigate({ to: "/quotes" });
     },
   });
-
-  if (isEditRoute) return <Outlet />;
-  if (isLoading) return <div className="p-10 text-center text-muted-foreground">Loading…</div>;
-  if (!data?.quote) return <div className="p-10 text-center">Quote not found.</div>;
-
-  const { quote, items, profile } = data;
-  const clientEmail = extractEmailAddress(quote.clients?.email);
-  const [autoNudge, setAutoNudge] = useState<boolean>(quote.auto_nudge_enabled);
-  const [sending, setSending] = useState(false);
-  const sendFn = useServerFn(sendRecordNow);
-  const { data: creditStatus } = useCreditStatus();
-  const showBranding = (creditStatus?.plan ?? "free") !== "pro";
-
-  const { data: logoAsset } = useLogoAsset(profile?.logo_url ?? null);
 
   const buildPdf = useMemo(() => () => generateDocumentPdf({
     kind: "Quote",
