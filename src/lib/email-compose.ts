@@ -30,12 +30,12 @@ export const cleanEmailText = (value?: string | null) =>
 
 export function base64ToBlob(base64: string, contentType = "application/pdf") {
   const byteCharacters = atob(base64);
-  const byteArrays: Uint8Array[] = [];
+  const byteArrays: ArrayBuffer[] = [];
   for (let offset = 0; offset < byteCharacters.length; offset += 1024) {
     const slice = byteCharacters.slice(offset, offset + 1024);
     const bytes = new Uint8Array(slice.length);
     for (let i = 0; i < slice.length; i += 1) bytes[i] = slice.charCodeAt(i);
-    byteArrays.push(bytes);
+    byteArrays.push(bytes.buffer as ArrayBuffer);
   }
   return new Blob(byteArrays, { type: contentType });
 }
