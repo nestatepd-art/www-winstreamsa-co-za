@@ -31,8 +31,9 @@ export const SceneOutro = () => {
         >
           <Img src={staticFile("brand/logo.png")} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
         </div>
-        <div style={{ fontSize: 78, fontWeight: 800, letterSpacing: -2, opacity: text1, transform: `translateY(${interpolate(text1, [0, 1], [30, 0])}px)`, lineHeight: 1.05 }}>
-          Quotes & invoices,<br />drafted by AI.
+        <div style={{ fontSize: 72, fontWeight: 800, letterSpacing: -2, opacity: text1, transform: `translateY(${interpolate(text1, [0, 1], [30, 0])}px)`, lineHeight: 1.05 }}>
+          Quotes & invoices,<br />drafted by AI,<br />
+          <span style={{ color: COLORS.accent }}>approved by you.</span>
         </div>
         <div style={{ fontSize: 30, color: COLORS.accent, marginTop: 24, opacity: text2, fontWeight: 600 }}>
           Free to start · No credit card
