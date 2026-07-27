@@ -1,65 +1,58 @@
-import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
+import { AbsoluteFill, Img, interpolate, spring, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
 import { COLORS, FONT } from "../theme";
 
 export const SceneOutro = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const s = spring({ frame, fps, config: { damping: 14 } });
-  const scale = interpolate(s, [0, 1], [0.85, 1]);
-  const op = interpolate(frame, [0, 15], [0, 1], { extrapolateRight: "clamp" });
-
-  const checkS = spring({ frame: frame - 10, fps, config: { damping: 10, stiffness: 180 } });
+  const logoIn = spring({ frame, fps, config: { damping: 14 } });
+  const text1 = spring({ frame: frame - 15, fps, config: { damping: 18 } });
+  const text2 = spring({ frame: frame - 40, fps, config: { damping: 18 } });
+  const urlIn = spring({ frame: frame - 70, fps, config: { damping: 18 } });
 
   return (
-    <AbsoluteFill style={{ alignItems: "center", justifyContent: "center", fontFamily: FONT.family }}>
-      <div style={{ transform: `scale(${scale})`, opacity: op, display: "flex", flexDirection: "column", alignItems: "center" }}>
+    <AbsoluteFill style={{ overflow: "hidden" }}>
+      <AbsoluteFill>
+        <Img src={staticFile("brand/og.jpg")} style={{ width: "100%", height: "100%", objectFit: "cover", transform: `scale(${interpolate(frame, [0, 165], [1.1, 1.2])})` }} />
+      </AbsoluteFill>
+      <AbsoluteFill style={{ background: "linear-gradient(180deg, rgba(5,7,15,0.5) 0%, rgba(5,7,15,0.9) 100%)" }} />
+      <AbsoluteFill style={{ alignItems: "center", justifyContent: "center", fontFamily: FONT.family, color: "#fff", padding: 80, textAlign: "center" }}>
         <div
           style={{
-            width: 140,
-            height: 140,
-            borderRadius: 70,
-            background: `linear-gradient(135deg, ${COLORS.success}, #34D399)`,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            boxShadow: "0 30px 80px rgba(16,185,129,0.35)",
+            width: 200,
+            height: 200,
+            padding: 24,
+            marginBottom: 30,
+            borderRadius: 50,
+            background: "rgba(255,255,255,0.08)",
+            border: "2px solid rgba(255,255,255,0.15)",
+            opacity: logoIn,
+            transform: `scale(${interpolate(logoIn, [0, 1], [0.7, 1])})`,
           }}
         >
-          <svg width="70" height="70" viewBox="0 0 70 70">
-            <path
-              d="M18 36 L30 48 L54 22"
-              fill="none"
-              stroke="#fff"
-              strokeWidth="7"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeDasharray="80"
-              strokeDashoffset={interpolate(checkS, [0, 1], [80, 0])}
-            />
-          </svg>
+          <Img src={staticFile("brand/logo.png")} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
         </div>
-        <div style={{ marginTop: 40, color: "#fff", fontSize: 68, fontWeight: 800, letterSpacing: -2 }}>
-          Quote ready in seconds
+        <div style={{ fontSize: 78, fontWeight: 800, letterSpacing: -2, opacity: text1, transform: `translateY(${interpolate(text1, [0, 1], [30, 0])}px)`, lineHeight: 1.05 }}>
+          Quotes & invoices,<br />drafted by AI.
         </div>
-        <div style={{ marginTop: 14, color: "#94A3B8", fontSize: 26 }}>
-          Sign, send and get paid — with WinStream SA
+        <div style={{ fontSize: 30, color: COLORS.accent, marginTop: 24, opacity: text2, fontWeight: 600 }}>
+          Free to start · No credit card
         </div>
         <div
           style={{
-            marginTop: 40,
-            padding: "16px 32px",
-            background: `linear-gradient(135deg, ${COLORS.primary}, ${COLORS.accent})`,
-            color: "#fff",
+            marginTop: 60,
+            padding: "22px 36px",
             borderRadius: 999,
-            fontSize: 22,
-            fontWeight: 700,
-            letterSpacing: 0.5,
-            boxShadow: `0 12px 40px ${COLORS.glow}`,
+            background: `linear-gradient(135deg, ${COLORS.primary}, ${COLORS.accent2})`,
+            fontSize: 34,
+            fontWeight: 800,
+            opacity: urlIn,
+            transform: `scale(${interpolate(urlIn, [0, 1], [0.85, 1])})`,
+            boxShadow: `0 20px 60px ${COLORS.glow}`,
           }}
         >
           www.winstreamsa.co.za
         </div>
-      </div>
+      </AbsoluteFill>
     </AbsoluteFill>
   );
 };

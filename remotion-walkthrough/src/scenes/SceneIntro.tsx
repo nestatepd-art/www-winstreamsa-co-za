@@ -1,53 +1,82 @@
-import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
+import { AbsoluteFill, Img, interpolate, spring, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
 import { COLORS, FONT } from "../theme";
 
 export const SceneIntro = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const s = spring({ frame, fps, config: { damping: 14, stiffness: 90 } });
-  const scale = interpolate(s, [0, 1], [0.6, 1]);
-  const op = interpolate(frame, [0, 15], [0, 1], { extrapolateRight: "clamp" });
-  const sub = spring({ frame: frame - 20, fps, config: { damping: 20 } });
-  const subY = interpolate(sub, [0, 1], [24, 0]);
+  const logoIn = spring({ frame, fps, config: { damping: 14 } });
+  const textIn = spring({ frame: frame - 18, fps, config: { damping: 18 } });
+  const cta = spring({ frame: frame - 70, fps, config: { damping: 20 } });
+
+  const bgZoom = interpolate(frame, [0, 150], [1.05, 1.18]);
 
   return (
-    <AbsoluteFill style={{ alignItems: "center", justifyContent: "center", fontFamily: FONT.family }}>
-      <div style={{ transform: `scale(${scale})`, opacity: op, display: "flex", alignItems: "center", gap: 24 }}>
+    <AbsoluteFill style={{ overflow: "hidden" }}>
+      {/* branded OG image as hero backdrop */}
+      <AbsoluteFill style={{ transform: `scale(${bgZoom})` }}>
+        <Img src={staticFile("brand/og.jpg")} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+      </AbsoluteFill>
+      <AbsoluteFill
+        style={{
+          background:
+            "linear-gradient(180deg, rgba(5,7,15,0.55) 0%, rgba(5,7,15,0.35) 40%, rgba(5,7,15,0.85) 100%)",
+        }}
+      />
+      <AbsoluteFill style={{ alignItems: "center", justifyContent: "center", fontFamily: FONT.family, color: "#fff", padding: 80 }}>
         <div
           style={{
-            width: 120,
-            height: 120,
-            borderRadius: 28,
-            background: `linear-gradient(135deg, ${COLORS.primary}, ${COLORS.accent})`,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "#fff",
-            fontWeight: 800,
-            fontSize: 72,
-            boxShadow: `0 30px 90px ${COLORS.glow}`,
+            width: 260,
+            height: 260,
+            borderRadius: 60,
+            background: "rgba(255,255,255,0.08)",
+            border: "2px solid rgba(255,255,255,0.15)",
+            padding: 30,
+            marginBottom: 40,
+            opacity: logoIn,
+            transform: `scale(${interpolate(logoIn, [0, 1], [0.6, 1])})`,
+            boxShadow: `0 30px 100px ${COLORS.tealGlow}`,
           }}
         >
-          W
+          <Img src={staticFile("brand/logo.png")} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
         </div>
-        <div style={{ color: "#fff" }}>
-          <div style={{ fontSize: 96, fontWeight: 800, letterSpacing: -3, lineHeight: 1 }}>WinStream</div>
-          <div style={{ fontSize: 30, color: "#94A3B8", fontWeight: 500, marginTop: 8 }}>Work that runs itself</div>
+        <div
+          style={{
+            fontSize: 110,
+            fontWeight: 800,
+            letterSpacing: -3,
+            opacity: textIn,
+            transform: `translateY(${interpolate(textIn, [0, 1], [30, 0])}px)`,
+          }}
+        >
+          WinStream
         </div>
-      </div>
-      <div
-        style={{
-          marginTop: 60,
-          transform: `translateY(${subY}px)`,
-          opacity: sub,
-          color: "#CBD5E1",
-          fontSize: 28,
-          fontWeight: 500,
-          letterSpacing: 0.5,
-        }}
-      >
-        Create a professional quote — with AI — in under a minute
-      </div>
+        <div
+          style={{
+            fontSize: 34,
+            fontWeight: 500,
+            color: COLORS.accent,
+            marginTop: 14,
+            opacity: textIn,
+            letterSpacing: 0.5,
+          }}
+        >
+          AI workflow automation for SA SMEs
+        </div>
+        <div
+          style={{
+            marginTop: 80,
+            fontSize: 30,
+            fontWeight: 600,
+            padding: "16px 32px",
+            borderRadius: 999,
+            background: "rgba(34,211,238,0.15)",
+            border: `2px solid ${COLORS.accent}`,
+            opacity: cta,
+          }}
+        >
+          A 60-second walkthrough
+        </div>
+      </AbsoluteFill>
     </AbsoluteFill>
   );
 };
