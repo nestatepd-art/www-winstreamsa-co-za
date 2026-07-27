@@ -28,7 +28,7 @@ export const SceneSettings = () => {
     <AbsoluteFill style={{ alignItems: "center", justifyContent: "center", opacity: enter, transform: `translateY(${y}px)` }}>
       <Phone url="www.winstreamsa.co.za/settings">
         <div style={{ position: "relative", height: "100%", background: "#F8FAFC" }}>
-          {/* Dashboard layer sliding out */}
+          {/* Dashboard + left sidebar drawer */}
           {showDashboard && (
             <div
               style={{
@@ -36,34 +36,44 @@ export const SceneSettings = () => {
                 inset: 0,
                 background: "#F8FAFC",
                 transform: `translateX(${interpolate(frame, [60, 80], [0, -900], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })}px)`,
-                padding: "30px 30px",
                 fontFamily: FONT.family,
               }}
             >
-              <div style={{ fontSize: 40, fontWeight: 800, color: COLORS.ink, letterSpacing: -1 }}>Dashboard</div>
-              <div style={{ fontSize: 22, color: COLORS.muted, marginTop: 6 }}>Ubuntu Trading (Pty) Ltd</div>
-
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginTop: 30 }}>
-                {[
-                  { l: "Quotes", v: "12" },
-                  { l: "Invoices", v: "8" },
-                  { l: "Paid", v: "R42,300" },
-                  { l: "Overdue", v: "R6,800" },
-                ].map((k) => (
-                  <div key={k.l} style={{ background: "#fff", borderRadius: 18, padding: 22, border: `1px solid ${COLORS.softBorder}` }}>
-                    <div style={{ fontSize: 18, color: COLORS.muted, fontWeight: 600 }}>{k.l}</div>
-                    <div style={{ fontSize: 40, fontWeight: 800, color: COLORS.ink, marginTop: 6 }}>{k.v}</div>
-                  </div>
-                ))}
+              {/* Top bar with hamburger */}
+              <div style={{ height: 70, padding: "0 24px", display: "flex", alignItems: "center", gap: 16, borderBottom: `1px solid ${COLORS.softBorder}`, background: "#fff" }}>
+                <div style={{ fontSize: 34, color: COLORS.ink, fontWeight: 800 }}>≡</div>
+                <div style={{ fontSize: 24, fontWeight: 800, color: COLORS.ink, letterSpacing: -0.5 }}>WinStream</div>
+                <div style={{ marginLeft: "auto", fontSize: 14, color: COLORS.muted }}>Work that runs itself</div>
               </div>
 
-              <div style={{ marginTop: 30, fontSize: 24, fontWeight: 700, color: COLORS.ink }}>Menu</div>
-              <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 12 }}>
+              {/* Left sidebar drawer (slides in) */}
+              <div
+                style={{
+                  position: "absolute",
+                  top: 70,
+                  bottom: 0,
+                  left: 0,
+                  width: 620,
+                  background: "#0B1220",
+                  color: "#fff",
+                  padding: "26px 22px",
+                  transform: `translateX(${interpolate(frame, [0, 22], [-620, 0], { extrapolateRight: "clamp" })}px)`,
+                  boxShadow: "20px 0 60px rgba(0,0,0,0.35)",
+                  zIndex: 5,
+                }}
+              >
+                <div style={{ fontSize: 14, fontWeight: 700, color: "#64748B", textTransform: "uppercase", letterSpacing: 1.4, marginBottom: 14 }}>Workspace</div>
                 {[
-                  ["📄", "Quotes"],
+                  ["▦", "Dashboard"],
+                  ["◉", "Clients"],
+                  ["✎", "Proposals"],
+                  ["§", "Quotes"],
                   ["🧾", "Invoices"],
-                  ["👥", "Clients"],
-                  ["⚙️", "Settings", true],
+                  ["🔔", "Reminders"],
+                  ["💳", "Billing"],
+                  ["💬", "Assist"],
+                  ["★", "Leave a Review"],
+                  ["⚙", "Settings", true],
                 ].map(([ic, lb, hi]) => (
                   <div
                     key={lb as string}
@@ -71,24 +81,36 @@ export const SceneSettings = () => {
                       display: "flex",
                       alignItems: "center",
                       gap: 16,
-                      padding: "22px 22px",
-                      background: hi ? "rgba(34,211,238,0.15)" : "#fff",
-                      border: `2px solid ${hi ? COLORS.accent : COLORS.softBorder}`,
-                      borderRadius: 16,
-                      fontSize: 26,
-                      fontWeight: 700,
-                      color: COLORS.ink,
-                      boxShadow: hi ? `0 12px 40px ${COLORS.tealGlow}` : "none",
+                      padding: "16px 18px",
+                      borderRadius: 12,
+                      background: hi ? `linear-gradient(135deg, ${COLORS.primary}, ${COLORS.accent2})` : "transparent",
+                      marginBottom: 4,
+                      fontSize: 24,
+                      fontWeight: hi ? 800 : 600,
+                      color: hi ? "#fff" : "#CBD5E1",
+                      boxShadow: hi ? `0 12px 30px ${COLORS.glow}` : "none",
                     }}
                   >
-                    <span style={{ fontSize: 30 }}>{ic}</span>
+                    <span style={{ fontSize: 26, width: 34, textAlign: "center" }}>{ic}</span>
                     <span>{lb}</span>
                   </div>
                 ))}
+                <div style={{ position: "absolute", bottom: 24, left: 22, right: 22, padding: "14px 16px", background: "rgba(34,211,238,0.10)", border: `1px solid ${COLORS.accent}`, borderRadius: 12, fontSize: 18 }}>
+                  <div style={{ color: COLORS.accent, fontWeight: 800 }}>Credits</div>
+                  <div style={{ color: "#CBD5E1", marginTop: 4 }}>14 / 20 this month</div>
+                </div>
               </div>
-              <Tap x={470} y={790} visible={frame > 40 && frame < 62} />
+
+              {/* Dashboard content peeking behind drawer */}
+              <div style={{ padding: "24px 30px", opacity: 0.35 }}>
+                <div style={{ fontSize: 38, fontWeight: 800, color: COLORS.ink, letterSpacing: -1 }}>Dashboard</div>
+                <div style={{ fontSize: 20, color: COLORS.muted, marginTop: 6 }}>Ubuntu Trading (Pty) Ltd</div>
+              </div>
+
+              <Tap x={180} y={860} visible={frame > 40 && frame < 62} />
             </div>
           )}
+
 
           {/* Settings layer sliding in */}
           {showSettings && (
