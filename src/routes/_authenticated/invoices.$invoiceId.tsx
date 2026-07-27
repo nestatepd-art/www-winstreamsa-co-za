@@ -21,13 +21,11 @@ import { useLogoAsset } from "@/hooks/use-logo-asset";
 
 
 export const Route = createFileRoute("/_authenticated/invoices/$invoiceId")({
-  component: InvoiceViewPage,
+  component: InvoiceRoute,
 });
 
-function InvoiceViewPage() {
+function InvoiceRoute() {
   const { invoiceId } = Route.useParams();
-  const navigate = useNavigate();
-  const qc = useQueryClient();
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const isEditRoute = pathname.endsWith(`/invoices/${invoiceId}/edit`);
 
@@ -43,6 +41,32 @@ function InvoiceViewPage() {
       return { invoice, items: items ?? [], profile };
     },
   });
+
+  if (isEditRoute) return <Outlet />;
+  if (isLoading) return <div className="p-10 text-center text-muted-foreground">Loading…</div>;
+  if (!data?.invoice) return <div className="p-10 text-center">Invoice not found.</div>;
+
+  return (
+    <InvoiceViewPage
+      invoiceId={invoiceId}
+      invoice={data.invoice}
+      items={data.items}
+      profile={data.profile}
+    />
+  );
+}
+
+function InvoiceViewPage({ invoiceId, invoice, items, profile }: { invoiceId: string; invoice: any; items: any[]; profile: any }) {
+  const navigate = useNavigate();
+  const qc = useQueryClient();
+  const client = invoice.clients as any;
+  const clientEmail = extractEmailAddress(client?.email);
+  const [autoNudge, setAutoNudge] = useState<boolean>(!!invoice.auto_nudge_enabled);
+  const [sending, setSending] = useState(false);
+  const sendFn = useServerFn(sendRecordNow);
+  const { data: creditStatus } = useCreditStatus();
+  const showBranding = (creditStatus?.plan ?? "free") !== "pro";
+  const { data: logoAsset } = useLogoAsset(profile?.logo_url ?? null);
 
   const statusMut = useMutation({
     mutationFn: async (status: string) => {
@@ -70,32 +94,19 @@ function InvoiceViewPage() {
     },
   });
 
-  const invoice = data?.invoice;
-  const items = data?.items ?? [];
-  const profile = data?.profile;
-  const client = invoice?.clients as any;
-  const clientEmail = extractEmailAddress(client?.email);
-  const [autoNudge, setAutoNudge] = useState<boolean>(!!invoice?.auto_nudge_enabled);
-  const [sending, setSending] = useState(false);
-  const sendFn = useServerFn(sendRecordNow);
-  const { data: creditStatus } = useCreditStatus();
-  const showBranding = (creditStatus?.plan ?? "free") !== "pro";
-
-  const { data: logoAsset } = useLogoAsset(profile?.logo_url ?? null);
-
   const buildPdf = useMemo(() => () => generateDocumentPdf({
     kind: "Invoice",
-    number: invoice?.invoice_number,
-    title: invoice?.title,
-    status: invoice?.status,
-    issue_date: invoice?.issue_date,
-    due_date: invoice?.due_date,
-    subtotal: invoice?.subtotal,
-    vat_rate: invoice?.vat_rate,
-    vat_amount: invoice?.vat_amount,
-    total: invoice?.total,
-    notes: invoice?.notes,
-    terms: invoice?.terms,
+    number: invoice.invoice_number,
+    title: invoice.title,
+    status: invoice.status,
+    issue_date: invoice.issue_date,
+    due_date: invoice.due_date,
+    subtotal: invoice.subtotal,
+    vat_rate: invoice.vat_rate,
+    vat_amount: invoice.vat_amount,
+    total: invoice.total,
+    notes: invoice.notes,
+    terms: invoice.terms,
     items: items as any,
     client,
     profile,
@@ -104,8 +115,8 @@ function InvoiceViewPage() {
   }), [invoice, items, profile, client, showBranding, logoAsset?.dataUrl]);
 
 
-  const { getBase64 } = usePdfPreviewUrl({ ready: !!invoice, build: buildPdf });
-  const filename = `Invoice-${invoice?.invoice_number ?? ""}.pdf`;
+  const { getBase64 } = usePdfPreviewUrl({ ready: true, build: buildPdf });
+  const filename = `Invoice-${invoice.invoice_number}.pdf`;
 
   const handleSend = async () => {
     if (!clientEmail) { toast.error("Client has no email on file."); return; }
