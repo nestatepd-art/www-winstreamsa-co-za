@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Mail, Send, SkipForward, Loader2, CheckCircle2, XCircle, Clock } from "lucide-react";
 import { toast } from "sonner";
+import { base64ToBlob, openEmailDraft } from "@/lib/email-compose";
 import {
   listFollowups,
   updateFollowup,
@@ -22,6 +23,7 @@ type Props = {
   recordId: string;
   autoNudgeEnabled: boolean;
   onAutoNudgeChange?: (enabled: boolean) => void;
+  recipientEmail?: string | null;
   /** Optional lazy PDF factory (returns base64 without data URL prefix) */
   getPdfBase64?: () => Promise<{ filename: string; base64: string } | null>;
 };
@@ -37,7 +39,7 @@ function statusBadge(status: string) {
   return <Badge variant="outline" className="gap-1"><Clock className="h-3 w-3" /> Scheduled</Badge>;
 }
 
-export function FollowupsPanel({ recordType, recordId, autoNudgeEnabled, onAutoNudgeChange, getPdfBase64 }: Props) {
+export function FollowupsPanel({ recordType, recordId, autoNudgeEnabled, onAutoNudgeChange, recipientEmail, getPdfBase64 }: Props) {
   const qc = useQueryClient();
   const list = useServerFn(listFollowups);
   const upd = useServerFn(updateFollowup);
@@ -102,18 +104,30 @@ export function FollowupsPanel({ recordType, recordId, autoNudgeEnabled, onAutoN
                 toast.success("Follow-up skipped");
                 qc.invalidateQueries({ queryKey });
               }}
-              onSend={async () => {
+              onSend={async (draft) => {
                 const pdf = getPdfBase64 ? await getPdfBase64() : null;
-                await send({
-                  data: {
-                    recordType,
-                    id: row.id,
-                    pdfBase64: pdf?.base64,
-                    pdfFilename: pdf?.filename,
-                  },
-                });
-                toast.success("Follow-up sent");
-                qc.invalidateQueries({ queryKey });
+                try {
+                  await send({
+                    data: {
+                      recordType,
+                      id: row.id,
+                      pdfBase64: pdf?.base64,
+                      pdfFilename: pdf?.filename,
+                    },
+                  });
+                  toast.success("Follow-up sent");
+                  qc.invalidateQueries({ queryKey });
+                } catch (error) {
+                  if (!recipientEmail) throw error;
+                  const result = await openEmailDraft({
+                    to: recipientEmail,
+                    subject: draft.subject,
+                    body: draft.body,
+                    attachment: pdf ? { blob: base64ToBlob(pdf.base64), filename: pdf.filename } : null,
+                  });
+                  if (!result) throw error;
+                  toast.warning("Direct send is still waiting on email verification, so a ready email draft opened instead.");
+                }
               }}
             />
           ))}
@@ -132,7 +146,7 @@ function FollowupRow({
   row: any;
   onSave: (patch: { subject?: string; body?: string }) => Promise<void>;
   onSkip: () => Promise<void>;
-  onSend: () => Promise<void>;
+  onSend: (draft: { subject: string; body: string }) => Promise<void>;
 }) {
   const [subject, setSubject] = useState<string>(row.subject);
   const [body, setBody] = useState<string>(row.body);
@@ -207,7 +221,7 @@ function FollowupRow({
             onClick={async () => {
               await saveIfChanged();
               setSending(true);
-              try { await onSend(); } catch (e: any) { toast.error(e?.message || "Send failed"); }
+              try { await onSend({ subject, body }); } catch (e: any) { toast.error(e?.message || "Send failed"); }
               finally { setSending(false); }
             }}
             disabled={sending || skipping}
