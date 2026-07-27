@@ -199,7 +199,7 @@ export const SceneSettings = () => {
           )}
         </div>
       </Phone>
-      <Caption step="STEP 2" title="Upload your business logo" />
+      <Caption step="STEP 2" title="Open the side menu → upload your logo" />
     </AbsoluteFill>
   );
 };
