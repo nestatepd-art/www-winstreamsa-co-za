@@ -6,10 +6,19 @@ import { AppSidebar } from "@/components/app-sidebar";
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
   beforeLoad: async () => {
-    const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) throw redirect({ to: "/auth" });
-    return { user: data.user };
+    // Never let a slow/locked auth call hang the router (blank screen). Fall back
+    // to the locally persisted session if getUser() doesn't answer quickly.
+    const timeout = new Promise<null>((resolve) => setTimeout(() => resolve(null), 4000));
+    const result = await Promise.race([supabase.auth.getUser(), timeout]);
+
+    if (result && !result.error && result.data.user) return { user: result.data.user };
+
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (sessionData.session?.user) return { user: sessionData.session.user };
+
+    throw redirect({ to: "/auth" });
   },
+
   component: AuthedLayout,
 });
 

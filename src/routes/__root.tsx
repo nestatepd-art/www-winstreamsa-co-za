@@ -190,38 +190,47 @@ function RootComponent() {
     supabase.auth.getUser().then(({ data }) => {
       if (data.user) identifyUser(data.user.id, data.user.email);
     });
-    const { data } = supabase.auth.onAuthStateChange(async (event, session) => {
+    // IMPORTANT: this callback must stay synchronous. Supabase holds an internal
+    // auth lock while it runs, so awaiting any supabase call here deadlocks the
+    // next getUser() (e.g. the /_authenticated route guard) and the app hangs on
+    // a blank screen until a manual refresh. Defer all async work with setTimeout.
+    const { data } = supabase.auth.onAuthStateChange((event, session) => {
       if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
-      router.invalidate();
       if (event === "SIGNED_OUT") {
         resetAnalytics();
+        router.invalidate();
         return;
       }
       if (session?.user) identifyUser(session.user.id, session.user.email);
-      queryClient.invalidateQueries();
 
-      if (event === "SIGNED_IN" && session?.user) {
-        try {
-          // Ensure a business profile exists (Google sign-ups skip the signup form).
-          const { data: existing } = await supabase
-            .from("business_profiles")
-            .select("id")
-            .eq("user_id", session.user.id)
-            .maybeSingle();
-          if (!existing) {
-            await supabase.from("business_profiles").insert({
-              user_id: session.user.id,
-              business_name: session.user.user_metadata?.full_name || "My Business",
-            });
+      setTimeout(async () => {
+        router.invalidate();
+        queryClient.invalidateQueries();
+
+        if (event === "SIGNED_IN" && session?.user) {
+          try {
+            // Ensure a business profile exists (Google sign-ups skip the signup form).
+            const { data: existing } = await supabase
+              .from("business_profiles")
+              .select("id")
+              .eq("user_id", session.user.id)
+              .maybeSingle();
+            if (!existing) {
+              await supabase.from("business_profiles").insert({
+                user_id: session.user.id,
+                business_name: session.user.user_metadata?.full_name || "My Business",
+              });
+            }
+            // Claim any pending purchases made before this account existed.
+            const { claimPendingPurchases } = await import("@/lib/portal.functions");
+            await claimPendingPurchases().catch(() => {});
+          } catch (err) {
+            console.warn("post-signin hook failed:", err);
           }
-          // Claim any pending purchases made before this account existed.
-          const { claimPendingPurchases } = await import("@/lib/portal.functions");
-          await claimPendingPurchases().catch(() => {});
-        } catch (err) {
-          console.warn("post-signin hook failed:", err);
         }
-      }
+      }, 0);
     });
+
     return () => data.subscription.unsubscribe();
   }, [router, queryClient]);
 
