@@ -52,9 +52,17 @@ async function normalizeCatastrophicSsrResponse(request: Request, response: Resp
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
+      // Canonical host: 301 non-www apex -> www so Search Console sees one URL.
+      const url = new URL(request.url);
+      if (url.hostname === "winstreamsa.co.za") {
+        url.hostname = "www.winstreamsa.co.za";
+        url.protocol = "https:";
+        return Response.redirect(url.toString(), 301);
+      }
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
       return await normalizeCatastrophicSsrResponse(request, response);
+
     } catch (error) {
       console.error(error);
       return new Response(renderErrorPage(), {
