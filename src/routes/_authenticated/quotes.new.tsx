@@ -145,8 +145,11 @@ function NewQuotePage() {
       }
       return quote;
     },
-    onSuccess: (q) => {
+    onSuccess: (q: any) => {
       toast.success("Quote saved");
+      import("@/lib/analytics").then(({ track }) =>
+        track("quote_created", { quote_id: q.id, total: q.total, status: q.status }),
+      );
       navigate({ to: "/quotes/$quoteId", params: { quoteId: q.id } });
     },
     onError: (e: any) => toast.error(e.message),
