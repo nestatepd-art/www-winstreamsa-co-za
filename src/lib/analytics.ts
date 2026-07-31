@@ -10,11 +10,35 @@ export function initAnalytics() {
   initialized = true;
   posthog.init(POSTHOG_KEY, {
     api_host: POSTHOG_HOST,
-    capture_pageview: true,
+    // SPA-safe: capture a pageview on every history change, not just first load.
+    capture_pageview: "history_change",
     capture_pageleave: true,
     autocapture: true,
+    capture_dead_clicks: true,
+    rageclick: true,
+    capture_exceptions: true,
+    person_profiles: "always",
     persistence: "localStorage+cookie",
+    session_recording: {
+      maskAllInputs: true,
+      maskTextSelector: "[data-ph-mask]",
+    },
+    disable_session_recording: false,
+    loaded: (ph) => {
+      ph.startSessionRecording();
+    },
   });
+}
+
+/** Manual pageview — used by the router subscription as a safety net. */
+export function trackPageview(path: string) {
+  if (typeof window === "undefined") return;
+  try {
+    posthog.capture("$pageview", {
+      $current_url: window.location.origin + path,
+      pathname: path,
+    });
+  } catch {}
 }
 
 export function identifyUser(userId: string, email?: string | null) {
