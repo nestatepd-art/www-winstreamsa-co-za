@@ -99,6 +99,9 @@ function NewProposal() {
     setBusy(null);
     if (error) return toast.error(error.message);
     toast.success("Proposal saved");
+    import("@/lib/analytics").then(({ track }) =>
+      track("proposal_created", { proposal_id: data.id }),
+    );
     navigate({ to: "/proposals/$proposalId", params: { proposalId: data.id } });
   };
 
