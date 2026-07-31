@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TrustRouteImport } from './routes/trust'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as StatusRouteImport } from './routes/status'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ReviewsRouteImport } from './routes/reviews'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
@@ -37,6 +38,7 @@ import { Route as AuthenticatedQuotesIndexRouteImport } from './routes/_authenti
 import { Route as AuthenticatedProposalsIndexRouteImport } from './routes/_authenticated/proposals.index'
 import { Route as AuthenticatedInvoicesIndexRouteImport } from './routes/_authenticated/invoices.index'
 import { Route as AuthenticatedChatIndexRouteImport } from './routes/_authenticated/chat.index'
+import { Route as ApiPublicHealthRouteImport } from './routes/api/public/health'
 import { Route as AuthenticatedQuotesNewRouteImport } from './routes/_authenticated/quotes.new'
 import { Route as AuthenticatedQuotesQuoteIdRouteImport } from './routes/_authenticated/quotes.$quoteId'
 import { Route as AuthenticatedProposalsNewRouteImport } from './routes/_authenticated/proposals.new'
@@ -60,6 +62,11 @@ const TrustRoute = TrustRouteImport.update({
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StatusRoute = StatusRouteImport.update({
+  id: '/status',
+  path: '/status',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
@@ -195,6 +202,11 @@ const AuthenticatedChatIndexRoute = AuthenticatedChatIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedChatRoute,
 } as any)
+const ApiPublicHealthRoute = ApiPublicHealthRouteImport.update({
+  id: '/api/public/health',
+  path: '/api/public/health',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedQuotesNewRoute = AuthenticatedQuotesNewRouteImport.update({
   id: '/quotes/new',
   path: '/quotes/new',
@@ -289,6 +301,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/reviews': typeof ReviewsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/status': typeof StatusRoute
   '/terms': typeof TermsRoute
   '/trust': typeof TrustRoute
   '/billing': typeof AuthenticatedBillingRoute
@@ -310,6 +323,7 @@ export interface FileRoutesByFullPath {
   '/proposals/new': typeof AuthenticatedProposalsNewRoute
   '/quotes/$quoteId': typeof AuthenticatedQuotesQuoteIdRouteWithChildren
   '/quotes/new': typeof AuthenticatedQuotesNewRoute
+  '/api/public/health': typeof ApiPublicHealthRoute
   '/chat/': typeof AuthenticatedChatIndexRoute
   '/invoices/': typeof AuthenticatedInvoicesIndexRoute
   '/proposals/': typeof AuthenticatedProposalsIndexRoute
@@ -332,6 +346,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/reviews': typeof ReviewsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/status': typeof StatusRoute
   '/terms': typeof TermsRoute
   '/trust': typeof TrustRoute
   '/billing': typeof AuthenticatedBillingRoute
@@ -352,6 +367,7 @@ export interface FileRoutesByTo {
   '/proposals/new': typeof AuthenticatedProposalsNewRoute
   '/quotes/$quoteId': typeof AuthenticatedQuotesQuoteIdRouteWithChildren
   '/quotes/new': typeof AuthenticatedQuotesNewRoute
+  '/api/public/health': typeof ApiPublicHealthRoute
   '/chat': typeof AuthenticatedChatIndexRoute
   '/invoices': typeof AuthenticatedInvoicesIndexRoute
   '/proposals': typeof AuthenticatedProposalsIndexRoute
@@ -376,6 +392,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/reviews': typeof ReviewsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/status': typeof StatusRoute
   '/terms': typeof TermsRoute
   '/trust': typeof TrustRoute
   '/_authenticated/billing': typeof AuthenticatedBillingRoute
@@ -397,6 +414,7 @@ export interface FileRoutesById {
   '/_authenticated/proposals/new': typeof AuthenticatedProposalsNewRoute
   '/_authenticated/quotes/$quoteId': typeof AuthenticatedQuotesQuoteIdRouteWithChildren
   '/_authenticated/quotes/new': typeof AuthenticatedQuotesNewRoute
+  '/api/public/health': typeof ApiPublicHealthRoute
   '/_authenticated/chat/': typeof AuthenticatedChatIndexRoute
   '/_authenticated/invoices/': typeof AuthenticatedInvoicesIndexRoute
   '/_authenticated/proposals/': typeof AuthenticatedProposalsIndexRoute
@@ -421,6 +439,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/reviews'
     | '/sitemap.xml'
+    | '/status'
     | '/terms'
     | '/trust'
     | '/billing'
@@ -442,6 +461,7 @@ export interface FileRouteTypes {
     | '/proposals/new'
     | '/quotes/$quoteId'
     | '/quotes/new'
+    | '/api/public/health'
     | '/chat/'
     | '/invoices/'
     | '/proposals/'
@@ -464,6 +484,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/reviews'
     | '/sitemap.xml'
+    | '/status'
     | '/terms'
     | '/trust'
     | '/billing'
@@ -484,6 +505,7 @@ export interface FileRouteTypes {
     | '/proposals/new'
     | '/quotes/$quoteId'
     | '/quotes/new'
+    | '/api/public/health'
     | '/chat'
     | '/invoices'
     | '/proposals'
@@ -507,6 +529,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/reviews'
     | '/sitemap.xml'
+    | '/status'
     | '/terms'
     | '/trust'
     | '/_authenticated/billing'
@@ -528,6 +551,7 @@ export interface FileRouteTypes {
     | '/_authenticated/proposals/new'
     | '/_authenticated/quotes/$quoteId'
     | '/_authenticated/quotes/new'
+    | '/api/public/health'
     | '/_authenticated/chat/'
     | '/_authenticated/invoices/'
     | '/_authenticated/proposals/'
@@ -552,11 +576,13 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   ReviewsRoute: typeof ReviewsRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  StatusRoute: typeof StatusRoute
   TermsRoute: typeof TermsRoute
   TrustRoute: typeof TrustRoute
   ApiChatRoute: typeof ApiChatRoute
   BlogSlugRoute: typeof BlogSlugRoute
   BlogIndexRoute: typeof BlogIndexRoute
+  ApiPublicHealthRoute: typeof ApiPublicHealthRoute
   ApiPublicHooksAutoNudgeRoute: typeof ApiPublicHooksAutoNudgeRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
@@ -576,6 +602,13 @@ declare module '@tanstack/react-router' {
       path: '/terms'
       fullPath: '/terms'
       preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/status': {
+      id: '/status'
+      path: '/status'
+      fullPath: '/status'
+      preLoaderRoute: typeof StatusRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sitemap.xml': {
@@ -759,6 +792,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/chat/'
       preLoaderRoute: typeof AuthenticatedChatIndexRouteImport
       parentRoute: typeof AuthenticatedChatRoute
+    }
+    '/api/public/health': {
+      id: '/api/public/health'
+      path: '/api/public/health'
+      fullPath: '/api/public/health'
+      preLoaderRoute: typeof ApiPublicHealthRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/quotes/new': {
       id: '/_authenticated/quotes/new'
@@ -962,11 +1002,13 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   ReviewsRoute: ReviewsRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  StatusRoute: StatusRoute,
   TermsRoute: TermsRoute,
   TrustRoute: TrustRoute,
   ApiChatRoute: ApiChatRoute,
   BlogSlugRoute: BlogSlugRoute,
   BlogIndexRoute: BlogIndexRoute,
+  ApiPublicHealthRoute: ApiPublicHealthRoute,
   ApiPublicHooksAutoNudgeRoute: ApiPublicHooksAutoNudgeRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
@@ -974,13 +1016,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
