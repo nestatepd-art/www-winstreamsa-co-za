@@ -11,7 +11,7 @@ export function initAnalytics() {
   posthog.init(POSTHOG_KEY, {
     api_host: POSTHOG_HOST,
     // SPA-safe: capture a pageview on every history change, not just first load.
-    capture_pageview: "history_change",
+    capture_pageview: false, // driven manually from the router so every SPA route change is captured exactly once
     capture_pageleave: true,
     autocapture: true,
     capture_dead_clicks: true,
