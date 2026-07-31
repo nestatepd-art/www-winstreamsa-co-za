@@ -187,6 +187,11 @@ function RootComponent() {
 
   useEffect(() => {
     initAnalytics();
+    // Capture the initial pageview + every SPA navigation.
+    trackPageview(router.state.location.pathname);
+    const unsubscribe = router.subscribe("onResolved", ({ toLocation }) => {
+      trackPageview(toLocation.pathname);
+    });
     supabase.auth.getUser().then(({ data }) => {
       if (data.user) identifyUser(data.user.id, data.user.email);
     });
