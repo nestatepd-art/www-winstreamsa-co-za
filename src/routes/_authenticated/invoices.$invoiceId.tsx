@@ -191,7 +191,7 @@ function InvoiceViewPage({ invoiceId, invoice, items, profile }: { invoiceId: st
               <Pencil className="h-4 w-4 mr-1" /> Edit
             </Link>
           </Button>
-          <Button variant="outline" size="sm" onClick={() => downloadBlob(buildPdf(), filename)}>
+          <Button variant="outline" size="sm" onClick={() => { downloadBlob(buildPdf(), filename); import("@/lib/analytics").then(({ track }) => track("pdf_downloaded", { doc_type: "invoice" })); }}>
             <Download className="h-4 w-4 mr-1" /> PDF
           </Button>
           <Button variant="outline" size="sm" onClick={() => window.print()}>
