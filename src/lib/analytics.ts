@@ -30,13 +30,18 @@ export function initAnalytics() {
   });
 }
 
-/** Manual pageview — used by the router subscription as a safety net. */
+/** Manual pageview — driven by the router so SPA navigations are never missed. */
 export function trackPageview(path: string) {
   if (typeof window === "undefined") return;
   try {
     posthog.capture("$pageview", {
       $current_url: window.location.origin + path,
       pathname: path,
+      app_area: path.startsWith("/blog")
+        ? "blog"
+        : ["/", "/pricing", "/features", "/about", "/contact", "/auth"].includes(path)
+          ? "marketing"
+          : "app",
     });
   } catch {}
 }
@@ -44,7 +49,10 @@ export function trackPageview(path: string) {
 export function identifyUser(userId: string, email?: string | null) {
   if (typeof window === "undefined") return;
   try {
-    posthog.identify(userId, email ? { email } : undefined);
+    posthog.identify(userId, {
+      ...(email ? { email } : {}),
+      last_seen_at: new Date().toISOString(),
+    });
   } catch {}
 }
 
