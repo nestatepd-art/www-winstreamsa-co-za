@@ -10,17 +10,49 @@ export function initAnalytics() {
   initialized = true;
   posthog.init(POSTHOG_KEY, {
     api_host: POSTHOG_HOST,
-    capture_pageview: true,
+    // SPA-safe: capture a pageview on every history change, not just first load.
+    capture_pageview: false, // driven manually from the router so every SPA route change is captured exactly once
     capture_pageleave: true,
     autocapture: true,
+    capture_dead_clicks: true,
+    rageclick: true,
+    capture_exceptions: true,
+    person_profiles: "always",
     persistence: "localStorage+cookie",
+    session_recording: {
+      maskAllInputs: true,
+      maskTextSelector: "[data-ph-mask]",
+    },
+    disable_session_recording: false,
+    loaded: (ph) => {
+      ph.startSessionRecording();
+    },
   });
+}
+
+/** Manual pageview — driven by the router so SPA navigations are never missed. */
+export function trackPageview(path: string) {
+  if (typeof window === "undefined") return;
+  try {
+    posthog.capture("$pageview", {
+      $current_url: window.location.origin + path,
+      pathname: path,
+      app_area: path.startsWith("/blog")
+        ? "blog"
+        : ["/", "/pricing", "/features", "/about", "/contact", "/auth"].includes(path)
+          ? "marketing"
+          : "app",
+    });
+  } catch {}
 }
 
 export function identifyUser(userId: string, email?: string | null) {
   if (typeof window === "undefined") return;
   try {
-    posthog.identify(userId, email ? { email } : undefined);
+    posthog.identify(userId, {
+      ...(email ? { email } : {}),
+      last_seen_at: new Date().toISOString(),
+    });
   } catch {}
 }
 

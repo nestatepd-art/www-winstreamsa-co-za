@@ -199,7 +199,7 @@ function QuoteViewPage({ quoteId, quote, items, profile }: { quoteId: string; qu
               <Receipt className="h-4 w-4 mr-1" /> Convert to invoice
             </Link>
           </Button>
-          <Button variant="outline" size="sm" onClick={() => downloadBlob(buildPdf(), filename)}>
+          <Button variant="outline" size="sm" onClick={() => { downloadBlob(buildPdf(), filename); import("@/lib/analytics").then(({ track }) => track("pdf_downloaded", { doc_type: "quote" })); }}>
             <Download className="h-4 w-4 mr-1" /> PDF
           </Button>
           <Button variant="outline" size="sm" onClick={() => window.print()}>

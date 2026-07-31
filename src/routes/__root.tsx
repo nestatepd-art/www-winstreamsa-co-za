@@ -14,7 +14,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { installStaleServerFunctionReloadGuard } from "../lib/stale-server-function-reload";
 import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { initAnalytics, identifyUser, resetAnalytics, track } from "@/lib/analytics";
+import { initAnalytics, identifyUser, resetAnalytics, track, trackPageview } from "@/lib/analytics";
 
 installStaleServerFunctionReloadGuard();
 
@@ -187,6 +187,11 @@ function RootComponent() {
 
   useEffect(() => {
     initAnalytics();
+    // Capture the initial pageview + every SPA navigation.
+    trackPageview(router.state.location.pathname);
+    const unsubscribe = router.subscribe("onResolved", ({ toLocation }) => {
+      trackPageview(toLocation.pathname);
+    });
     supabase.auth.getUser().then(({ data }) => {
       if (data.user) identifyUser(data.user.id, data.user.email);
     });
@@ -239,7 +244,10 @@ function RootComponent() {
       }, 0);
     });
 
-    return () => data.subscription.unsubscribe();
+    return () => {
+      unsubscribe();
+      data.subscription.unsubscribe();
+    };
   }, [router, queryClient]);
 
   return (
