@@ -42,6 +42,7 @@ function ClientsPage() {
     },
     onSuccess: () => {
       toast.success("Client added");
+      import("@/lib/analytics").then(({ track }) => track("client_added"));
       setOpen(false);
       setForm({ name: "", contact_person: "", email: "", phone: "", city: "", notes: "" });
       qc.invalidateQueries({ queryKey: ["clients"] });
