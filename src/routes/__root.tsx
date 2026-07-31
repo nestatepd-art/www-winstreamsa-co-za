@@ -244,7 +244,10 @@ function RootComponent() {
       }, 0);
     });
 
-    return () => data.subscription.unsubscribe();
+    return () => {
+      unsubscribe();
+      data.subscription.unsubscribe();
+    };
   }, [router, queryClient]);
 
   return (
