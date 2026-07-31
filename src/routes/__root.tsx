@@ -14,7 +14,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { installStaleServerFunctionReloadGuard } from "../lib/stale-server-function-reload";
 import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { initAnalytics, identifyUser, resetAnalytics } from "@/lib/analytics";
+import { initAnalytics, identifyUser, resetAnalytics, track } from "@/lib/analytics";
 
 installStaleServerFunctionReloadGuard();
 
@@ -201,7 +201,15 @@ function RootComponent() {
         router.invalidate();
         return;
       }
-      if (session?.user) identifyUser(session.user.id, session.user.email);
+      if (session?.user) {
+        identifyUser(session.user.id, session.user.email);
+        if (event === "SIGNED_IN") {
+          track("signed_in", {
+            method: session.user.app_metadata?.provider ?? "email",
+            user_id: session.user.id,
+          });
+        }
+      }
 
       setTimeout(async () => {
         router.invalidate();
