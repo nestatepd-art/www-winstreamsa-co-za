@@ -44,7 +44,9 @@ export function SiteFooter() {
   return (
     <footer className="border-t border-white/10 bg-[#04121a] text-white/60">
       <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 py-8 text-xs sm:flex-row">
-        <span>© {new Date().getFullYear()} WinStream SA. All rights reserved.</span>
+        <Link to="/" className="cursor-pointer hover:text-white">
+          © {new Date().getFullYear()} WinStream SA. All rights reserved.
+        </Link>
         <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
           <Link to="/features" className="hover:text-white">Features</Link>
           <Link to="/pricing" className="hover:text-white">Pricing</Link>

@@ -233,3 +233,11 @@
   animation: ws-grid-drift 40s linear infinite;
 }
 
+
+/* Cookie-consent dismiss button: let clicks land on the button, not the icon */
+button.cb--dismissButton svg,
+button.cb--dismissButton svg *,
+[data-cbtest="btnDismiss"] svg,
+[data-cbtest="btnDismiss"] svg * {
+  pointer-events: none;
+}
