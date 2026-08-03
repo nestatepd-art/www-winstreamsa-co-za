@@ -16,7 +16,7 @@ function Dashboard() {
     queryKey: ["dashboard-stats"],
     queryFn: async () => {
       const [{ data: profile }, { data: quotes }, { count: clientCount }] = await Promise.all([
-        supabase.from("business_profiles").select("business_name").maybeSingle(),
+        supabase.from("business_profiles").select("business_name, email, phone, address_line1, city").maybeSingle(),
         supabase.from("quotes").select("id, quote_number, title, status, total, created_at, client_id, clients(name)").order("created_at", { ascending: false }).limit(5),
         supabase.from("clients").select("id", { count: "exact", head: true }),
       ]);
