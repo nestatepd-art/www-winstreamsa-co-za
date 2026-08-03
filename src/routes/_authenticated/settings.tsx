@@ -50,10 +50,12 @@ function SettingsPage() {
         if (error) throw error;
       }
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("Saved");
-      qc.invalidateQueries({ queryKey: ["business-profile"] });
-      qc.invalidateQueries({ queryKey: ["dashboard-stats"] });
+      await Promise.all([
+        qc.invalidateQueries({ queryKey: ["business-profile"] }),
+        qc.invalidateQueries({ queryKey: ["dashboard-stats"] }),
+      ]);
       let inSetup = false;
       try { inSetup = sessionStorage.getItem("ws-setup") === "1"; } catch {}
       if (inSetup) navigate({ to: "/dashboard" });
