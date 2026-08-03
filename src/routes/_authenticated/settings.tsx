@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -25,6 +25,7 @@ const LANGS = [
 
 function SettingsPage() {
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const { data: profile, isLoading } = useQuery({
     queryKey: ["business-profile"],
     queryFn: async () => {
@@ -52,7 +53,11 @@ function SettingsPage() {
     onSuccess: () => {
       toast.success("Saved");
       qc.invalidateQueries({ queryKey: ["business-profile"] });
+      let inSetup = false;
+      try { inSetup = sessionStorage.getItem("ws-setup") === "1"; } catch {}
+      if (inSetup) navigate({ to: "/dashboard" });
     },
+
     onError: (e: any) => toast.error(e.message),
   });
 

@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,6 +18,7 @@ export const Route = createFileRoute("/_authenticated/clients")({
 
 function ClientsPage() {
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ name: "", contact_person: "", email: "", phone: "", city: "", notes: "" });
 
@@ -46,7 +47,14 @@ function ClientsPage() {
       setOpen(false);
       setForm({ name: "", contact_person: "", email: "", phone: "", city: "", notes: "" });
       qc.invalidateQueries({ queryKey: ["clients"] });
+      let inSetup = false;
+      try { inSetup = sessionStorage.getItem("ws-setup") === "1"; } catch {}
+      if (inSetup) {
+        try { sessionStorage.removeItem("ws-setup"); } catch {}
+        navigate({ to: "/dashboard" });
+      }
     },
+
     onError: (e: any) => toast.error(e.message),
   });
 
