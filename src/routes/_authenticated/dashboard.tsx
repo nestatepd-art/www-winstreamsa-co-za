@@ -27,6 +27,9 @@ function Dashboard() {
       const pendingValue = pending.reduce((s, q) => s + Number(q.total ?? 0), 0);
       return {
         businessName: profile?.business_name || "Your business",
+        profileComplete: Boolean(
+          profile?.business_name && profile?.email && profile?.phone && profile?.address_line1 && profile?.city,
+        ),
         recentQuotes: quotes ?? [],
         clientCount: clientCount ?? 0,
         quoteCount: (allQuotes ?? []).length,
@@ -35,6 +38,7 @@ function Dashboard() {
       };
     },
   });
+
 
   return (
     <div className="p-6 lg:p-10 max-w-7xl mx-auto space-y-8">
