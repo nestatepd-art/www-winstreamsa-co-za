@@ -15,6 +15,8 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 function Dashboard() {
   const { data: stats } = useQuery({
     queryKey: ["dashboard-stats"],
+    staleTime: 0,
+    refetchOnMount: "always",
     queryFn: async () => {
       const [{ data: profile }, { data: quotes }, { count: clientCount }] = await Promise.all([
         supabase.from("business_profiles").select("business_name, email, phone, address_line1, city").maybeSingle(),
