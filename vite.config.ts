@@ -19,11 +19,14 @@ export default defineConfig({
   },
   vite: {
     resolve: {
-      alias: {
-        "entities/lib/decode.js": path.resolve(process.cwd(), "node_modules/entities/lib/decode.js"),
-        "entities/lib/encode.js": path.resolve(process.cwd(), "node_modules/entities/lib/encode.js"),
-        entities: path.resolve(process.cwd(), "node_modules/entities"),
-      },
+      alias: [
+        // Only rewrite the exact v4 subpaths / bare specifier — never prefix-match,
+        // or parse5's "entities/escape" (v6) resolves into the v4 copy and fails.
+        { find: "entities/lib/decode.js", replacement: path.resolve(process.cwd(), "node_modules/entities/lib/decode.js") },
+        { find: "entities/lib/encode.js", replacement: path.resolve(process.cwd(), "node_modules/entities/lib/encode.js") },
+        { find: /^entities$/, replacement: path.resolve(process.cwd(), "node_modules/entities") },
+      ],
+
     },
   },
 });
