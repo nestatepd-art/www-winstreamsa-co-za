@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FileText, Users, TrendingUp, Plus, ArrowRight, Sparkles } from "lucide-react";
+import { FileText, Users, TrendingUp, Plus, ArrowRight, Sparkles, Check, Circle } from "lucide-react";
 import { formatZAR, formatDate } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 
@@ -16,7 +16,7 @@ function Dashboard() {
     queryKey: ["dashboard-stats"],
     queryFn: async () => {
       const [{ data: profile }, { data: quotes }, { count: clientCount }] = await Promise.all([
-        supabase.from("business_profiles").select("business_name").maybeSingle(),
+        supabase.from("business_profiles").select("business_name, email, phone, address_line1, city").maybeSingle(),
         supabase.from("quotes").select("id, quote_number, title, status, total, created_at, client_id, clients(name)").order("created_at", { ascending: false }).limit(5),
         supabase.from("clients").select("id", { count: "exact", head: true }),
       ]);
@@ -27,6 +27,9 @@ function Dashboard() {
       const pendingValue = pending.reduce((s, q) => s + Number(q.total ?? 0), 0);
       return {
         businessName: profile?.business_name || "Your business",
+        profileComplete: Boolean(
+          profile?.business_name && profile?.email && profile?.phone && profile?.address_line1 && profile?.city,
+        ),
         recentQuotes: quotes ?? [],
         clientCount: clientCount ?? 0,
         quoteCount: (allQuotes ?? []).length,
@@ -35,6 +38,7 @@ function Dashboard() {
       };
     },
   });
+
 
   return (
     <div className="p-6 lg:p-10 max-w-7xl mx-auto space-y-8">
@@ -52,6 +56,15 @@ function Dashboard() {
           <Link to="/quotes/new"><Plus className="h-4 w-4 mr-1" /> New quote</Link>
         </Button>
       </header>
+
+      {stats && stats.quoteCount === 0 && (
+        <OnboardingChecklist
+          profileComplete={stats.profileComplete}
+          hasClient={stats.clientCount > 0}
+        />
+      )}
+
+
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard icon={<FileText className="h-4 w-4" />} label="Quotes" value={String(stats?.quoteCount ?? 0)} />
@@ -105,6 +118,55 @@ function Dashboard() {
     </div>
   );
 }
+
+function OnboardingChecklist({ profileComplete, hasClient }: { profileComplete: boolean; hasClient: boolean }) {
+  const steps = [
+    { label: "Complete your business profile", hint: "Logo, VAT number and banking details", to: "/settings", done: profileComplete },
+    { label: "Add your first client", hint: "Save contact details once, reuse everywhere", to: "/clients", done: hasClient },
+    { label: "Create your first quote", hint: "Let AI draft the line items for you", to: "/quotes/new", done: false },
+  ];
+  const doneCount = steps.filter((s) => s.done).length;
+
+  return (
+    <Card className="border-primary/25 bg-primary/5">
+      <CardHeader>
+        <CardTitle className="text-lg flex items-center gap-2">
+          <Sparkles className="h-4 w-4 text-primary" /> Get set up
+        </CardTitle>
+        <CardDescription>
+          {doneCount} of {steps.length} done — finish these to send your first professional quote.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-2">
+        {steps.map((step) => (
+          <Link
+            key={step.label}
+            to={step.to}
+            className="flex items-center gap-3 rounded-md border border-border/60 bg-card/60 px-3 py-3 hover:bg-muted/50 transition-colors"
+          >
+            <span
+              className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border ${
+                step.done
+                  ? "border-primary bg-primary/15 text-primary"
+                  : "border-border text-muted-foreground"
+              }`}
+            >
+              {step.done ? <Check className="h-3.5 w-3.5" /> : <Circle className="h-2 w-2 fill-current" />}
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className={`block text-sm font-medium ${step.done ? "text-primary" : "text-foreground"}`}>
+                {step.label}
+              </span>
+              <span className="block text-xs text-muted-foreground">{step.hint}</span>
+            </span>
+            <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+          </Link>
+        ))}
+      </CardContent>
+    </Card>
+  );
+}
+
 
 function StatCard({ icon, label, value, hint, tone }: { icon: React.ReactNode; label: string; value: string; hint?: string; tone?: "success" }) {
   return (
