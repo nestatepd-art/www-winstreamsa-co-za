@@ -31,7 +31,7 @@ const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
 }
 
 // Configuration
-const SITE_NAME = "www-winstreamsa-co-za"
+const SITE_NAME = "WinStream SA"
 const SENDER_DOMAIN = "notify.winstreamsa.co.za"
 const ROOT_DOMAIN = "winstreamsa.co.za"
 const FROM_DOMAIN = "winstreamsa.co.za"
@@ -134,7 +134,7 @@ export const Route = createFileRoute("/lovable/email/auth/webhook")({
         // Build template props from payload.data (HookData structure)
         const templateProps = {
           siteName: SITE_NAME,
-          siteUrl: `https://${ROOT_DOMAIN}`,
+          siteUrl: `https://www.${ROOT_DOMAIN}`,
           recipient: payload.data.email,
           confirmationUrl: payload.data.url,
           token: payload.data.token,

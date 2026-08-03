@@ -44,13 +44,22 @@ export const RecoveryEmail = ({
 
 export default RecoveryEmail
 
-const main = { backgroundColor: '#ffffff', fontFamily: 'Arial, sans-serif' }
-const container = { padding: '20px 25px' }
+const main = {
+  backgroundColor: '#ffffff',
+  fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif",
+}
+const container = {
+  padding: '32px 28px',
+  maxWidth: '600px',
+  border: '1px solid #e6e8ee',
+  borderRadius: '12px',
+}
 const h1 = {
   fontSize: '22px',
   fontWeight: 'bold' as const,
-  color: '#000000',
+  color: '#0b1020',
   margin: '0 0 20px',
+  letterSpacing: '-0.4px',
 }
 const text = {
   fontSize: '14px',
@@ -59,11 +68,18 @@ const text = {
   margin: '0 0 25px',
 }
 const button = {
-  backgroundColor: '#000000',
+  backgroundColor: '#0b1020',
   color: '#ffffff',
   fontSize: '14px',
-  borderRadius: '8px',
-  padding: '12px 20px',
+  borderRadius: '10px',
+  padding: '13px 22px',
+  fontWeight: 'bold' as const,
   textDecoration: 'none',
 }
-const footer = { fontSize: '12px', color: '#999999', margin: '30px 0 0' }
+const footer = {
+  fontSize: '12px',
+  color: '#8a8f9c',
+  margin: '30px 0 0',
+  borderTop: '1px solid #eef0f4',
+  paddingTop: '16px',
+}
