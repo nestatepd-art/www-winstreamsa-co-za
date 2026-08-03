@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
-import { FileText, Users, TrendingUp, Plus, ArrowRight, Sparkles, Check, FileSignature, Receipt, BellRing, MessageSquare, CreditCard, Settings } from "lucide-react";
+import { FileText, Users, TrendingUp, Plus, ArrowRight, Sparkles, Check, Receipt } from "lucide-react";
 import { formatZAR, formatDate } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 
@@ -122,27 +122,14 @@ function Dashboard() {
   );
 }
 
-const WORKSPACE_FEATURES = [
-  { label: "Clients", hint: "Your contact book", to: "/clients", icon: Users },
-  { label: "Proposals", hint: "Win the work", to: "/proposals", icon: FileSignature },
-  { label: "Quotes", hint: "AI-drafted, branded", to: "/quotes", icon: FileText },
-  { label: "Invoices", hint: "Get paid faster", to: "/invoices", icon: Receipt },
-  { label: "Reminders", hint: "Auto follow-ups", to: "/reminders", icon: BellRing },
-  { label: "Assist", hint: "Ask WinStream AI", to: "/chat", icon: MessageSquare },
-  { label: "Billing", hint: "Plan & credits", to: "/billing", icon: CreditCard },
-  { label: "Settings", hint: "Logo, VAT, banking", to: "/settings", icon: Settings },
-] as const;
-
 function OnboardingChecklist({ profileComplete, hasClient }: { profileComplete: boolean; hasClient: boolean }) {
   const steps = [
     { label: "Complete your business profile", hint: "Logo, VAT number and banking details", to: "/settings", cta: "Open settings", done: profileComplete },
-    { label: "Add your first client", hint: "Save contact details once, reuse everywhere", to: "/clients", cta: "Add a client", done: hasClient },
-    { label: "Create your first quote", hint: "Let AI draft the line items for you", to: "/quotes/new", cta: "New quote", done: false },
+    { label: "Add your first client", hint: "Save contact details once, reuse everywhere", to: "/clients/new", cta: "Add a client", done: hasClient },
+    { label: "Create your first quote or invoice", hint: "You are ready to create your first document from the dashboard", to: "/quotes/new", cta: "New quote", done: false },
   ];
   const doneCount = steps.filter((s) => s.done).length;
-  const targetIndex = Math.min(steps.findIndex((s) => !s.done) === -1 ? steps.length - 1 : steps.findIndex((s) => !s.done), steps.length - 1);
-  // Panel 3 is the workspace menu, shown once the first two steps are done.
-  const targetPanel = profileComplete && hasClient ? 3 : targetIndex;
+  const targetPanel = profileComplete ? (hasClient ? 2 : 1) : 0;
 
   const [panel, setPanel] = useState(targetPanel);
 
@@ -152,7 +139,7 @@ function OnboardingChecklist({ profileComplete, hasClient }: { profileComplete: 
     return () => clearTimeout(t);
   }, [targetPanel, panel]);
 
-  const panels = [0, 1, 2, 3];
+  const panels = [0, 1, 2];
 
   return (
     <Card className="border-primary/25 bg-primary/5 overflow-hidden">
@@ -161,17 +148,15 @@ function OnboardingChecklist({ profileComplete, hasClient }: { profileComplete: 
           <Sparkles className="h-4 w-4 text-primary" /> Get set up
         </CardTitle>
         <CardDescription>
-          {doneCount} of {steps.length} done — finish these to send your first professional quote.
+          {doneCount} of {steps.length} done — finish these to create your first professional document.
         </CardDescription>
         <div className="flex items-center gap-1.5 pt-2">
           {panels.map((i) => (
-            <button
+            <span
               key={i}
-              type="button"
-              aria-label={i === 3 ? "Show workspace menu" : `Show step ${i + 1}`}
-              onClick={() => setPanel(i)}
+              aria-hidden="true"
               className={`h-1.5 rounded-full transition-all duration-300 ${
-                panel === i ? "w-8 bg-primary" : "w-3 bg-primary/25 hover:bg-primary/40"
+                panel === i ? "w-8 bg-primary" : "w-3 bg-primary/25"
               }`}
             />
           ))}
@@ -204,45 +189,31 @@ function OnboardingChecklist({ profileComplete, hasClient }: { profileComplete: 
                     </div>
                   </div>
                   <div className="mt-4 flex items-center gap-2">
-                    <Button asChild size="sm" variant={step.done ? "outline" : "default"}>
-                      <Link
-                        to={step.to}
-                        onClick={() => {
-                          try { sessionStorage.setItem("ws-setup", "1"); } catch {}
-                        }}
-                      >
-                        {step.done ? "Review" : step.cta} <ArrowRight className="h-3 w-3 ml-1" />
-                      </Link>
-                    </Button>
+                    {i === 2 ? (
+                      <>
+                        <Button asChild size="sm">
+                          <Link to="/quotes/new">New quote <ArrowRight className="h-3 w-3 ml-1" /></Link>
+                        </Button>
+                        <Button asChild size="sm" variant="outline">
+                          <Link to="/invoices/new"><Receipt className="h-3 w-3 mr-1" /> New invoice</Link>
+                        </Button>
+                      </>
+                    ) : (
+                      <Button asChild size="sm" variant={step.done ? "outline" : "default"}>
+                        <Link
+                          to={step.to}
+                          onClick={() => {
+                            try { sessionStorage.setItem("ws-setup", "1"); } catch {}
+                          }}
+                        >
+                          {step.done ? "Review" : step.cta} <ArrowRight className="h-3 w-3 ml-1" />
+                        </Link>
+                      </Button>
+                    )}
                   </div>
                 </div>
               </div>
             ))}
-
-
-            <div className="w-full shrink-0 px-0.5">
-              <div className="rounded-lg border border-border/60 bg-card/60 p-4">
-                <div className="text-sm font-medium">You're set up — here's everything you can do</div>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Every feature is also in the left menu, any time.
-                </p>
-                <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-                  {WORKSPACE_FEATURES.map((f) => (
-                    <Link
-                      key={f.label}
-                      to={f.to}
-                      className="flex items-center gap-2 rounded-md border border-border/60 bg-background/40 px-3 py-2.5 hover:bg-muted/50 hover:border-primary/40 transition-colors"
-                    >
-                      <f.icon className="h-4 w-4 shrink-0 text-primary" />
-                      <span className="min-w-0">
-                        <span className="block text-xs font-medium truncate">{f.label}</span>
-                        <span className="block text-[10px] text-muted-foreground truncate">{f.hint}</span>
-                      </span>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </CardContent>
