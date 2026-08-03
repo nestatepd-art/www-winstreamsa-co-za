@@ -57,6 +57,15 @@ function Dashboard() {
         </Button>
       </header>
 
+      {stats && stats.quoteCount === 0 && (
+        <OnboardingChecklist
+          profileComplete={stats.profileComplete}
+          hasClient={stats.clientCount > 0}
+        />
+      )}
+
+
+
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard icon={<FileText className="h-4 w-4" />} label="Quotes" value={String(stats?.quoteCount ?? 0)} />
         <StatCard icon={<Users className="h-4 w-4" />} label="Clients" value={String(stats?.clientCount ?? 0)} />
