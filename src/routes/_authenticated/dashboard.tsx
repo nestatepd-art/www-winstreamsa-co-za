@@ -203,17 +203,20 @@ function OnboardingChecklist({ profileComplete, hasClient }: { profileComplete: 
                   </div>
                   <div className="mt-4 flex items-center gap-2">
                     <Button asChild size="sm" variant={step.done ? "outline" : "default"}>
-                      <Link to={step.to}>
+                      <Link
+                        to={step.to}
+                        onClick={() => {
+                          try { sessionStorage.setItem("ws-setup", "1"); } catch {}
+                        }}
+                      >
                         {step.done ? "Review" : step.cta} <ArrowRight className="h-3 w-3 ml-1" />
                       </Link>
-                    </Button>
-                    <Button size="sm" variant="ghost" onClick={() => setPanel(Math.min(panel + 1, 3))}>
-                      Skip
                     </Button>
                   </div>
                 </div>
               </div>
             ))}
+
 
             <div className="w-full shrink-0 px-0.5">
               <div className="rounded-lg border border-border/60 bg-card/60 p-4">

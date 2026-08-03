@@ -46,7 +46,14 @@ function ClientsPage() {
       setOpen(false);
       setForm({ name: "", contact_person: "", email: "", phone: "", city: "", notes: "" });
       qc.invalidateQueries({ queryKey: ["clients"] });
+      let inSetup = false;
+      try { inSetup = sessionStorage.getItem("ws-setup") === "1"; } catch {}
+      if (inSetup) {
+        try { sessionStorage.removeItem("ws-setup"); } catch {}
+        navigate({ to: "/dashboard" });
+      }
     },
+
     onError: (e: any) => toast.error(e.message),
   });
 

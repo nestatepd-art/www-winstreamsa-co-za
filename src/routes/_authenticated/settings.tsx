@@ -52,7 +52,11 @@ function SettingsPage() {
     onSuccess: () => {
       toast.success("Saved");
       qc.invalidateQueries({ queryKey: ["business-profile"] });
+      let inSetup = false;
+      try { inSetup = sessionStorage.getItem("ws-setup") === "1"; } catch {}
+      if (inSetup) navigate({ to: "/dashboard" });
     },
+
     onError: (e: any) => toast.error(e.message),
   });
 
