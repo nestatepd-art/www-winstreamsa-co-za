@@ -119,6 +119,55 @@ function Dashboard() {
   );
 }
 
+function OnboardingChecklist({ profileComplete, hasClient }: { profileComplete: boolean; hasClient: boolean }) {
+  const steps = [
+    { label: "Complete your business profile", hint: "Logo, VAT number and banking details", to: "/settings", done: profileComplete },
+    { label: "Add your first client", hint: "Save contact details once, reuse everywhere", to: "/clients", done: hasClient },
+    { label: "Create your first quote", hint: "Let AI draft the line items for you", to: "/quotes/new", done: false },
+  ];
+  const doneCount = steps.filter((s) => s.done).length;
+
+  return (
+    <Card className="border-primary/25 bg-primary/5">
+      <CardHeader>
+        <CardTitle className="text-lg flex items-center gap-2">
+          <Sparkles className="h-4 w-4 text-primary" /> Get set up
+        </CardTitle>
+        <CardDescription>
+          {doneCount} of {steps.length} done — finish these to send your first professional quote.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-2">
+        {steps.map((step) => (
+          <Link
+            key={step.label}
+            to={step.to}
+            className="flex items-center gap-3 rounded-md border border-border/60 bg-card/60 px-3 py-3 hover:bg-muted/50 transition-colors"
+          >
+            <span
+              className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border ${
+                step.done
+                  ? "border-primary bg-primary/15 text-primary"
+                  : "border-border text-muted-foreground"
+              }`}
+            >
+              {step.done ? <Check className="h-3.5 w-3.5" /> : <Circle className="h-2 w-2 fill-current" />}
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className={`block text-sm font-medium ${step.done ? "text-primary" : "text-foreground"}`}>
+                {step.label}
+              </span>
+              <span className="block text-xs text-muted-foreground">{step.hint}</span>
+            </span>
+            <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+          </Link>
+        ))}
+      </CardContent>
+    </Card>
+  );
+}
+
+
 function StatCard({ icon, label, value, hint, tone }: { icon: React.ReactNode; label: string; value: string; hint?: string; tone?: "success" }) {
   return (
     <Card>
