@@ -3,7 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FileText, Users, TrendingUp, Plus, ArrowRight, Sparkles, Check, Circle } from "lucide-react";
+import { useEffect, useState } from "react";
+import { FileText, Users, TrendingUp, Plus, ArrowRight, Sparkles, Check, FileSignature, Receipt, BellRing, MessageSquare, CreditCard, Settings } from "lucide-react";
 import { formatZAR, formatDate } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 
@@ -119,16 +120,40 @@ function Dashboard() {
   );
 }
 
+const WORKSPACE_FEATURES = [
+  { label: "Clients", hint: "Your contact book", to: "/clients", icon: Users },
+  { label: "Proposals", hint: "Win the work", to: "/proposals", icon: FileSignature },
+  { label: "Quotes", hint: "AI-drafted, branded", to: "/quotes", icon: FileText },
+  { label: "Invoices", hint: "Get paid faster", to: "/invoices", icon: Receipt },
+  { label: "Reminders", hint: "Auto follow-ups", to: "/reminders", icon: BellRing },
+  { label: "Assist", hint: "Ask WinStream AI", to: "/chat", icon: MessageSquare },
+  { label: "Billing", hint: "Plan & credits", to: "/billing", icon: CreditCard },
+  { label: "Settings", hint: "Logo, VAT, banking", to: "/settings", icon: Settings },
+] as const;
+
 function OnboardingChecklist({ profileComplete, hasClient }: { profileComplete: boolean; hasClient: boolean }) {
   const steps = [
-    { label: "Complete your business profile", hint: "Logo, VAT number and banking details", to: "/settings", done: profileComplete },
-    { label: "Add your first client", hint: "Save contact details once, reuse everywhere", to: "/clients", done: hasClient },
-    { label: "Create your first quote", hint: "Let AI draft the line items for you", to: "/quotes/new", done: false },
+    { label: "Complete your business profile", hint: "Logo, VAT number and banking details", to: "/settings", cta: "Open settings", done: profileComplete },
+    { label: "Add your first client", hint: "Save contact details once, reuse everywhere", to: "/clients", cta: "Add a client", done: hasClient },
+    { label: "Create your first quote", hint: "Let AI draft the line items for you", to: "/quotes/new", cta: "New quote", done: false },
   ];
   const doneCount = steps.filter((s) => s.done).length;
+  const targetIndex = Math.min(steps.findIndex((s) => !s.done) === -1 ? steps.length - 1 : steps.findIndex((s) => !s.done), steps.length - 1);
+  // Panel 3 is the workspace menu, shown once the first two steps are done.
+  const targetPanel = profileComplete && hasClient ? 3 : targetIndex;
+
+  const [panel, setPanel] = useState(targetPanel);
+
+  useEffect(() => {
+    if (panel === targetPanel) return;
+    const t = setTimeout(() => setPanel(targetPanel), 550);
+    return () => clearTimeout(t);
+  }, [targetPanel, panel]);
+
+  const panels = [0, 1, 2, 3];
 
   return (
-    <Card className="border-primary/25 bg-primary/5">
+    <Card className="border-primary/25 bg-primary/5 overflow-hidden">
       <CardHeader>
         <CardTitle className="text-lg flex items-center gap-2">
           <Sparkles className="h-4 w-4 text-primary" /> Get set up
@@ -136,36 +161,90 @@ function OnboardingChecklist({ profileComplete, hasClient }: { profileComplete: 
         <CardDescription>
           {doneCount} of {steps.length} done — finish these to send your first professional quote.
         </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-2">
-        {steps.map((step) => (
-          <Link
-            key={step.label}
-            to={step.to}
-            className="flex items-center gap-3 rounded-md border border-border/60 bg-card/60 px-3 py-3 hover:bg-muted/50 transition-colors"
-          >
-            <span
-              className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border ${
-                step.done
-                  ? "border-primary bg-primary/15 text-primary"
-                  : "border-border text-muted-foreground"
+        <div className="flex items-center gap-1.5 pt-2">
+          {panels.map((i) => (
+            <button
+              key={i}
+              type="button"
+              aria-label={i === 3 ? "Show workspace menu" : `Show step ${i + 1}`}
+              onClick={() => setPanel(i)}
+              className={`h-1.5 rounded-full transition-all duration-300 ${
+                panel === i ? "w-8 bg-primary" : "w-3 bg-primary/25 hover:bg-primary/40"
               }`}
-            >
-              {step.done ? <Check className="h-3.5 w-3.5" /> : <Circle className="h-2 w-2 fill-current" />}
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className={`block text-sm font-medium ${step.done ? "text-primary" : "text-foreground"}`}>
-                {step.label}
-              </span>
-              <span className="block text-xs text-muted-foreground">{step.hint}</span>
-            </span>
-            <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground" />
-          </Link>
-        ))}
+            />
+          ))}
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="overflow-hidden">
+          <div
+            className="flex transition-transform duration-500 ease-out"
+            style={{ transform: `translateX(-${panel * 100}%)` }}
+          >
+            {steps.map((step, i) => (
+              <div key={step.label} className="w-full shrink-0 px-0.5">
+                <div className="rounded-lg border border-border/60 bg-card/60 p-4">
+                  <div className="flex items-start gap-3">
+                    <span
+                      className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-xs font-medium ${
+                        step.done
+                          ? "border-primary bg-primary/15 text-primary"
+                          : "border-border text-muted-foreground"
+                      }`}
+                    >
+                      {step.done ? <Check className="h-3.5 w-3.5" /> : i + 1}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className={`text-sm font-medium ${step.done ? "text-primary" : "text-foreground"}`}>
+                        {step.label}
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-0.5">{step.hint}</p>
+                    </div>
+                  </div>
+                  <div className="mt-4 flex items-center gap-2">
+                    <Button asChild size="sm" variant={step.done ? "outline" : "default"}>
+                      <Link to={step.to}>
+                        {step.done ? "Review" : step.cta} <ArrowRight className="h-3 w-3 ml-1" />
+                      </Link>
+                    </Button>
+                    <Button size="sm" variant="ghost" onClick={() => setPanel(Math.min(panel + 1, 3))}>
+                      Skip
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            <div className="w-full shrink-0 px-0.5">
+              <div className="rounded-lg border border-border/60 bg-card/60 p-4">
+                <div className="text-sm font-medium">You're set up — here's everything you can do</div>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Every feature is also in the left menu, any time.
+                </p>
+                <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+                  {WORKSPACE_FEATURES.map((f) => (
+                    <Link
+                      key={f.label}
+                      to={f.to}
+                      className="flex items-center gap-2 rounded-md border border-border/60 bg-background/40 px-3 py-2.5 hover:bg-muted/50 hover:border-primary/40 transition-colors"
+                    >
+                      <f.icon className="h-4 w-4 shrink-0 text-primary" />
+                      <span className="min-w-0">
+                        <span className="block text-xs font-medium truncate">{f.label}</span>
+                        <span className="block text-[10px] text-muted-foreground truncate">{f.hint}</span>
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );
 }
+
 
 
 function StatCard({ icon, label, value, hint, tone }: { icon: React.ReactNode; label: string; value: string; hint?: string; tone?: "success" }) {
