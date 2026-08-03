@@ -14,9 +14,9 @@ import { cleanDocumentText, cleanDocumentTitle, formatZAR, computeQuoteTotals, g
 
 export const Route = createFileRoute("/_authenticated/invoices/new")({
   component: NewInvoicePage,
-  validateSearch: (s: Record<string, unknown>) => ({
-    fromQuote: typeof s.fromQuote === "string" ? s.fromQuote : undefined,
-  }),
+  validateSearch: (s: Record<string, unknown>): { fromQuote?: string } =>
+    typeof s.fromQuote === "string" ? { fromQuote: s.fromQuote } : {},
+
 });
 
 type Item = { description: string; quantity: number; unit_price: number };
