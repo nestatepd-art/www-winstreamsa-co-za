@@ -3,7 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FileText, Users, TrendingUp, Plus, ArrowRight, Sparkles, Check, Circle } from "lucide-react";
+import { useEffect, useState } from "react";
+import { FileText, Users, TrendingUp, Plus, ArrowRight, Sparkles, Check, FileSignature, Receipt, BellRing, MessageSquare, CreditCard, Settings } from "lucide-react";
 import { formatZAR, formatDate } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 
