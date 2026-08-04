@@ -148,9 +148,14 @@ export const sendFollowupNow = createServerFn({ method: "POST" })
         subject: (fu as any).subject,
         status: "sent",
       });
-      return { ok: true };
+      return { ok: true as const, to: toEmail };
     } catch (e: any) {
       const msg = String(e?.message ?? e).slice(0, 500);
+      if (msg.includes("EMAIL_NOT_VERIFIED")) {
+        // Provider can't deliver to this recipient yet — let the UI fall back
+        // to the user's mail app instead of surfacing a crash.
+        return { ok: false as const, reason: "EMAIL_NOT_VERIFIED" as const, to: toEmail };
+      }
       await ((context.supabase as any) as any)
         .from(tableFor(data.recordType))
         .update({ status: "failed", error: msg })
