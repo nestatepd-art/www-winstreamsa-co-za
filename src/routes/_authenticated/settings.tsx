@@ -58,7 +58,8 @@ function SettingsPage() {
       ]);
       let inSetup = false;
       try { inSetup = sessionStorage.getItem("ws-setup") === "1"; } catch {}
-      if (inSetup) navigate({ to: "/dashboard" });
+      // Step 1 → Step 2 of the "Get set up" flow
+      if (inSetup) navigate({ to: "/clients/new" });
     },
 
     onError: (e: any) => toast.error(e.message),
