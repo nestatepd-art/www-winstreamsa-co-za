@@ -31,6 +31,8 @@ function ProposalDetail() {
   const qc = useQueryClient();
   const draftMsg = useServerFn(draftClientMessage);
   const sendMsg = useServerFn(sendCommunication);
+  const sendProposal = useServerFn(sendProposalNow);
+
 
   const { data: proposal } = useQuery({
     queryKey: ["proposal", proposalId],
