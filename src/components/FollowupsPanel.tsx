@@ -126,7 +126,7 @@ export function FollowupsPanel({ recordType, recordId, autoNudgeEnabled, onAutoN
                     attachment: pdf ? { blob: base64ToBlob(pdf.base64), filename: pdf.filename } : null,
                   });
                   if (!result) throw error;
-                  toast.warning("Direct send is still waiting on email verification, so a ready email draft opened instead.");
+                  toast.success("Your email app opened with the follow-up ready to send.");
                 }
               }}
             />
