@@ -29,16 +29,23 @@ export const sendProposalNow = createServerFn({ method: "POST" })
       footerNote: `Sent via WinStream on behalf of ${businessName}.`,
     });
 
-    await sendViaResend({
-      to: data.to,
-      subject: data.subject,
-      html,
-      fromName: businessName,
-      replyTo: profile?.email ?? null,
-      attachments: data.pdfBase64 && data.pdfFilename
-        ? [{ filename: data.pdfFilename, content: data.pdfBase64 }]
-        : undefined,
-    });
+    try {
+      await sendViaResend({
+        to: data.to,
+        subject: data.subject,
+        html,
+        fromName: businessName,
+        replyTo: profile?.email ?? null,
+        attachments: data.pdfBase64 && data.pdfFilename
+          ? [{ filename: data.pdfFilename, content: data.pdfBase64 }]
+          : undefined,
+      });
+    } catch (e: any) {
+      if (String(e?.message ?? e).includes("EMAIL_NOT_VERIFIED")) {
+        return { ok: false as const, reason: "EMAIL_NOT_VERIFIED" as const, to: data.to };
+      }
+      throw e;
+    }
 
-    return { ok: true, to: data.to };
+    return { ok: true as const, to: data.to };
   });
