@@ -42,6 +42,7 @@ function NewClientPage() {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["clients"] }),
         queryClient.invalidateQueries({ queryKey: ["dashboard-stats"] }),
+        queryClient.invalidateQueries({ queryKey: ["onboarding-status"] }),
       ]);
       try { sessionStorage.removeItem("ws-setup"); } catch {}
       navigate({ to: "/dashboard" });
