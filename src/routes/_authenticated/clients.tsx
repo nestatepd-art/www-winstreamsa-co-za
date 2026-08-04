@@ -48,6 +48,7 @@ function ClientsPage() {
       setForm({ name: "", contact_person: "", email: "", phone: "", city: "", notes: "" });
       qc.invalidateQueries({ queryKey: ["clients"] });
       qc.invalidateQueries({ queryKey: ["dashboard-stats"] });
+      qc.invalidateQueries({ queryKey: ["onboarding-status"] });
       let inSetup = false;
       try { inSetup = sessionStorage.getItem("ws-setup") === "1"; } catch {}
       if (inSetup) {

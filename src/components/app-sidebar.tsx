@@ -12,6 +12,7 @@ import {
   Newspaper,
   BellRing,
   Star,
+  Lock,
 } from "lucide-react";
 import winstreamLogo from "@/assets/winstream-logo.png.asset.json";
 import { toast } from "sonner";
@@ -30,6 +31,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { CreditMeter } from "@/components/credit-meter";
+import { isOnboardingAllowedPath, useOnboardingStatus } from "@/hooks/use-onboarding";
 import { useEffect, useState } from "react";
 
 const items = [
@@ -53,6 +55,8 @@ export function AppSidebar() {
     currentPath === path || currentPath.startsWith(path + "/");
 
   const [isAdmin, setIsAdmin] = useState(false);
+  const { data: onboarding } = useOnboardingStatus();
+  const locked = (url: string) => Boolean(onboarding && !onboarding.complete && !isOnboardingAllowedPath(url));
 
   useEffect(() => {
     let cancelled = false;
@@ -106,12 +110,28 @@ export function AppSidebar() {
             <SidebarMenu>
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild isActive={isActive(item.url)}>
-                    <Link to={item.url} className="flex items-center gap-2">
+                  {locked(item.url) ? (
+                    <SidebarMenuButton
+                      className="cursor-not-allowed opacity-50"
+                      title="Finish the setup steps to unlock"
+                      onClick={(event) => event.preventDefault()}
+                    >
                       <item.icon className="h-4 w-4" />
-                      {!collapsed && <span>{item.title}</span>}
-                    </Link>
-                  </SidebarMenuButton>
+                      {!collapsed && (
+                        <span className="flex flex-1 items-center justify-between gap-2">
+                          {item.title}
+                          <Lock className="h-3 w-3" />
+                        </span>
+                      )}
+                    </SidebarMenuButton>
+                  ) : (
+                    <SidebarMenuButton asChild isActive={isActive(item.url)}>
+                      <Link to={item.url} className="flex items-center gap-2">
+                        <item.icon className="h-4 w-4" />
+                        {!collapsed && <span>{item.title}</span>}
+                      </Link>
+                    </SidebarMenuButton>
+                  )}
                 </SidebarMenuItem>
               ))}
               {isAdmin && (
