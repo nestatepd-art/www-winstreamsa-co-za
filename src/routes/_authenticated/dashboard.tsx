@@ -178,7 +178,7 @@ function OnboardingChecklist({ profileComplete, hasClient }: { profileComplete: 
                       <Link to="/quotes/new">New quote <ArrowRight className="h-3 w-3 ml-1" /></Link>
                     </Button>
                     <Button asChild size="sm" variant="outline">
-                      <Link to="/invoices/new"><Receipt className="h-3 w-3 mr-2" /></Link>
+                      <Link to="/invoices/new"><Receipt className="h-3 w-3 mr-1" /> New invoice</Link>
                     </Button>
                   </div>
                 ) : (
