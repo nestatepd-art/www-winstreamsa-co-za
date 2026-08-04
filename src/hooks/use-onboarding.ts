@@ -44,8 +44,8 @@ export function useOnboardingStatus() {
         profileComplete,
         hasClient,
         hasDocument,
-        // Steps 1 & 2 unlock the app; step 3 is creating the first document.
-        complete: (profileComplete && hasClient) || hasDocument,
+        // Adding the first client (step 2) unlocks the whole app.
+        complete: hasClient || hasDocument,
       };
     },
   });
