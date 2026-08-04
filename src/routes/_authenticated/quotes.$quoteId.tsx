@@ -141,6 +141,7 @@ function QuoteViewPage({ quoteId, quote, items, profile }: { quoteId: string; qu
           pdfFilename: base64 ? filename : undefined,
         },
       });
+      if (!res.ok) throw new Error("EMAIL_NOT_VERIFIED");
       toast.success(`Sent to ${res.to}`);
       import("@/lib/analytics").then(({ track }) => track("quote_sent", { quote_id: quoteId, total: quote.total }));
       qc.invalidateQueries({ queryKey: ["quote", quoteId] });

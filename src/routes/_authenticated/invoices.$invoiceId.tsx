@@ -144,6 +144,7 @@ function InvoiceViewPage({ invoiceId, invoice, items, profile }: { invoiceId: st
           pdfFilename: base64 ? filename : undefined,
         },
       });
+      if (!res.ok) throw new Error("EMAIL_NOT_VERIFIED");
       toast.success(`Sent to ${res.to}`);
       qc.invalidateQueries({ queryKey: ["invoice", invoiceId] });
     } catch (e: any) {

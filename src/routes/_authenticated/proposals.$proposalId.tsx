@@ -149,6 +149,7 @@ function ProposalDetail() {
               pdfFilename: filename,
             },
           });
+          if (!res.ok) throw new Error("EMAIL_NOT_VERIFIED");
           toast.success(`Sent to ${res.to}`);
         } catch {
           const result = await openEmailDraft({ to: email, subject, body, attachment: { blob, filename } });
