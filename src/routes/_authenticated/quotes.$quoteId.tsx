@@ -153,7 +153,7 @@ function QuoteViewPage({ quoteId, quote, items, profile }: { quoteId: string; qu
           attachment: { blob: buildPdf(), filename },
         });
         if (!result) throw new Error("Email draft could not be opened. Please check your default mail app.");
-        toast.warning("Direct send is still waiting on email verification, so a ready email draft opened with the PDF downloaded.");
+        toast.success("Your email app opened with the message ready and the PDF saved to Downloads — attach it and hit send.");
       } catch (fallbackError: any) {
         toast.error(fallbackError?.message || e?.message || "Send failed");
       }

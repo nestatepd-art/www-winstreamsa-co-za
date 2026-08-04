@@ -40,7 +40,14 @@ export async function sendViaResend(input: ResendSendInput): Promise<{ id?: stri
     body: JSON.stringify(body),
   });
   const text = await res.text();
-  if (!res.ok) throw new Error(`Resend ${res.status}: ${text.slice(0, 400)}`);
+  if (!res.ok) {
+    // Unverified sending domain: provider only allows delivery to the account owner.
+    // Surface a stable code so the UI can fall back to the user's own mail client.
+    if (res.status === 403 && /only send testing emails|verify a domain/i.test(text)) {
+      throw new Error("EMAIL_NOT_VERIFIED");
+    }
+    throw new Error(`Resend ${res.status}: ${text.slice(0, 400)}`);
+  }
   try {
     return { id: JSON.parse(text)?.id, raw: text };
   } catch {
