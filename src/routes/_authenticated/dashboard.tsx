@@ -3,7 +3,6 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
 import { FileText, Users, TrendingUp, Plus, ArrowRight, Sparkles, Check, Receipt } from "lucide-react";
 import { formatZAR, formatDate } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
@@ -133,20 +132,9 @@ function OnboardingChecklist({ profileComplete, hasClient }: { profileComplete: 
     { label: "Dashboard — create your first quote", hint: "You are ready to create your first document", to: "/quotes/new", cta: "New quote", done: false },
   ];
   const doneCount = steps.filter((s) => s.done).length;
-  const targetPanel = profileComplete ? (hasClient ? 2 : 1) : 0;
-
-  const [panel, setPanel] = useState(targetPanel);
-
-  useEffect(() => {
-    if (panel === targetPanel) return;
-    const t = setTimeout(() => setPanel(targetPanel), 550);
-    return () => clearTimeout(t);
-  }, [targetPanel, panel]);
-
-  const panels = [0, 1, 2];
 
   return (
-    <Card className="border-primary/25 bg-primary/5 overflow-hidden">
+    <Card className="border-primary/25 bg-primary/5">
       <CardHeader>
         <CardTitle className="text-lg flex items-center gap-2">
           <Sparkles className="h-4 w-4 text-primary" /> Get set up
@@ -154,71 +142,60 @@ function OnboardingChecklist({ profileComplete, hasClient }: { profileComplete: 
         <CardDescription>
           {doneCount} of {steps.length} done — finish these to create your first professional document.
         </CardDescription>
-        <div className="flex items-center gap-1.5 pt-2">
-          {panels.map((i) => (
-            <span
-              key={i}
-              aria-hidden="true"
-              className={`h-1.5 rounded-full transition-all duration-300 ${
-                panel === i ? "w-8 bg-primary" : "w-3 bg-primary/25"
-              }`}
-            />
-          ))}
-        </div>
       </CardHeader>
       <CardContent>
-        <div className="overflow-hidden">
-          <div
-            className="flex transition-transform duration-500 ease-out"
-            style={{ transform: `translateX(-${panel * 100}%)` }}
-          >
-            {steps.map((step, i) => (
-              <div key={step.label} className="w-full shrink-0 px-0.5">
-                <div className="rounded-lg border border-border/60 bg-card/60 p-4">
-                  <div className="flex items-start gap-3">
-                    <span
-                      className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-xs font-medium ${
-                        step.done
-                          ? "border-primary bg-primary/15 text-primary"
-                          : "border-border text-muted-foreground"
-                      }`}
-                    >
-                      {step.done ? <Check className="h-3.5 w-3.5" /> : i + 1}
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <div className={`text-sm font-medium ${step.done ? "text-primary" : "text-foreground"}`}>
-                        {step.label}
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-0.5">{step.hint}</p>
-                    </div>
+        <div className="grid gap-3 sm:grid-cols-3">
+          {steps.map((step, i) => (
+            <div
+              key={step.label}
+              className={`rounded-lg border p-4 transition-colors ${
+                step.done
+                  ? "border-primary/40 bg-primary/10"
+                  : "border-border/60 bg-card/60"
+              }`}
+            >
+              <div className="flex items-start gap-3">
+                <span
+                  className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-xs font-medium ${
+                    step.done
+                      ? "border-primary bg-primary/15 text-primary"
+                      : "border-border text-muted-foreground"
+                  }`}
+                >
+                  {step.done ? <Check className="h-3.5 w-3.5" /> : i + 1}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <div className={`text-sm font-medium ${step.done ? "text-primary" : "text-foreground"}`}>
+                    {step.label}
                   </div>
-                  <div className="mt-4 flex items-center gap-2">
-                    {i === 2 ? (
-                      <>
-                        <Button asChild size="sm">
-                          <Link to="/quotes/new">New quote <ArrowRight className="h-3 w-3 ml-1" /></Link>
-                        </Button>
-                        <Button asChild size="sm" variant="outline">
-                          <Link to="/invoices/new"><Receipt className="h-3 w-3 mr-1" /> New invoice</Link>
-                        </Button>
-                      </>
-                    ) : (
-                      <Button asChild size="sm" variant={step.done ? "outline" : "default"}>
-                        <Link
-                          to={step.to}
-                          onClick={() => {
-                            try { sessionStorage.setItem("ws-setup", "1"); } catch {}
-                          }}
-                        >
-                          {step.done ? "Review" : step.cta} <ArrowRight className="h-3 w-3 ml-1" />
-                        </Link>
-                      </Button>
-                    )}
-                  </div>
+                  <p className="text-xs text-muted-foreground mt-0.5">{step.hint}</p>
                 </div>
               </div>
-            ))}
-          </div>
+              <div className="mt-4">
+                {i === 2 ? (
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Button asChild size="sm">
+                      <Link to="/quotes/new">New quote <ArrowRight className="h-3 w-3 ml-1" /></Link>
+                    </Button>
+                    <Button asChild size="sm" variant="outline">
+                      <Link to="/invoices/new"><Receipt className="h-3 w-3 mr-1" /> New invoice</Link>
+                    </Button>
+                  </div>
+                ) : (
+                  <Button asChild size="sm" variant={step.done ? "outline" : "default"}>
+                    <Link
+                      to={step.to}
+                      onClick={() => {
+                        try { sessionStorage.setItem("ws-setup", "1"); } catch {}
+                      }}
+                    >
+                      {step.done ? "Review" : step.cta} <ArrowRight className="h-3 w-3 ml-1" />
+                    </Link>
+                  </Button>
+                )}
+              </div>
+            </div>
+          ))}
         </div>
       </CardContent>
     </Card>
