@@ -4,6 +4,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { draftClientMessage, sendCommunication } from "@/lib/proposals.functions";
+import { sendProposalNow } from "@/lib/proposal-send.functions";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -31,6 +33,8 @@ function ProposalDetail() {
   const qc = useQueryClient();
   const draftMsg = useServerFn(draftClientMessage);
   const sendMsg = useServerFn(sendCommunication);
+  const sendProposal = useServerFn(sendProposalNow);
+
 
   const { data: proposal } = useQuery({
     queryKey: ["proposal", proposalId],
@@ -132,8 +136,26 @@ function ProposalDetail() {
         }
         const blob = pdf.output("blob");
         const filename = `Proposal-${(proposal?.title ?? "proposal").replace(/[^a-z0-9]+/gi, "-")}.pdf`;
-        const result = await openEmailDraft({ to: email, subject, body, attachment: { blob, filename } });
-        if (!result) throw new Error("Email draft could not be opened. Please check your default mail app.");
+        try {
+          const base64 = pdf.output("datauristring").split(",")[1];
+          const res = await sendProposal({
+            data: {
+              proposalId,
+              to: email,
+              subject,
+              bodyText: body,
+              clientName: client?.name ?? null,
+              pdfBase64: base64,
+              pdfFilename: filename,
+            },
+          });
+          toast.success(`Sent to ${res.to}`);
+        } catch {
+          const result = await openEmailDraft({ to: email, subject, body, attachment: { blob, filename } });
+          if (!result) throw new Error("Email draft could not be opened. Please check your default mail app.");
+          toast.success("Your email app opened with the message ready and the PDF saved to Downloads — attach it and hit send.");
+        }
+
       } else {
         const phone = to.trim().replace(/[^\d+]/g, "").replace(/^\+/, "");
         const url = `https://wa.me/${phone}?text=${encodeURIComponent(body)}`;
