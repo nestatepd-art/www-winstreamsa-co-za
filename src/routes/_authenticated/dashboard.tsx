@@ -18,10 +18,11 @@ function Dashboard() {
     staleTime: 0,
     refetchOnMount: "always",
     queryFn: async () => {
-      const [{ data: profile }, { data: quotes }, { count: clientCount }] = await Promise.all([
+      const [{ data: profile }, { data: quotes }, { count: clientCount }, { count: invoiceCount }] = await Promise.all([
         supabase.from("business_profiles").select("business_name, email, phone, address_line1, city").maybeSingle(),
         supabase.from("quotes").select("id, quote_number, title, status, total, created_at, client_id, clients(name)").order("created_at", { ascending: false }).limit(5),
         supabase.from("clients").select("id", { count: "exact", head: true }),
+        supabase.from("invoices").select("id", { count: "exact", head: true }),
       ]);
       const { data: allQuotes } = await supabase.from("quotes").select("status, total");
       const accepted = (allQuotes ?? []).filter((q) => q.status === "accepted");
@@ -35,12 +36,14 @@ function Dashboard() {
         ),
         recentQuotes: quotes ?? [],
         clientCount: clientCount ?? 0,
+        invoiceCount: invoiceCount ?? 0,
         quoteCount: (allQuotes ?? []).length,
         acceptedValue,
         pendingValue,
       };
     },
   });
+
 
 
   return (
@@ -60,12 +63,13 @@ function Dashboard() {
         </Button>
       </header>
 
-      {stats && stats.quoteCount === 0 && (
+      {stats && stats.quoteCount === 0 && stats.invoiceCount === 0 && (
         <OnboardingChecklist
           profileComplete={stats.profileComplete}
           hasClient={stats.clientCount > 0}
         />
       )}
+
 
 
 
