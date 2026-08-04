@@ -55,7 +55,7 @@ function SettingsPage() {
       await Promise.all([
         qc.invalidateQueries({ queryKey: ["business-profile"] }),
         qc.invalidateQueries({ queryKey: ["dashboard-stats"] }),
-        queryClient.invalidateQueries({ queryKey: ["onboarding-status"] }),
+        qc.invalidateQueries({ queryKey: ["onboarding-status"] }),
       ]);
       let inSetup = false;
       try { inSetup = sessionStorage.getItem("ws-setup") === "1"; } catch {}
