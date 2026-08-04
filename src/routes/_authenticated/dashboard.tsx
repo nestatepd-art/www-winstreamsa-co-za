@@ -130,7 +130,7 @@ function OnboardingChecklist({ profileComplete, hasClient }: { profileComplete: 
   const steps = [
     { label: "Complete your business profile", hint: "Logo, VAT number and banking details", to: "/settings", cta: "Open settings", done: profileComplete },
     { label: "Add your first client", hint: "Save contact details once, reuse everywhere", to: "/clients/new", cta: "Add a client", done: hasClient },
-    { label: "Create your first quote or invoice", hint: "You are ready to create your first document from the dashboard", to: "/quotes/new", cta: "New quote", done: false },
+    { label: "Dashboard — create your first quote", hint: "You are ready to create your first document", to: "/quotes/new", cta: "New quote", done: false },
   ];
   const doneCount = steps.filter((s) => s.done).length;
   const targetPanel = profileComplete ? (hasClient ? 2 : 1) : 0;
