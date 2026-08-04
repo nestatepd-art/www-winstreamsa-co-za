@@ -148,9 +148,14 @@ export const sendFollowupNow = createServerFn({ method: "POST" })
         subject: (fu as any).subject,
         status: "sent",
       });
-      return { ok: true };
+      return { ok: true as const, to: toEmail };
     } catch (e: any) {
       const msg = String(e?.message ?? e).slice(0, 500);
+      if (msg.includes("EMAIL_NOT_VERIFIED")) {
+        // Provider can't deliver to this recipient yet — let the UI fall back
+        // to the user's mail app instead of surfacing a crash.
+        return { ok: false as const, reason: "EMAIL_NOT_VERIFIED" as const, to: toEmail };
+      }
       await ((context.supabase as any) as any)
         .from(tableFor(data.recordType))
         .update({ status: "failed", error: msg })
@@ -206,16 +211,24 @@ export const sendRecordNow = createServerFn({ method: "POST" })
       footerNote: `Sent via WinStream on behalf of ${businessName}.`,
     });
 
-    await sendViaResend({
-      to: toEmail,
-      subject: data.subject,
-      html,
-      fromName: businessName,
-      replyTo: profile?.email ?? null,
-      attachments: data.pdfBase64 && data.pdfFilename
-        ? [{ filename: data.pdfFilename, content: data.pdfBase64 }]
-        : undefined,
-    });
+    try {
+      await sendViaResend({
+        to: toEmail,
+        subject: data.subject,
+        html,
+        fromName: businessName,
+        replyTo: profile?.email ?? null,
+        attachments: data.pdfBase64 && data.pdfFilename
+          ? [{ filename: data.pdfFilename, content: data.pdfBase64 }]
+          : undefined,
+      });
+    } catch (e: any) {
+      const msg = String(e?.message ?? e);
+      if (msg.includes("EMAIL_NOT_VERIFIED")) {
+        return { ok: false as const, reason: "EMAIL_NOT_VERIFIED" as const, to: toEmail };
+      }
+      throw e;
+    }
 
     // Mark sent status on parent
     const patch: Record<string, unknown> = { sent_at: new Date().toISOString() };
@@ -230,5 +243,5 @@ export const sendRecordNow = createServerFn({ method: "POST" })
       subject: data.subject,
       status: "sent",
     });
-    return { ok: true, to: toEmail };
+    return { ok: true as const, to: toEmail };
   });

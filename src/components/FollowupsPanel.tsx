@@ -107,7 +107,7 @@ export function FollowupsPanel({ recordType, recordId, autoNudgeEnabled, onAutoN
               onSend={async (draft) => {
                 const pdf = getPdfBase64 ? await getPdfBase64() : null;
                 try {
-                  await send({
+                  const res = await send({
                     data: {
                       recordType,
                       id: row.id,
@@ -115,6 +115,7 @@ export function FollowupsPanel({ recordType, recordId, autoNudgeEnabled, onAutoN
                       pdfFilename: pdf?.filename,
                     },
                   });
+                  if (!res.ok) throw new Error("EMAIL_NOT_VERIFIED");
                   toast.success("Follow-up sent");
                   qc.invalidateQueries({ queryKey });
                 } catch (error) {
