@@ -15,18 +15,44 @@ export type ResendSendInput = {
   attachments?: ResendAttachment[];
 };
 
+/** Cached lookup of a verified sending domain (so direct send starts working the moment DNS verifies). */
+let verifiedDomainCache: { value: string | null; at: number } = { value: null, at: 0 };
+
+async function getVerifiedDomain(lovableKey: string, resendKey: string): Promise<string | null> {
+  const now = Date.now();
+  if (now - verifiedDomainCache.at < 5 * 60_000) return verifiedDomainCache.value;
+  try {
+    const res = await fetch(`${GATEWAY_URL}/domains`, {
+      headers: {
+        Authorization: `Bearer ${lovableKey}`,
+        "X-Connection-Api-Key": resendKey,
+      },
+    });
+    if (!res.ok) throw new Error(String(res.status));
+    const json: any = await res.json();
+    const verified = (json?.data ?? []).find((d: any) => d?.status === "verified");
+    verifiedDomainCache = { value: verified?.name ?? null, at: now };
+  } catch {
+    verifiedDomainCache = { value: null, at: now };
+  }
+  return verifiedDomainCache.value;
+}
+
 export async function sendViaResend(input: ResendSendInput): Promise<{ id?: string; raw: string }> {
   const LOVABLE_API_KEY = process.env.LOVABLE_API_KEY;
   const RESEND_API_KEY = process.env.RESEND_API_KEY;
   if (!LOVABLE_API_KEY || !RESEND_API_KEY) throw new Error("Email credentials not configured");
 
   const fromLabel = (input.fromName || "WinStream").replace(/[<>]/g, "").trim() || "WinStream";
+  const domain = await getVerifiedDomain(LOVABLE_API_KEY, RESEND_API_KEY);
+  const fromAddress = domain ? `noreply@${domain}` : "onboarding@resend.dev";
   const body: Record<string, unknown> = {
-    from: `${fromLabel} <onboarding@resend.dev>`,
+    from: `${fromLabel} <${fromAddress}>`,
     to: [input.to],
     subject: input.subject,
     html: input.html,
   };
+
   if (input.replyTo) body.reply_to = input.replyTo;
   if (input.attachments?.length) body.attachments = input.attachments;
 
