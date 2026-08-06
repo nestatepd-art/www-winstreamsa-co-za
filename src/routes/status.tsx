@@ -83,7 +83,7 @@ function StatusPage() {
   const overall = isError ? "down" : (data?.overall ?? "operational");
 
   return (
-    <div className="min-h-screen bg-[#04121a] text-white">
+    <div className="min-h-[100dvh] touch-pan-y overflow-x-clip overscroll-y-auto bg-[#04121a] text-white">
       <SiteNav />
       <main className="mx-auto max-w-3xl px-6 py-14">
         <h1 className="text-4xl font-bold tracking-tight">System status</h1>
