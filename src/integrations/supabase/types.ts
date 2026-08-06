@@ -1012,7 +1012,7 @@ export type Database = {
           rating: number
           title: string | null
           updated_at: string
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           approved?: boolean
@@ -1025,7 +1025,7 @@ export type Database = {
           rating: number
           title?: string | null
           updated_at?: string
-          user_id: string
+          user_id?: string | null
         }
         Update: {
           approved?: boolean
@@ -1038,7 +1038,7 @@ export type Database = {
           rating?: number
           title?: string | null
           updated_at?: string
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: []
       }
