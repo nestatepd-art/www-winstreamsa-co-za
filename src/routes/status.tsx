@@ -118,11 +118,11 @@ function StatusPage() {
           </button>
         </section>
 
-        <section className="mt-10">
+        <section className="mt-10 touch-pan-y">
           <h2 className="text-xl font-semibold">Services</h2>
-          <ul className="mt-4 divide-y divide-white/10 overflow-hidden rounded-2xl border border-white/10 bg-white/5">
+          <ul className="mt-4 touch-pan-y divide-y divide-white/10 overflow-hidden rounded-2xl border border-white/10 bg-white/5">
             {(data?.checks ?? []).map((c) => (
-              <li key={c.id} className="flex items-center gap-3 px-5 py-4">
+              <li key={c.id} className="flex touch-pan-y items-center gap-3 px-5 py-4">
                 <StatusIcon status={c.status} className={`h-5 w-5 shrink-0 ${tone(c.status)}`} />
                 <div className="min-w-0">
                   <p className="font-medium">{c.name}</p>
