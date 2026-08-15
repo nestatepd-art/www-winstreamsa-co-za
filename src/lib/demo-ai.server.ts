@@ -26,7 +26,7 @@ const SYSTEM = `You write content for South African small-business quotes and in
 Return JSON only, no markdown fences:
 {"title":"...","items":[{"description":"...","qty":1,"unitPrice":0}],"notes":"..."}
 Rules:
-- 2 to 4 realistic line items with plain, specific descriptions (8-18 words).
+- Only include line items the brief actually asks for. If the brief describes a single job or item, return EXACTLY one line item. Never invent extra callout, travel, labour or sundry charges that were not mentioned.
 - unitPrice is a realistic ZAR amount (numbers only, VAT inclusive at 15%).
 - notes: 1-2 sentences covering validity and payment terms.`;
 

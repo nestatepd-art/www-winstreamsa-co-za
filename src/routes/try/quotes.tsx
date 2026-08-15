@@ -1,15 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { DocWorkspace } from "@/components/demo/doc-workspace";
 
-export const Route = createFileRoute("/demo/quotes")({
+export const Route = createFileRoute("/try/quotes")({
   head: () => ({
     meta: [
-      { title: "Demo Quotes — WinStream SA" },
+      { title: "Quotes — WinStream SA" },
       {
         name: "description",
-        content: "Build VAT-inclusive quotes with AI drafting in the free WinStream demo workspace.",
+        content: "Build VAT-inclusive quotes with AI drafting in the free WinStream workspace.",
       },
-      { property: "og:title", content: "Demo Quotes — WinStream SA" },
+      { property: "og:title", content: "Quotes — WinStream SA" },
       {
         property: "og:description",
         content: "Try AI quote drafting with sample data, no signup required.",

@@ -35,6 +35,7 @@ import {
 import { draftDemoDocument } from "@/lib/demo-ai.functions";
 import { generateDocumentPdf, downloadBlob } from "@/lib/pdf-export";
 import { openEmailDraft } from "@/lib/email-compose";
+import { sendPublicDocumentEmail } from "@/lib/public-send.functions";
 import type { DemoState } from "@/lib/demo-store";
 
 /** Builds a real, branded PDF from a sandbox document — same generator as live. */
@@ -74,6 +75,16 @@ function buildDemoPdf(state: DemoState, doc: DemoDoc) {
     },
     showBranding: true,
   });
+}
+
+/** Blob -> base64 (no data URL prefix) for server-side email attachments. */
+async function blobToBase64(blob: Blob): Promise<string> {
+  const buf = new Uint8Array(await blob.arrayBuffer());
+  let binary = "";
+  for (let i = 0; i < buf.length; i += 8192) {
+    binary += String.fromCharCode(...buf.subarray(i, i + 8192));
+  }
+  return btoa(binary);
 }
 
 const pdfFilename = (doc: DemoDoc) =>
@@ -155,6 +166,7 @@ function DocCard({ doc }: { doc: DemoDoc }) {
   const state = useDemoState();
   const { subtotal, vat, total } = docTotals(doc);
   const [expanded, setExpanded] = useState(false);
+  const [sending, setSending] = useState(false);
 
   return (
     <Card>
@@ -207,35 +219,86 @@ function DocCard({ doc }: { doc: DemoDoc }) {
           <Button
             size="sm"
             variant="outline"
+            disabled={sending}
             onClick={async () => {
               const client = state.clients.find((c) => c.id === doc.clientId);
+              const to = client?.email?.trim();
+              const kind =
+                doc.type === "invoice" ? "Invoice" : doc.type === "proposal" ? "Proposal" : "Quote";
+              const subject = `${kind} ${doc.number} — ${doc.title || "Untitled"}`;
+              const body = [
+                `Hi ${client?.contact || client?.name || "there"},`,
+                "",
+                `Please find ${kind.toLowerCase()} ${doc.number} for ${money(total)} attached.`,
+                "",
+                "Kind regards,",
+                state.profile.businessName,
+              ].join("\n");
+
+              if (!to) {
+                toast.error("Add an email address for this client first");
+                return;
+              }
+
+              setSending(true);
               try {
                 const blob = buildDemoPdf(state, doc);
-                const kind = doc.type === "invoice" ? "Invoice" : doc.type === "proposal" ? "Proposal" : "Quote";
-                await openEmailDraft({
-                  to: client?.email ?? "",
-                  subject: `${kind} ${doc.number} — ${doc.title || "Untitled"}`,
-                  body: [
-                    `Hi ${client?.contact || client?.name || "there"},`,
-                    "",
-                    `Please find ${kind.toLowerCase()} ${doc.number} for ${money(total)} attached.`,
-                    "",
-                    "Kind regards,",
-                    state.profile.businessName,
-                  ].join("\n"),
-                  attachment: { blob, filename: pdfFilename(doc) },
-                });
+                const filename = pdfFilename(doc);
+
+                let sent = false;
+                try {
+                  const pdfBase64 = await blobToBase64(blob);
+                  const res = await sendPublicDocumentEmail({
+                    data: {
+                      to,
+                      subject,
+                      bodyText: body,
+                      businessName: state.profile.businessName,
+                      clientName: client?.contact || client?.name || undefined,
+                      replyTo: state.profile.email?.includes("@")
+                        ? state.profile.email
+                        : undefined,
+                      pdfBase64,
+                      pdfFilename: filename,
+                    },
+                  });
+                  sent = res.ok === true;
+                } catch {
+                  sent = false;
+                }
+
                 updateDoc(doc.id, { status: "sent" });
-                toast.success("Draft opened in your mail app", {
-                  description: "The PDF was saved to Downloads — attach it before sending.",
-                });
+
+                if (sent) {
+                  toast.success(`${kind} emailed to ${to}`, {
+                    description: "Sent from WinStream with the PDF attached.",
+                  });
+                } else {
+                  await openEmailDraft({
+                    to,
+                    subject,
+                    body,
+                    attachment: { blob, filename },
+                  });
+                  toast.success("Draft opened in your mail app", {
+                    description: "The PDF was saved to Downloads — attach it before sending.",
+                  });
+                }
               } catch {
-                toast.error("Could not open your mail app");
+                toast.error("Could not send this document");
+              } finally {
+                setSending(false);
               }
             }}
           >
-            <Send className="mr-1.5 h-3.5 w-3.5" /> Send
+            {sending ? (
+              <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Send className="mr-1.5 h-3.5 w-3.5" />
+            )}
+            {sending ? "Sending…" : "Send"}
           </Button>
+
           <Button
             size="sm"
             variant="outline"
@@ -317,7 +380,7 @@ function DocForm({ type, onDone }: { type: DemoDocType; onDone: () => void }) {
       return;
     }
     if (aiLeft <= 0) {
-      toast.error("Demo AI limit reached — sign up free to keep drafting");
+      toast.error("AI drafting limit reached — sign up free to keep drafting");
       return;
     }
     setDrafting(true);
@@ -368,7 +431,7 @@ function DocForm({ type, onDone }: { type: DemoDocType; onDone: () => void }) {
       <div className="rounded-lg border border-primary/25 bg-primary/5 p-3">
         <Label className="flex items-center gap-1.5 text-xs font-semibold">
           <Sparkles className="h-3.5 w-3.5 text-primary" />
-          Draft with AI · {aiLeft} left in demo
+          Draft with AI · {aiLeft} left
         </Label>
         <div className="mt-2 flex flex-col gap-2 sm:flex-row">
           <Input
@@ -383,7 +446,7 @@ function DocForm({ type, onDone }: { type: DemoDocType; onDone: () => void }) {
         </div>
         {aiLeft <= 0 && (
           <p className="mt-2 text-xs text-muted-foreground">
-            Demo limit reached.{" "}
+            Limit reached.{" "}
             <Link to="/auth" className="font-medium text-primary hover:underline">
               Sign up free
             </Link>{" "}

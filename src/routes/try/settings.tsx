@@ -7,16 +7,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { setDemoState, useDemoState } from "@/lib/demo-store";
 
-export const Route = createFileRoute("/demo/settings")({
+export const Route = createFileRoute("/try/settings")({
   head: () => ({
     meta: [
-      { title: "Demo Settings — WinStream SA" },
+      { title: "Business Profile — WinStream SA" },
       {
         name: "description",
         content:
           "See how your business details, VAT number and banking info appear on WinStream documents.",
       },
-      { property: "og:title", content: "Demo Settings — WinStream SA" },
+      { property: "og:title", content: "Business Profile — WinStream SA" },
       {
         property: "og:description",
         content: "Configure a sample business profile in the WinStream sandbox.",
