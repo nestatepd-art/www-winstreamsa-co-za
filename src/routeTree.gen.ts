@@ -19,6 +19,7 @@ import { Route as RefundRouteImport } from './routes/refund'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as FeaturesRouteImport } from './routes/features'
+import { Route as DemoRouteImport } from './routes/demo'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AboutRouteImport } from './routes/about'
@@ -112,6 +113,11 @@ const PricingRoute = PricingRouteImport.update({
 const FeaturesRoute = FeaturesRouteImport.update({
   id: '/features',
   path: '/features',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoRoute = DemoRouteImport.update({
+  id: '/demo',
+  path: '/demo',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ContactRoute = ContactRouteImport.update({
@@ -355,6 +361,7 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
   '/contact': typeof ContactRoute
+  '/demo': typeof DemoRoute
   '/features': typeof FeaturesRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
@@ -409,6 +416,7 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
   '/contact': typeof ContactRoute
+  '/demo': typeof DemoRoute
   '/features': typeof FeaturesRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
@@ -465,6 +473,7 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
   '/contact': typeof ContactRoute
+  '/demo': typeof DemoRoute
   '/features': typeof FeaturesRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
@@ -522,6 +531,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/auth'
     | '/contact'
+    | '/demo'
     | '/features'
     | '/pricing'
     | '/privacy'
@@ -576,6 +586,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/auth'
     | '/contact'
+    | '/demo'
     | '/features'
     | '/pricing'
     | '/privacy'
@@ -631,6 +642,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/auth'
     | '/contact'
+    | '/demo'
     | '/features'
     | '/pricing'
     | '/privacy'
@@ -688,6 +700,7 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   AuthRoute: typeof AuthRoute
   ContactRoute: typeof ContactRoute
+  DemoRoute: typeof DemoRoute
   FeaturesRoute: typeof FeaturesRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
@@ -779,6 +792,13 @@ declare module '@tanstack/react-router' {
       path: '/features'
       fullPath: '/features'
       preLoaderRoute: typeof FeaturesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo': {
+      id: '/demo'
+      path: '/demo'
+      fullPath: '/demo'
+      preLoaderRoute: typeof DemoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/contact': {
@@ -1220,6 +1240,7 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   AuthRoute: AuthRoute,
   ContactRoute: ContactRoute,
+  DemoRoute: DemoRoute,
   FeaturesRoute: FeaturesRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
