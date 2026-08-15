@@ -441,14 +441,25 @@ function DocForm({ type, onDone }: { type: DemoDocType; onDone: () => void }) {
           className="mt-1"
           rows={3}
           value={notes}
+          placeholder="e.g. Valid for 14 days. 50% deposit on acceptance. Prices VAT inclusive at 15%."
           onChange={(e) => setNotes(e.target.value)}
         />
       </div>
 
-      <div className="flex items-center justify-between border-t border-border pt-3">
-        <span className="text-sm font-semibold">
-          Total {money(items.reduce((s, i) => s + i.qty * i.unitPrice, 0))}
-        </span>
+      <div className="flex flex-wrap items-end justify-between gap-3 border-t border-border pt-3">
+        <div className="text-right text-xs text-muted-foreground">
+          {(() => {
+            const gross = items.reduce((s, i) => s + i.qty * i.unitPrice, 0);
+            const sub = gross / (1 + VAT_RATE);
+            return (
+              <div className="space-y-0.5 text-left">
+                <div>Subtotal {money(sub)}</div>
+                <div>VAT (15%) {money(gross - sub)}</div>
+                <div className="text-sm font-semibold text-foreground">Total {money(gross)}</div>
+              </div>
+            );
+          })()}
+        </div>
         <Button onClick={save}>Save {LABEL[type].one.toLowerCase()}</Button>
       </div>
     </div>
