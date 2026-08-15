@@ -207,11 +207,31 @@ function DocCard({ doc }: { doc: DemoDoc }) {
           <Button
             size="sm"
             variant="outline"
-            onClick={() => {
-              updateDoc(doc.id, { status: doc.type === "invoice" ? "paid" : "sent" });
-              toast.success("Sending is live on real accounts", {
-                description: "In the demo we just mark the document as sent.",
-              });
+            onClick={async () => {
+              const client = state.clients.find((c) => c.id === doc.clientId);
+              try {
+                const blob = buildDemoPdf(state, doc);
+                const kind = doc.type === "invoice" ? "Invoice" : doc.type === "proposal" ? "Proposal" : "Quote";
+                await openEmailDraft({
+                  to: client?.email ?? "",
+                  subject: `${kind} ${doc.number} — ${doc.title || "Untitled"}`,
+                  body: [
+                    `Hi ${client?.contact || client?.name || "there"},`,
+                    "",
+                    `Please find ${kind.toLowerCase()} ${doc.number} for ${money(total)} attached.`,
+                    "",
+                    "Kind regards,",
+                    state.profile.businessName,
+                  ].join("\n"),
+                  attachment: { blob, filename: pdfFilename(doc) },
+                });
+                updateDoc(doc.id, { status: "sent" });
+                toast.success("Draft opened in your mail app", {
+                  description: "The PDF was saved to Downloads — attach it before sending.",
+                });
+              } catch {
+                toast.error("Could not open your mail app");
+              }
             }}
           >
             <Send className="mr-1.5 h-3.5 w-3.5" /> Send
@@ -219,11 +239,14 @@ function DocCard({ doc }: { doc: DemoDoc }) {
           <Button
             size="sm"
             variant="outline"
-            onClick={() =>
-              toast.info("PDF export is available after signup", {
-                description: "Real accounts download a branded PDF with your logo and banking details.",
-              })
-            }
+            onClick={() => {
+              try {
+                downloadBlob(buildDemoPdf(state, doc), pdfFilename(doc));
+                toast.success("PDF downloaded");
+              } catch {
+                toast.error("Could not generate the PDF");
+              }
+            }}
           >
             <Download className="mr-1.5 h-3.5 w-3.5" /> PDF
           </Button>
