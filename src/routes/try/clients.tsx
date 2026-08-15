@@ -1,12 +1,19 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { Plus, Trash2 } from "lucide-react";
+import { Pencil, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
-import { addClient, removeClient, useDemoState } from "@/lib/demo-store";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { addClient, removeClient, updateClient, useDemoState } from "@/lib/demo-store";
 
 export const Route = createFileRoute("/try/clients")({
   head: () => ({
@@ -14,22 +21,33 @@ export const Route = createFileRoute("/try/clients")({
       { title: "Clients — WinStream SA" },
       {
         name: "description",
-        content: "Add and manage sample clients in the free WinStream workspace.",
+        content: "Add, edit and manage your clients in the free WinStream workspace.",
       },
       { property: "og:title", content: "Clients — WinStream SA" },
       {
         property: "og:description",
-        content: "Manage a client book in the WinStream sandbox, no signup required.",
+        content: "Manage a client book in WinStream, no signup required.",
       },
       { name: "robots", content: "noindex" },
     ],
   }),
-  component: DemoClients,
+  component: TryClients,
 });
 
-function DemoClients() {
+const FIELDS = [
+  ["name", "Business name"],
+  ["contact", "Contact person"],
+  ["email", "Email"],
+  ["phone", "Phone"],
+] as const;
+
+const EMPTY = { name: "", contact: "", email: "", phone: "" };
+
+function TryClients() {
   const state = useDemoState();
-  const [form, setForm] = useState({ name: "", contact: "", email: "", phone: "" });
+  const [form, setForm] = useState(EMPTY);
+  const [editId, setEditId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState(EMPTY);
 
   const submit = () => {
     if (!form.name.trim()) {
@@ -37,8 +55,19 @@ function DemoClients() {
       return;
     }
     addClient(form);
-    setForm({ name: "", contact: "", email: "", phone: "" });
+    setForm(EMPTY);
     toast.success("Client added");
+  };
+
+  const saveEdit = () => {
+    if (!editId) return;
+    if (!editForm.name.trim()) {
+      toast.error("Client name is required");
+      return;
+    }
+    updateClient(editId, editForm);
+    setEditId(null);
+    toast.success("Client updated");
   };
 
   return (
@@ -51,14 +80,7 @@ function DemoClients() {
       <Card className="mt-6">
         <CardContent className="space-y-3 py-5">
           <div className="grid gap-3 sm:grid-cols-2">
-            {(
-              [
-                ["name", "Business name"],
-                ["contact", "Contact person"],
-                ["email", "Email"],
-                ["phone", "Phone"],
-              ] as const
-            ).map(([key, label]) => (
+            {FIELDS.map(([key, label]) => (
               <div key={key}>
                 <Label className="text-xs">{label}</Label>
                 <Input
@@ -87,20 +109,65 @@ function DemoClients() {
                 {[c.contact, c.email, c.phone].filter(Boolean).join(" · ") || "No contact details"}
               </div>
             </div>
-            <Button
-              size="sm"
-              variant="ghost"
-              className="text-destructive"
-              onClick={() => {
-                removeClient(c.id);
-                toast.success("Client removed");
-              }}
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
+            <div className="flex items-center gap-1">
+              <Button
+                size="sm"
+                variant="ghost"
+                aria-label="Edit client"
+                onClick={() => {
+                  setEditId(c.id);
+                  setEditForm({
+                    name: c.name ?? "",
+                    contact: c.contact ?? "",
+                    email: c.email ?? "",
+                    phone: c.phone ?? "",
+                  });
+                }}
+              >
+                <Pencil className="h-4 w-4" />
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="text-destructive"
+                aria-label="Delete client"
+                onClick={() => {
+                  removeClient(c.id);
+                  toast.success("Client removed");
+                }}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         ))}
       </div>
+
+      <Dialog open={editId !== null} onOpenChange={(o) => !o && setEditId(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit client</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {FIELDS.map(([key, label]) => (
+              <div key={key}>
+                <Label className="text-xs">{label}</Label>
+                <Input
+                  className="mt-1"
+                  value={editForm[key]}
+                  onChange={(e) => setEditForm((f) => ({ ...f, [key]: e.target.value }))}
+                />
+              </div>
+            ))}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditId(null)}>
+              Cancel
+            </Button>
+            <Button onClick={saveEdit}>Save changes</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
