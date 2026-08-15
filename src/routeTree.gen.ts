@@ -33,6 +33,7 @@ import { Route as TryQuotesRouteImport } from './routes/try/quotes'
 import { Route as TryProposalsRouteImport } from './routes/try/proposals'
 import { Route as TryInvoicesRouteImport } from './routes/try/invoices'
 import { Route as TryClientsRouteImport } from './routes/try/clients'
+import { Route as DemoSplatRouteImport } from './routes/demo.$'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AuthenticatedWriteReviewRouteImport } from './routes/_authenticated/write-review'
@@ -183,6 +184,11 @@ const TryClientsRoute = TryClientsRouteImport.update({
   id: '/clients',
   path: '/clients',
   getParentRoute: () => TryRouteRoute,
+} as any)
+const DemoSplatRoute = DemoSplatRouteImport.update({
+  id: '/$',
+  path: '/$',
+  getParentRoute: () => DemoRoute,
 } as any)
 const BlogSlugRoute = BlogSlugRouteImport.update({
   id: '/blog/$slug',
@@ -361,7 +367,7 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
   '/contact': typeof ContactRoute
-  '/demo': typeof DemoRoute
+  '/demo': typeof DemoRouteWithChildren
   '/features': typeof FeaturesRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
@@ -381,6 +387,7 @@ export interface FileRoutesByFullPath {
   '/write-review': typeof AuthenticatedWriteReviewRoute
   '/api/chat': typeof ApiChatRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/demo/$': typeof DemoSplatRoute
   '/try/clients': typeof TryClientsRoute
   '/try/invoices': typeof TryInvoicesRoute
   '/try/proposals': typeof TryProposalsRoute
@@ -416,7 +423,7 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
   '/contact': typeof ContactRoute
-  '/demo': typeof DemoRoute
+  '/demo': typeof DemoRouteWithChildren
   '/features': typeof FeaturesRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
@@ -435,6 +442,7 @@ export interface FileRoutesByTo {
   '/write-review': typeof AuthenticatedWriteReviewRoute
   '/api/chat': typeof ApiChatRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/demo/$': typeof DemoSplatRoute
   '/try/clients': typeof TryClientsRoute
   '/try/invoices': typeof TryInvoicesRoute
   '/try/proposals': typeof TryProposalsRoute
@@ -473,7 +481,7 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
   '/contact': typeof ContactRoute
-  '/demo': typeof DemoRoute
+  '/demo': typeof DemoRouteWithChildren
   '/features': typeof FeaturesRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
@@ -493,6 +501,7 @@ export interface FileRoutesById {
   '/_authenticated/write-review': typeof AuthenticatedWriteReviewRoute
   '/api/chat': typeof ApiChatRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/demo/$': typeof DemoSplatRoute
   '/try/clients': typeof TryClientsRoute
   '/try/invoices': typeof TryInvoicesRoute
   '/try/proposals': typeof TryProposalsRoute
@@ -551,6 +560,7 @@ export interface FileRouteTypes {
     | '/write-review'
     | '/api/chat'
     | '/blog/$slug'
+    | '/demo/$'
     | '/try/clients'
     | '/try/invoices'
     | '/try/proposals'
@@ -605,6 +615,7 @@ export interface FileRouteTypes {
     | '/write-review'
     | '/api/chat'
     | '/blog/$slug'
+    | '/demo/$'
     | '/try/clients'
     | '/try/invoices'
     | '/try/proposals'
@@ -662,6 +673,7 @@ export interface FileRouteTypes {
     | '/_authenticated/write-review'
     | '/api/chat'
     | '/blog/$slug'
+    | '/demo/$'
     | '/try/clients'
     | '/try/invoices'
     | '/try/proposals'
@@ -700,7 +712,7 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   AuthRoute: typeof AuthRoute
   ContactRoute: typeof ContactRoute
-  DemoRoute: typeof DemoRoute
+  DemoRoute: typeof DemoRouteWithChildren
   FeaturesRoute: typeof FeaturesRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
@@ -891,6 +903,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/try/clients'
       preLoaderRoute: typeof TryClientsRouteImport
       parentRoute: typeof TryRouteRoute
+    }
+    '/demo/$': {
+      id: '/demo/$'
+      path: '/$'
+      fullPath: '/demo/$'
+      preLoaderRoute: typeof DemoSplatRouteImport
+      parentRoute: typeof DemoRoute
     }
     '/blog/$slug': {
       id: '/blog/$slug'
@@ -1233,6 +1252,16 @@ const TryRouteRouteWithChildren = TryRouteRoute._addFileChildren(
   TryRouteRouteChildren,
 )
 
+interface DemoRouteChildren {
+  DemoSplatRoute: typeof DemoSplatRoute
+}
+
+const DemoRouteChildren: DemoRouteChildren = {
+  DemoSplatRoute: DemoSplatRoute,
+}
+
+const DemoRouteWithChildren = DemoRoute._addFileChildren(DemoRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
@@ -1240,7 +1269,7 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   AuthRoute: AuthRoute,
   ContactRoute: ContactRoute,
-  DemoRoute: DemoRoute,
+  DemoRoute: DemoRouteWithChildren,
   FeaturesRoute: FeaturesRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,

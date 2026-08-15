@@ -248,3 +248,10 @@ export function removeDoc(id: string) {
 export function bumpAiUsage() {
   setDemoState((s) => ({ ...s, aiUsed: s.aiUsed + 1 }));
 }
+
+export function updateClient(id: string, patch: Partial<Omit<DemoClient, "id">>) {
+  setDemoState((s) => ({
+    ...s,
+    clients: s.clients.map((c) => (c.id === id ? { ...c, ...patch } : c)),
+  }));
+}
