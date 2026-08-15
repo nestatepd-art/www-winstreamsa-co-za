@@ -27,6 +27,7 @@ import {
   updateDoc,
   useDemoState,
   uid,
+  VAT_RATE,
   type DemoDoc,
   type DemoDocType,
   type DemoLineItem,
@@ -362,40 +363,68 @@ function DocForm({ type, onDone }: { type: DemoDocType; onDone: () => void }) {
 
       <div className="space-y-2">
         <Label className="text-xs">Line items</Label>
+        <div className="hidden gap-2 px-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground sm:flex">
+          <span className="flex-1">Description</span>
+          <span className="w-16 text-center">Qty</span>
+          <span className="w-28 text-right">Unit price (R)</span>
+          <span className="w-24 text-right">Line total</span>
+          <span className="w-9" />
+        </div>
         {items.map((item, idx) => (
-          <div key={item.id} className="flex gap-2">
-            <Input
-              value={item.description}
-              placeholder="Description"
-              onChange={(e) =>
-                setItems((prev) =>
-                  prev.map((i, n) => (n === idx ? { ...i, description: e.target.value } : i)),
-                )
-              }
-            />
-            <Input
-              type="number"
-              className="w-16"
-              value={item.qty}
-              onChange={(e) =>
-                setItems((prev) =>
-                  prev.map((i, n) => (n === idx ? { ...i, qty: Number(e.target.value) } : i)),
-                )
-              }
-            />
-            <Input
-              type="number"
-              className="w-28"
-              value={item.unitPrice}
-              onChange={(e) =>
-                setItems((prev) =>
-                  prev.map((i, n) => (n === idx ? { ...i, unitPrice: Number(e.target.value) } : i)),
-                )
-              }
-            />
+          <div key={item.id} className="flex flex-wrap items-end gap-2 sm:flex-nowrap">
+            <div className="min-w-[10rem] flex-1">
+              <Label className="mb-1 block text-[11px] text-muted-foreground sm:hidden">
+                Description
+              </Label>
+              <Input
+                value={item.description}
+                placeholder="e.g. Supply and install 150L geyser"
+                onChange={(e) =>
+                  setItems((prev) =>
+                    prev.map((i, n) => (n === idx ? { ...i, description: e.target.value } : i)),
+                  )
+                }
+              />
+            </div>
+            <div className="w-16">
+              <Label className="mb-1 block text-[11px] text-muted-foreground sm:hidden">Qty</Label>
+              <Input
+                type="number"
+                min={0}
+                step={1}
+                placeholder="1"
+                value={item.qty}
+                onChange={(e) =>
+                  setItems((prev) =>
+                    prev.map((i, n) => (n === idx ? { ...i, qty: Number(e.target.value) } : i)),
+                  )
+                }
+              />
+            </div>
+            <div className="w-28">
+              <Label className="mb-1 block text-[11px] text-muted-foreground sm:hidden">
+                Unit price (R)
+              </Label>
+              <Input
+                type="number"
+                min={0}
+                step="0.01"
+                placeholder="0.00"
+                value={item.unitPrice}
+                onChange={(e) =>
+                  setItems((prev) =>
+                    prev.map((i, n) => (n === idx ? { ...i, unitPrice: Number(e.target.value) } : i)),
+                  )
+                }
+              />
+            </div>
+            <div className="w-24 pb-2 text-right text-sm tabular-nums text-muted-foreground">
+              {money(item.qty * item.unitPrice)}
+            </div>
             <Button
               variant="ghost"
               size="icon"
+              aria-label="Remove line item"
               onClick={() => setItems((prev) => prev.filter((_, n) => n !== idx))}
             >
               <Trash2 className="h-4 w-4" />
@@ -413,14 +442,25 @@ function DocForm({ type, onDone }: { type: DemoDocType; onDone: () => void }) {
           className="mt-1"
           rows={3}
           value={notes}
+          placeholder="e.g. Valid for 14 days. 50% deposit on acceptance. Prices VAT inclusive at 15%."
           onChange={(e) => setNotes(e.target.value)}
         />
       </div>
 
-      <div className="flex items-center justify-between border-t border-border pt-3">
-        <span className="text-sm font-semibold">
-          Total {money(items.reduce((s, i) => s + i.qty * i.unitPrice, 0))}
-        </span>
+      <div className="flex flex-wrap items-end justify-between gap-3 border-t border-border pt-3">
+        <div className="text-right text-xs text-muted-foreground">
+          {(() => {
+            const gross = items.reduce((s, i) => s + i.qty * i.unitPrice, 0);
+            const sub = gross / (1 + VAT_RATE);
+            return (
+              <div className="space-y-0.5 text-left">
+                <div>Subtotal {money(sub)}</div>
+                <div>VAT (15%) {money(gross - sub)}</div>
+                <div className="text-sm font-semibold text-foreground">Total {money(gross)}</div>
+              </div>
+            );
+          })()}
+        </div>
         <Button onClick={save}>Save {LABEL[type].one.toLowerCase()}</Button>
       </div>
     </div>
