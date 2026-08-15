@@ -33,6 +33,51 @@ import {
   type DemoLineItem,
 } from "@/lib/demo-store";
 import { draftDemoDocument } from "@/lib/demo-ai.functions";
+import { generateDocumentPdf, downloadBlob } from "@/lib/pdf-export";
+import { openEmailDraft } from "@/lib/email-compose";
+import type { DemoState } from "@/lib/demo-store";
+
+/** Builds a real, branded PDF from a sandbox document — same generator as live. */
+function buildDemoPdf(state: DemoState, doc: DemoDoc) {
+  const { subtotal, vat, total } = docTotals(doc);
+  const client = state.clients.find((c) => c.id === doc.clientId);
+  return generateDocumentPdf({
+    kind: doc.type === "invoice" ? "Invoice" : "Quote",
+    number: doc.number,
+    title: doc.title || "Untitled",
+    status: doc.status,
+    issue_date: doc.createdAt,
+    due_date: doc.dueDate,
+    subtotal,
+    vat_rate: VAT_RATE * 100,
+    vat_amount: vat,
+    total,
+    notes: doc.notes,
+    items: doc.items.map((i) => ({
+      description: i.description,
+      quantity: i.qty,
+      unit_price: i.unitPrice,
+      line_total: i.qty * i.unitPrice,
+    })),
+    client: {
+      name: client?.name ?? null,
+      contact_person: client?.contact ?? null,
+      email: client?.email ?? null,
+      phone: client?.phone ?? null,
+    },
+    profile: {
+      business_name: state.profile.businessName,
+      vat_number: state.profile.vatNumber,
+      email: state.profile.email,
+      phone: state.profile.phone,
+      bank_name: state.profile.bankDetails,
+    },
+    showBranding: true,
+  });
+}
+
+const pdfFilename = (doc: DemoDoc) =>
+  `${doc.number}-${(doc.title || "document").replace(/[^\w-]+/g, "-").slice(0, 40)}.pdf`;
 
 const LABEL: Record<DemoDocType, { one: string; many: string; blurb: string }> = {
   quote: {
@@ -162,11 +207,31 @@ function DocCard({ doc }: { doc: DemoDoc }) {
           <Button
             size="sm"
             variant="outline"
-            onClick={() => {
-              updateDoc(doc.id, { status: doc.type === "invoice" ? "paid" : "sent" });
-              toast.success("Sending is live on real accounts", {
-                description: "In the demo we just mark the document as sent.",
-              });
+            onClick={async () => {
+              const client = state.clients.find((c) => c.id === doc.clientId);
+              try {
+                const blob = buildDemoPdf(state, doc);
+                const kind = doc.type === "invoice" ? "Invoice" : doc.type === "proposal" ? "Proposal" : "Quote";
+                await openEmailDraft({
+                  to: client?.email ?? "",
+                  subject: `${kind} ${doc.number} — ${doc.title || "Untitled"}`,
+                  body: [
+                    `Hi ${client?.contact || client?.name || "there"},`,
+                    "",
+                    `Please find ${kind.toLowerCase()} ${doc.number} for ${money(total)} attached.`,
+                    "",
+                    "Kind regards,",
+                    state.profile.businessName,
+                  ].join("\n"),
+                  attachment: { blob, filename: pdfFilename(doc) },
+                });
+                updateDoc(doc.id, { status: "sent" });
+                toast.success("Draft opened in your mail app", {
+                  description: "The PDF was saved to Downloads — attach it before sending.",
+                });
+              } catch {
+                toast.error("Could not open your mail app");
+              }
             }}
           >
             <Send className="mr-1.5 h-3.5 w-3.5" /> Send
@@ -174,11 +239,14 @@ function DocCard({ doc }: { doc: DemoDoc }) {
           <Button
             size="sm"
             variant="outline"
-            onClick={() =>
-              toast.info("PDF export is available after signup", {
-                description: "Real accounts download a branded PDF with your logo and banking details.",
-              })
-            }
+            onClick={() => {
+              try {
+                downloadBlob(buildDemoPdf(state, doc), pdfFilename(doc));
+                toast.success("PDF downloaded");
+              } catch {
+                toast.error("Could not generate the PDF");
+              }
+            }}
           >
             <Download className="mr-1.5 h-3.5 w-3.5" /> PDF
           </Button>
