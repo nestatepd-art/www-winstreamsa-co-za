@@ -128,7 +128,7 @@ export function AppSidebar() {
                     </SidebarMenuButton>
                   ) : (
                     <SidebarMenuButton asChild isActive={isActive(item.url)}>
-                      <Link to={item.url} className="flex items-center gap-2">
+                      <Link to={item.url} onClick={handleNavClick} className="flex items-center gap-2">
                         <item.icon className="h-4 w-4" />
                         {!collapsed && <span>{item.title}</span>}
                       </Link>
@@ -140,7 +140,7 @@ export function AppSidebar() {
                 <>
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild isActive={isActive("/admin/blog")}>
-                      <Link to="/admin/blog" className="flex items-center gap-2">
+                      <Link to="/admin/blog" onClick={handleNavClick} className="flex items-center gap-2">
                         <Newspaper className="h-4 w-4" />
                         {!collapsed && <span>Blog Admin</span>}
                       </Link>
@@ -148,7 +148,7 @@ export function AppSidebar() {
                   </SidebarMenuItem>
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild isActive={isActive("/admin/reviews")}>
-                      <Link to="/admin/reviews" className="flex items-center gap-2">
+                      <Link to="/admin/reviews" onClick={handleNavClick} className="flex items-center gap-2">
                         <Star className="h-4 w-4" />
                         {!collapsed && <span>Reviews Admin</span>}
                       </Link>
