@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { Plus, Users, Mail, Phone, Trash2 } from "lucide-react";
+import { Plus, Users, Mail, Phone, Trash2, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { EmptyState } from "./dashboard";
 
@@ -20,7 +20,22 @@ function ClientsPage() {
   const qc = useQueryClient();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ name: "", contact_person: "", email: "", phone: "", city: "", notes: "" });
+  const emptyForm = { name: "", contact_person: "", email: "", phone: "", city: "", notes: "" };
+  const [form, setForm] = useState(emptyForm);
+  const [editId, setEditId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState(emptyForm);
+
+  const startEdit = (c: any) => {
+    setEditId(c.id);
+    setEditForm({
+      name: c.name ?? "",
+      contact_person: c.contact_person ?? "",
+      email: c.email ?? "",
+      phone: c.phone ?? "",
+      city: c.city ?? "",
+      notes: c.notes ?? "",
+    });
+  };
 
   const { data: clients = [] } = useQuery({
     queryKey: ["clients"],
