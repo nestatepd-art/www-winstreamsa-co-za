@@ -207,35 +207,86 @@ function DocCard({ doc }: { doc: DemoDoc }) {
           <Button
             size="sm"
             variant="outline"
+            disabled={sending}
             onClick={async () => {
               const client = state.clients.find((c) => c.id === doc.clientId);
+              const to = client?.email?.trim();
+              const kind =
+                doc.type === "invoice" ? "Invoice" : doc.type === "proposal" ? "Proposal" : "Quote";
+              const subject = `${kind} ${doc.number} — ${doc.title || "Untitled"}`;
+              const body = [
+                `Hi ${client?.contact || client?.name || "there"},`,
+                "",
+                `Please find ${kind.toLowerCase()} ${doc.number} for ${money(total)} attached.`,
+                "",
+                "Kind regards,",
+                state.profile.businessName,
+              ].join("\n");
+
+              if (!to) {
+                toast.error("Add an email address for this client first");
+                return;
+              }
+
+              setSending(true);
               try {
                 const blob = buildDemoPdf(state, doc);
-                const kind = doc.type === "invoice" ? "Invoice" : doc.type === "proposal" ? "Proposal" : "Quote";
-                await openEmailDraft({
-                  to: client?.email ?? "",
-                  subject: `${kind} ${doc.number} — ${doc.title || "Untitled"}`,
-                  body: [
-                    `Hi ${client?.contact || client?.name || "there"},`,
-                    "",
-                    `Please find ${kind.toLowerCase()} ${doc.number} for ${money(total)} attached.`,
-                    "",
-                    "Kind regards,",
-                    state.profile.businessName,
-                  ].join("\n"),
-                  attachment: { blob, filename: pdfFilename(doc) },
-                });
+                const filename = pdfFilename(doc);
+
+                let sent = false;
+                try {
+                  const pdfBase64 = await blobToBase64(blob);
+                  const res = await sendPublicDocumentEmail({
+                    data: {
+                      to,
+                      subject,
+                      bodyText: body,
+                      businessName: state.profile.businessName,
+                      clientName: client?.contact || client?.name || undefined,
+                      replyTo: state.profile.email?.includes("@")
+                        ? state.profile.email
+                        : undefined,
+                      pdfBase64,
+                      pdfFilename: filename,
+                    },
+                  });
+                  sent = res.ok === true;
+                } catch {
+                  sent = false;
+                }
+
                 updateDoc(doc.id, { status: "sent" });
-                toast.success("Draft opened in your mail app", {
-                  description: "The PDF was saved to Downloads — attach it before sending.",
-                });
+
+                if (sent) {
+                  toast.success(`${kind} emailed to ${to}`, {
+                    description: "Sent from WinStream with the PDF attached.",
+                  });
+                } else {
+                  await openEmailDraft({
+                    to,
+                    subject,
+                    body,
+                    attachment: { blob, filename },
+                  });
+                  toast.success("Draft opened in your mail app", {
+                    description: "The PDF was saved to Downloads — attach it before sending.",
+                  });
+                }
               } catch {
-                toast.error("Could not open your mail app");
+                toast.error("Could not send this document");
+              } finally {
+                setSending(false);
               }
             }}
           >
-            <Send className="mr-1.5 h-3.5 w-3.5" /> Send
+            {sending ? (
+              <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Send className="mr-1.5 h-3.5 w-3.5" />
+            )}
+            {sending ? "Sending…" : "Send"}
           </Button>
+
           <Button
             size="sm"
             variant="outline"
