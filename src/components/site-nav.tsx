@@ -29,12 +29,20 @@ export function SiteNav() {
             </Link>
           ))}
         </div>
-        <Link
-          to="/auth"
-          className="rounded-lg bg-white px-4 py-1.5 text-sm font-semibold text-[#04121a] hover:bg-white/90"
-        >
-          Sign in
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            to="/demo"
+            className="hidden rounded-lg border border-white/20 px-3 py-1.5 text-sm font-semibold text-white hover:bg-white/10 sm:inline-flex"
+          >
+            Try free
+          </Link>
+          <Link
+            to="/auth"
+            className="rounded-lg bg-white px-4 py-1.5 text-sm font-semibold text-[#04121a] hover:bg-white/90"
+          >
+            Sign in
+          </Link>
+        </div>
       </nav>
     </header>
   );

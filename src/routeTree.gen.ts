@@ -27,6 +27,11 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DemoIndexRouteImport } from './routes/demo/index'
 import { Route as BlogIndexRouteImport } from './routes/blog.index'
+import { Route as DemoSettingsRouteImport } from './routes/demo/settings'
+import { Route as DemoQuotesRouteImport } from './routes/demo/quotes'
+import { Route as DemoProposalsRouteImport } from './routes/demo/proposals'
+import { Route as DemoInvoicesRouteImport } from './routes/demo/invoices'
+import { Route as DemoClientsRouteImport } from './routes/demo/clients'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AuthenticatedWriteReviewRouteImport } from './routes/_authenticated/write-review'
@@ -147,6 +152,31 @@ const BlogIndexRoute = BlogIndexRouteImport.update({
   id: '/blog/',
   path: '/blog/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const DemoSettingsRoute = DemoSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => DemoRouteRoute,
+} as any)
+const DemoQuotesRoute = DemoQuotesRouteImport.update({
+  id: '/quotes',
+  path: '/quotes',
+  getParentRoute: () => DemoRouteRoute,
+} as any)
+const DemoProposalsRoute = DemoProposalsRouteImport.update({
+  id: '/proposals',
+  path: '/proposals',
+  getParentRoute: () => DemoRouteRoute,
+} as any)
+const DemoInvoicesRoute = DemoInvoicesRouteImport.update({
+  id: '/invoices',
+  path: '/invoices',
+  getParentRoute: () => DemoRouteRoute,
+} as any)
+const DemoClientsRoute = DemoClientsRouteImport.update({
+  id: '/clients',
+  path: '/clients',
+  getParentRoute: () => DemoRouteRoute,
 } as any)
 const BlogSlugRoute = BlogSlugRouteImport.update({
   id: '/blog/$slug',
@@ -344,6 +374,11 @@ export interface FileRoutesByFullPath {
   '/write-review': typeof AuthenticatedWriteReviewRoute
   '/api/chat': typeof ApiChatRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/demo/clients': typeof DemoClientsRoute
+  '/demo/invoices': typeof DemoInvoicesRoute
+  '/demo/proposals': typeof DemoProposalsRoute
+  '/demo/quotes': typeof DemoQuotesRoute
+  '/demo/settings': typeof DemoSettingsRoute
   '/blog/': typeof BlogIndexRoute
   '/demo/': typeof DemoIndexRoute
   '/admin/blog': typeof AuthenticatedAdminBlogRoute
@@ -392,6 +427,11 @@ export interface FileRoutesByTo {
   '/write-review': typeof AuthenticatedWriteReviewRoute
   '/api/chat': typeof ApiChatRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/demo/clients': typeof DemoClientsRoute
+  '/demo/invoices': typeof DemoInvoicesRoute
+  '/demo/proposals': typeof DemoProposalsRoute
+  '/demo/quotes': typeof DemoQuotesRoute
+  '/demo/settings': typeof DemoSettingsRoute
   '/blog': typeof BlogIndexRoute
   '/demo': typeof DemoIndexRoute
   '/admin/blog': typeof AuthenticatedAdminBlogRoute
@@ -444,6 +484,11 @@ export interface FileRoutesById {
   '/_authenticated/write-review': typeof AuthenticatedWriteReviewRoute
   '/api/chat': typeof ApiChatRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/demo/clients': typeof DemoClientsRoute
+  '/demo/invoices': typeof DemoInvoicesRoute
+  '/demo/proposals': typeof DemoProposalsRoute
+  '/demo/quotes': typeof DemoQuotesRoute
+  '/demo/settings': typeof DemoSettingsRoute
   '/blog/': typeof BlogIndexRoute
   '/demo/': typeof DemoIndexRoute
   '/_authenticated/admin/blog': typeof AuthenticatedAdminBlogRoute
@@ -496,6 +541,11 @@ export interface FileRouteTypes {
     | '/write-review'
     | '/api/chat'
     | '/blog/$slug'
+    | '/demo/clients'
+    | '/demo/invoices'
+    | '/demo/proposals'
+    | '/demo/quotes'
+    | '/demo/settings'
     | '/blog/'
     | '/demo/'
     | '/admin/blog'
@@ -544,6 +594,11 @@ export interface FileRouteTypes {
     | '/write-review'
     | '/api/chat'
     | '/blog/$slug'
+    | '/demo/clients'
+    | '/demo/invoices'
+    | '/demo/proposals'
+    | '/demo/quotes'
+    | '/demo/settings'
     | '/blog'
     | '/demo'
     | '/admin/blog'
@@ -595,6 +650,11 @@ export interface FileRouteTypes {
     | '/_authenticated/write-review'
     | '/api/chat'
     | '/blog/$slug'
+    | '/demo/clients'
+    | '/demo/invoices'
+    | '/demo/proposals'
+    | '/demo/quotes'
+    | '/demo/settings'
     | '/blog/'
     | '/demo/'
     | '/_authenticated/admin/blog'
@@ -776,6 +836,41 @@ declare module '@tanstack/react-router' {
       fullPath: '/blog/'
       preLoaderRoute: typeof BlogIndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/demo/settings': {
+      id: '/demo/settings'
+      path: '/settings'
+      fullPath: '/demo/settings'
+      preLoaderRoute: typeof DemoSettingsRouteImport
+      parentRoute: typeof DemoRouteRoute
+    }
+    '/demo/quotes': {
+      id: '/demo/quotes'
+      path: '/quotes'
+      fullPath: '/demo/quotes'
+      preLoaderRoute: typeof DemoQuotesRouteImport
+      parentRoute: typeof DemoRouteRoute
+    }
+    '/demo/proposals': {
+      id: '/demo/proposals'
+      path: '/proposals'
+      fullPath: '/demo/proposals'
+      preLoaderRoute: typeof DemoProposalsRouteImport
+      parentRoute: typeof DemoRouteRoute
+    }
+    '/demo/invoices': {
+      id: '/demo/invoices'
+      path: '/invoices'
+      fullPath: '/demo/invoices'
+      preLoaderRoute: typeof DemoInvoicesRouteImport
+      parentRoute: typeof DemoRouteRoute
+    }
+    '/demo/clients': {
+      id: '/demo/clients'
+      path: '/clients'
+      fullPath: '/demo/clients'
+      preLoaderRoute: typeof DemoClientsRouteImport
+      parentRoute: typeof DemoRouteRoute
     }
     '/blog/$slug': {
       id: '/blog/$slug'
@@ -1097,10 +1192,20 @@ const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
 interface DemoRouteRouteChildren {
+  DemoClientsRoute: typeof DemoClientsRoute
+  DemoInvoicesRoute: typeof DemoInvoicesRoute
+  DemoProposalsRoute: typeof DemoProposalsRoute
+  DemoQuotesRoute: typeof DemoQuotesRoute
+  DemoSettingsRoute: typeof DemoSettingsRoute
   DemoIndexRoute: typeof DemoIndexRoute
 }
 
 const DemoRouteRouteChildren: DemoRouteRouteChildren = {
+  DemoClientsRoute: DemoClientsRoute,
+  DemoInvoicesRoute: DemoInvoicesRoute,
+  DemoProposalsRoute: DemoProposalsRoute,
+  DemoQuotesRoute: DemoQuotesRoute,
+  DemoSettingsRoute: DemoSettingsRoute,
   DemoIndexRoute: DemoIndexRoute,
 }
 

@@ -130,12 +130,16 @@ function LandingPage() {
             />
           </Link>
           <Link
-            to="/auth"
+            to="/demo"
             className="inline-flex items-center justify-center rounded-xl border border-white/15 bg-white/5 px-7 py-3.5 text-sm font-semibold text-white backdrop-blur-md transition-colors hover:bg-white/10 active:scale-95"
           >
-            Sign in
+            Try it free — no signup
           </Link>
         </div>
+
+        <p className="mt-3 animate-fade-in text-xs text-white/45 [animation-delay:300ms]">
+          Explore the full workspace with sample data. No card, no account.
+        </p>
 
         {/* Feature cards */}
         <div className="mt-20 grid w-full animate-fade-in gap-4 sm:grid-cols-3 [animation-delay:360ms]">
