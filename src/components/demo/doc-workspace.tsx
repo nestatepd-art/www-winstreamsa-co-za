@@ -35,6 +35,7 @@ import {
 import { draftDemoDocument } from "@/lib/demo-ai.functions";
 import { generateDocumentPdf, downloadBlob } from "@/lib/pdf-export";
 import { openEmailDraft } from "@/lib/email-compose";
+import { sendPublicDocumentEmail } from "@/lib/public-send.functions";
 import type { DemoState } from "@/lib/demo-store";
 
 /** Builds a real, branded PDF from a sandbox document — same generator as live. */
@@ -74,6 +75,16 @@ function buildDemoPdf(state: DemoState, doc: DemoDoc) {
     },
     showBranding: true,
   });
+}
+
+/** Blob -> base64 (no data URL prefix) for server-side email attachments. */
+async function blobToBase64(blob: Blob): Promise<string> {
+  const buf = new Uint8Array(await blob.arrayBuffer());
+  let binary = "";
+  for (let i = 0; i < buf.length; i += 8192) {
+    binary += String.fromCharCode(...buf.subarray(i, i + 8192));
+  }
+  return btoa(binary);
 }
 
 const pdfFilename = (doc: DemoDoc) =>
@@ -155,6 +166,7 @@ function DocCard({ doc }: { doc: DemoDoc }) {
   const state = useDemoState();
   const { subtotal, vat, total } = docTotals(doc);
   const [expanded, setExpanded] = useState(false);
+  const [sending, setSending] = useState(false);
 
   return (
     <Card>
