@@ -362,37 +362,64 @@ function DocForm({ type, onDone }: { type: DemoDocType; onDone: () => void }) {
 
       <div className="space-y-2">
         <Label className="text-xs">Line items</Label>
+        <div className="hidden gap-2 px-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground sm:flex">
+          <span className="flex-1">Description</span>
+          <span className="w-16 text-center">Qty</span>
+          <span className="w-28 text-right">Unit price (R)</span>
+          <span className="w-24 text-right">Line total</span>
+          <span className="w-9" />
+        </div>
         {items.map((item, idx) => (
-          <div key={item.id} className="flex gap-2">
-            <Input
-              value={item.description}
-              placeholder="Description"
-              onChange={(e) =>
-                setItems((prev) =>
-                  prev.map((i, n) => (n === idx ? { ...i, description: e.target.value } : i)),
-                )
-              }
-            />
-            <Input
-              type="number"
-              className="w-16"
-              value={item.qty}
-              onChange={(e) =>
-                setItems((prev) =>
-                  prev.map((i, n) => (n === idx ? { ...i, qty: Number(e.target.value) } : i)),
-                )
-              }
-            />
-            <Input
-              type="number"
-              className="w-28"
-              value={item.unitPrice}
-              onChange={(e) =>
-                setItems((prev) =>
-                  prev.map((i, n) => (n === idx ? { ...i, unitPrice: Number(e.target.value) } : i)),
-                )
-              }
-            />
+          <div key={item.id} className="flex flex-wrap items-end gap-2 sm:flex-nowrap">
+            <div className="min-w-[10rem] flex-1">
+              <Label className="mb-1 block text-[11px] text-muted-foreground sm:hidden">
+                Description
+              </Label>
+              <Input
+                value={item.description}
+                placeholder="e.g. Supply and install 150L geyser"
+                onChange={(e) =>
+                  setItems((prev) =>
+                    prev.map((i, n) => (n === idx ? { ...i, description: e.target.value } : i)),
+                  )
+                }
+              />
+            </div>
+            <div className="w-16">
+              <Label className="mb-1 block text-[11px] text-muted-foreground sm:hidden">Qty</Label>
+              <Input
+                type="number"
+                min={0}
+                step={1}
+                placeholder="1"
+                value={item.qty}
+                onChange={(e) =>
+                  setItems((prev) =>
+                    prev.map((i, n) => (n === idx ? { ...i, qty: Number(e.target.value) } : i)),
+                  )
+                }
+              />
+            </div>
+            <div className="w-28">
+              <Label className="mb-1 block text-[11px] text-muted-foreground sm:hidden">
+                Unit price (R)
+              </Label>
+              <Input
+                type="number"
+                min={0}
+                step="0.01"
+                placeholder="0.00"
+                value={item.unitPrice}
+                onChange={(e) =>
+                  setItems((prev) =>
+                    prev.map((i, n) => (n === idx ? { ...i, unitPrice: Number(e.target.value) } : i)),
+                  )
+                }
+              />
+            </div>
+            <div className="w-24 pb-2 text-right text-sm tabular-nums text-muted-foreground">
+              {money(item.qty * item.unitPrice)}
+            </div>
             <Button
               variant="ghost"
               size="icon"
