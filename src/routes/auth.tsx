@@ -53,7 +53,10 @@ function AuthPage() {
       return toast.error(msg);
     }
     toast.success("Welcome back");
-    navigate({ to: "/dashboard" });
+    // Full document navigation: the router/query caches were built for the
+    // signed-out session, and invalidating them mid-flight is what used to
+    // leave the app on a blank screen until a manual refresh.
+    window.location.assign("/dashboard");
   };
 
   const sendReset = async () => {
@@ -119,7 +122,7 @@ function AuthPage() {
       // The OAuth flow redirects away; profile creation and pending-purchase
       // claiming happen in __root.tsx's onAuthStateChange after redirect.
       if (result.redirected) return;
-      navigate({ to: "/dashboard" });
+      window.location.assign("/dashboard");
     } catch (err) {
       setLoading(false);
       toast.error("Google sign-in failed", { description: err instanceof Error ? err.message : String(err) });
