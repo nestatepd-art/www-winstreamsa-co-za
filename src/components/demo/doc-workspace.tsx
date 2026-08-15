@@ -27,6 +27,7 @@ import {
   updateDoc,
   useDemoState,
   uid,
+  VAT_RATE,
   type DemoDoc,
   type DemoDocType,
   type DemoLineItem,
