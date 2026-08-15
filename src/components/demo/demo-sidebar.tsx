@@ -43,7 +43,7 @@ const items: NavItem[] = [
 ];
 
 export function DemoSidebar() {
-  const { state: sidebarState } = useSidebar();
+  const { state: sidebarState, setOpenMobile } = useSidebar();
   const collapsed = sidebarState === "collapsed";
   const currentPath = useRouterState({ select: (r) => r.location.pathname });
   const demo = useDemoState();
@@ -51,6 +51,8 @@ export function DemoSidebar() {
 
   const isActive = (url: string, exact?: boolean) =>
     exact ? currentPath === url : currentPath === url || currentPath.startsWith(url + "/");
+
+  const handleNavClick = () => setOpenMobile(false);
 
   return (
     <Sidebar collapsible="icon">
@@ -76,7 +78,7 @@ export function DemoSidebar() {
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild isActive={isActive(item.url, item.exact)}>
-                    <Link to={item.url as "/demo"} className="flex items-center gap-2">
+                    <Link to={item.url as "/demo"} onClick={handleNavClick} className="flex items-center gap-2">
                       <item.icon className="h-4 w-4" />
                       {!collapsed && <span>{item.title}</span>}
                     </Link>
