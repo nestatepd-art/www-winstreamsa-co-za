@@ -423,6 +423,7 @@ function DocForm({ type, onDone }: { type: DemoDocType; onDone: () => void }) {
             <Button
               variant="ghost"
               size="icon"
+              aria-label="Remove line item"
               onClick={() => setItems((prev) => prev.filter((_, n) => n !== idx))}
             >
               <Trash2 className="h-4 w-4" />
