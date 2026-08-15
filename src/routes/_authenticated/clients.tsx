@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { Plus, Users, Mail, Phone, Trash2 } from "lucide-react";
+import { Plus, Users, Mail, Phone, Trash2, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { EmptyState } from "./dashboard";
 
@@ -20,7 +20,22 @@ function ClientsPage() {
   const qc = useQueryClient();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ name: "", contact_person: "", email: "", phone: "", city: "", notes: "" });
+  const emptyForm = { name: "", contact_person: "", email: "", phone: "", city: "", notes: "" };
+  const [form, setForm] = useState(emptyForm);
+  const [editId, setEditId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState(emptyForm);
+
+  const startEdit = (c: any) => {
+    setEditId(c.id);
+    setEditForm({
+      name: c.name ?? "",
+      contact_person: c.contact_person ?? "",
+      email: c.email ?? "",
+      phone: c.phone ?? "",
+      city: c.city ?? "",
+      notes: c.notes ?? "",
+    });
+  };
 
   const { data: clients = [] } = useQuery({
     queryKey: ["clients"],
@@ -68,6 +83,21 @@ function ClientsPage() {
     onSuccess: () => {
       toast.success("Client deleted");
       qc.invalidateQueries({ queryKey: ["clients"] });
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const updateMut = useMutation({
+    mutationFn: async () => {
+      if (!editId) return;
+      const { error } = await supabase.from("clients").update(editForm).eq("id", editId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Client updated");
+      setEditId(null);
+      qc.invalidateQueries({ queryKey: ["clients"] });
+      qc.invalidateQueries({ queryKey: ["dashboard-stats"] });
     },
     onError: (e: any) => toast.error(e.message),
   });
@@ -120,13 +150,22 @@ function ClientsPage() {
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-start justify-between gap-2">
                   <span className="truncate">{c.name}</span>
-                  <button
-                    onClick={() => confirm(`Delete ${c.name}?`) && deleteMut.mutate(c.id)}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
-                    aria-label="Delete client"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
+                  <span className="flex items-center gap-2 shrink-0">
+                    <button
+                      onClick={() => startEdit(c)}
+                      className="text-muted-foreground hover:text-primary transition-colors"
+                      aria-label="Edit client"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => confirm(`Delete ${c.name}?`) && deleteMut.mutate(c.id)}
+                      className="text-muted-foreground hover:text-destructive transition-colors"
+                      aria-label="Delete client"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </span>
                 </CardTitle>
                 {c.contact_person && <CardDescription>{c.contact_person}</CardDescription>}
               </CardHeader>
@@ -139,6 +178,30 @@ function ClientsPage() {
           ))}
         </div>
       )}
+
+      <Dialog open={editId !== null} onOpenChange={(o) => !o && setEditId(null)}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Edit client</DialogTitle></DialogHeader>
+          <div className="grid gap-4">
+            <Field label="Business / client name *">
+              <Input value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} required />
+            </Field>
+            <Field label="Contact person">
+              <Input value={editForm.contact_person} onChange={(e) => setEditForm({ ...editForm, contact_person: e.target.value })} />
+            </Field>
+            <div className="grid grid-cols-2 gap-4">
+              <Field label="Email"><Input type="email" value={editForm.email} onChange={(e) => setEditForm({ ...editForm, email: e.target.value })} /></Field>
+              <Field label="Phone"><Input value={editForm.phone} onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })} /></Field>
+            </div>
+            <Field label="City"><Input value={editForm.city} onChange={(e) => setEditForm({ ...editForm, city: e.target.value })} /></Field>
+            <Field label="Notes"><Textarea value={editForm.notes} onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })} /></Field>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditId(null)}>Cancel</Button>
+            <Button onClick={() => updateMut.mutate()} disabled={!editForm.name || updateMut.isPending}>Save changes</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
