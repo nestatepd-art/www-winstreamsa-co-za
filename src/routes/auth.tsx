@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2 } from "lucide-react";
+import { PasswordInput } from "@/components/password-input";
 import winstreamLogo from "@/assets/winstream-logo.png.asset.json";
 import { toast } from "sonner";
 
@@ -180,7 +181,7 @@ function AuthPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="si-pass">Password</Label>
-                    <Input id="si-pass" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
+                    <PasswordInput id="si-pass" required value={password} onChange={(e) => setPassword(e.target.value)} />
                   </div>
                   <Button type="submit" disabled={loading} className="w-full">
                     {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Sign in"}
@@ -217,7 +218,7 @@ function AuthPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="su-pass">Password</Label>
-                    <Input id="su-pass" type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} />
+                    <PasswordInput id="su-pass" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} />
                   </div>
                   <Button type="submit" disabled={loading} className="w-full">
                     {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Create account"}
