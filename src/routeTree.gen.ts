@@ -25,6 +25,7 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as DemoRouteRouteImport } from './routes/demo/route'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DemoIndexRouteImport } from './routes/demo/index'
 import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
@@ -136,6 +137,11 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const DemoIndexRoute = DemoIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DemoRouteRoute,
 } as any)
 const BlogIndexRoute = BlogIndexRouteImport.update({
   id: '/blog/',
@@ -315,7 +321,7 @@ const AuthenticatedInvoicesInvoiceIdEditRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/demo': typeof DemoRouteRoute
+  '/demo': typeof DemoRouteRouteWithChildren
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
   '/contact': typeof ContactRoute
@@ -339,6 +345,7 @@ export interface FileRoutesByFullPath {
   '/api/chat': typeof ApiChatRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/blog/': typeof BlogIndexRoute
+  '/demo/': typeof DemoIndexRoute
   '/admin/blog': typeof AuthenticatedAdminBlogRoute
   '/admin/reviews': typeof AuthenticatedAdminReviewsRoute
   '/chat/$threadId': typeof AuthenticatedChatThreadIdRoute
@@ -364,7 +371,6 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/demo': typeof DemoRouteRoute
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
   '/contact': typeof ContactRoute
@@ -387,6 +393,7 @@ export interface FileRoutesByTo {
   '/api/chat': typeof ApiChatRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/blog': typeof BlogIndexRoute
+  '/demo': typeof DemoIndexRoute
   '/admin/blog': typeof AuthenticatedAdminBlogRoute
   '/admin/reviews': typeof AuthenticatedAdminReviewsRoute
   '/chat/$threadId': typeof AuthenticatedChatThreadIdRoute
@@ -414,7 +421,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
-  '/demo': typeof DemoRouteRoute
+  '/demo': typeof DemoRouteRouteWithChildren
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
   '/contact': typeof ContactRoute
@@ -438,6 +445,7 @@ export interface FileRoutesById {
   '/api/chat': typeof ApiChatRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/blog/': typeof BlogIndexRoute
+  '/demo/': typeof DemoIndexRoute
   '/_authenticated/admin/blog': typeof AuthenticatedAdminBlogRoute
   '/_authenticated/admin/reviews': typeof AuthenticatedAdminReviewsRoute
   '/_authenticated/chat/$threadId': typeof AuthenticatedChatThreadIdRoute
@@ -489,6 +497,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/blog/$slug'
     | '/blog/'
+    | '/demo/'
     | '/admin/blog'
     | '/admin/reviews'
     | '/chat/$threadId'
@@ -514,7 +523,6 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/demo'
     | '/about'
     | '/auth'
     | '/contact'
@@ -537,6 +545,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/blog/$slug'
     | '/blog'
+    | '/demo'
     | '/admin/blog'
     | '/admin/reviews'
     | '/chat/$threadId'
@@ -587,6 +596,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/blog/$slug'
     | '/blog/'
+    | '/demo/'
     | '/_authenticated/admin/blog'
     | '/_authenticated/admin/reviews'
     | '/_authenticated/chat/$threadId'
@@ -614,7 +624,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
-  DemoRouteRoute: typeof DemoRouteRoute
+  DemoRouteRoute: typeof DemoRouteRouteWithChildren
   AboutRoute: typeof AboutRoute
   AuthRoute: typeof AuthRoute
   ContactRoute: typeof ContactRoute
@@ -752,6 +762,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/demo/': {
+      id: '/demo/'
+      path: '/'
+      fullPath: '/demo/'
+      preLoaderRoute: typeof DemoIndexRouteImport
+      parentRoute: typeof DemoRouteRoute
     }
     '/blog/': {
       id: '/blog/'
@@ -1079,10 +1096,22 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
+interface DemoRouteRouteChildren {
+  DemoIndexRoute: typeof DemoIndexRoute
+}
+
+const DemoRouteRouteChildren: DemoRouteRouteChildren = {
+  DemoIndexRoute: DemoIndexRoute,
+}
+
+const DemoRouteRouteWithChildren = DemoRouteRoute._addFileChildren(
+  DemoRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
-  DemoRouteRoute: DemoRouteRoute,
+  DemoRouteRoute: DemoRouteRouteWithChildren,
   AboutRoute: AboutRoute,
   AuthRoute: AuthRoute,
   ContactRoute: ContactRoute,
