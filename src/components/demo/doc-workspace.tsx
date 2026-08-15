@@ -33,6 +33,51 @@ import {
   type DemoLineItem,
 } from "@/lib/demo-store";
 import { draftDemoDocument } from "@/lib/demo-ai.functions";
+import { generateDocumentPdf, downloadBlob } from "@/lib/pdf-export";
+import { openEmailDraft } from "@/lib/email-compose";
+import type { DemoState } from "@/lib/demo-store";
+
+/** Builds a real, branded PDF from a sandbox document — same generator as live. */
+function buildDemoPdf(state: DemoState, doc: DemoDoc) {
+  const { subtotal, vat, total } = docTotals(doc);
+  const client = state.clients.find((c) => c.id === doc.clientId);
+  return generateDocumentPdf({
+    kind: doc.type === "invoice" ? "Invoice" : "Quote",
+    number: doc.number,
+    title: doc.title || "Untitled",
+    status: doc.status,
+    issue_date: doc.createdAt,
+    due_date: doc.dueDate,
+    subtotal,
+    vat_rate: VAT_RATE * 100,
+    vat_amount: vat,
+    total,
+    notes: doc.notes,
+    items: doc.items.map((i) => ({
+      description: i.description,
+      quantity: i.qty,
+      unit_price: i.unitPrice,
+      line_total: i.qty * i.unitPrice,
+    })),
+    client: {
+      name: client?.name ?? null,
+      contact_person: client?.contact ?? null,
+      email: client?.email ?? null,
+      phone: client?.phone ?? null,
+    },
+    profile: {
+      business_name: state.profile.businessName,
+      vat_number: state.profile.vatNumber,
+      email: state.profile.email,
+      phone: state.profile.phone,
+      bank_name: state.profile.bankDetails,
+    },
+    showBranding: true,
+  });
+}
+
+const pdfFilename = (doc: DemoDoc) =>
+  `${doc.number}-${(doc.title || "document").replace(/[^\w-]+/g, "-").slice(0, 40)}.pdf`;
 
 const LABEL: Record<DemoDocType, { one: string; many: string; blurb: string }> = {
   quote: {
