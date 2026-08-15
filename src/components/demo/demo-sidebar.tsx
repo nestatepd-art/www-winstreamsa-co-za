@@ -76,7 +76,7 @@ export function DemoSidebar() {
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild isActive={isActive(item.url, item.exact)}>
-                    <Link to={item.url} className="flex items-center gap-2">
+                    <Link to={item.url as "/demo"} className="flex items-center gap-2">
                       <item.icon className="h-4 w-4" />
                       {!collapsed && <span>{item.title}</span>}
                     </Link>
