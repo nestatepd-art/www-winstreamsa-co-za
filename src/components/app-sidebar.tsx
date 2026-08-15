@@ -48,11 +48,13 @@ const items = [
 ];
 
 export function AppSidebar() {
-  const { state } = useSidebar();
+  const { state, setOpenMobile } = useSidebar();
   const collapsed = state === "collapsed";
   const currentPath = useRouterState({ select: (r) => r.location.pathname });
   const isActive = (path: string) =>
     currentPath === path || currentPath.startsWith(path + "/");
+
+  const handleNavClick = () => setOpenMobile(false);
 
   const [isAdmin, setIsAdmin] = useState(false);
   const { data: onboarding } = useOnboardingStatus();
