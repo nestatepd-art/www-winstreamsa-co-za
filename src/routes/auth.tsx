@@ -88,7 +88,9 @@ function AuthPage() {
       });
     }
     setLoading(false);
-    toast.success("Account created — let's set up your business");
+    toast.success("Account created — please check your mailbox to verify your account before signing in.", {
+      duration: 7000,
+    });
     navigate({ to: "/settings" });
   };
 
