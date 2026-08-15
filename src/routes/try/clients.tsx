@@ -45,7 +45,7 @@ function DemoClients() {
     <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
       <h1 className="text-2xl font-semibold tracking-tight">Clients</h1>
       <p className="mt-1 text-sm text-muted-foreground">
-        Your client book. In the demo it lives in this browser only.
+        Your client book. Here it lives in this browser until you create an account.
       </p>
 
       <Card className="mt-6">

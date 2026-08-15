@@ -15,7 +15,7 @@ function DemoLayout() {
         <div className="flex min-w-0 flex-1 flex-col">
           <div className="flex flex-wrap items-center justify-between gap-2 bg-primary px-4 py-2 text-xs font-medium text-primary-foreground">
             <span>
-              Demo mode — sample data stays in your browser. Nothing is saved to an account.
+              Free workspace — sample data stays in your browser. Create an account to save your work.
             </span>
             <Link
               to="/auth"

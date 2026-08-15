@@ -7,7 +7,7 @@ export const Route = createFileRoute("/try/invoices")({
       { title: "Invoices — WinStream SA" },
       {
         name: "description",
-        content: "See how WinStream tracks due, paid and overdue invoices in the free demo workspace.",
+        content: "See how WinStream tracks due, paid and overdue invoices in the free WinStream workspace.",
       },
       { property: "og:title", content: "Invoices — WinStream SA" },
       {
