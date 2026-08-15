@@ -53,7 +53,10 @@ function AuthPage() {
       return toast.error(msg);
     }
     toast.success("Welcome back");
-    navigate({ to: "/dashboard" });
+    // Full document navigation: the router/query caches were built for the
+    // signed-out session, and invalidating them mid-flight is what used to
+    // leave the app on a blank screen until a manual refresh.
+    window.location.assign("/dashboard");
   };
 
   const sendReset = async () => {
