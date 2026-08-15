@@ -87,6 +87,21 @@ function ClientsPage() {
     onError: (e: any) => toast.error(e.message),
   });
 
+  const updateMut = useMutation({
+    mutationFn: async () => {
+      if (!editId) return;
+      const { error } = await supabase.from("clients").update(editForm).eq("id", editId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Client updated");
+      setEditId(null);
+      qc.invalidateQueries({ queryKey: ["clients"] });
+      qc.invalidateQueries({ queryKey: ["dashboard-stats"] });
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
   return (
     <div className="p-6 lg:p-10 max-w-7xl mx-auto space-y-8">
       <header className="flex items-end justify-between gap-4">
