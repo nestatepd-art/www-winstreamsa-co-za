@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { addClient, removeClient, useDemoState } from "@/lib/demo-store";
 
-export const Route = createFileRoute("/demo/clients")({
+export const Route = createFileRoute("/try/clients")({
   head: () => ({
     meta: [
       { title: "Demo Clients — WinStream SA" },

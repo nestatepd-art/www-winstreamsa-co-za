@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { clientName, docTotals, money, useDemoState } from "@/lib/demo-store";
 
-export const Route = createFileRoute("/demo/")({
+export const Route = createFileRoute("/try/")({
   head: () => ({
     meta: [
       { title: "Try WinStream Free — Demo Workspace, No Signup" },

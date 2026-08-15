@@ -2,7 +2,7 @@ import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { DemoSidebar } from "@/components/demo/demo-sidebar";
 
-export const Route = createFileRoute("/demo")({
+export const Route = createFileRoute("/try")({
   ssr: false,
   component: DemoLayout,
 });

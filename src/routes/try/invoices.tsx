@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { DocWorkspace } from "@/components/demo/doc-workspace";
 
-export const Route = createFileRoute("/demo/invoices")({
+export const Route = createFileRoute("/try/invoices")({
   head: () => ({
     meta: [
       { title: "Demo Invoices — WinStream SA" },
