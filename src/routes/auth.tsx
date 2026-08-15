@@ -122,7 +122,7 @@ function AuthPage() {
       // The OAuth flow redirects away; profile creation and pending-purchase
       // claiming happen in __root.tsx's onAuthStateChange after redirect.
       if (result.redirected) return;
-      navigate({ to: "/dashboard" });
+      window.location.assign("/dashboard");
     } catch (err) {
       setLoading(false);
       toast.error("Google sign-in failed", { description: err instanceof Error ? err.message : String(err) });
