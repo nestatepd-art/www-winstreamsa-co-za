@@ -26,14 +26,21 @@ import {
 } from "@/components/ui/sidebar";
 import { DEMO_AI_LIMIT, resetDemo, useDemoState } from "@/lib/demo-store";
 
-const items = [
+type NavItem = {
+  title: string;
+  url: string;
+  icon: typeof LayoutDashboard;
+  exact?: boolean;
+};
+
+const items: NavItem[] = [
   { title: "Dashboard", url: "/demo", icon: LayoutDashboard, exact: true },
   { title: "Clients", url: "/demo/clients", icon: Users },
   { title: "Quotes", url: "/demo/quotes", icon: FileText },
   { title: "Invoices", url: "/demo/invoices", icon: Receipt },
   { title: "Proposals", url: "/demo/proposals", icon: FileSignature },
   { title: "Settings", url: "/demo/settings", icon: Settings },
-] as const;
+];
 
 export function DemoSidebar() {
   const { state: sidebarState } = useSidebar();
