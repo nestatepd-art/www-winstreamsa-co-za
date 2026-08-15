@@ -11,12 +11,12 @@ import { addClient, removeClient, useDemoState } from "@/lib/demo-store";
 export const Route = createFileRoute("/try/clients")({
   head: () => ({
     meta: [
-      { title: "Demo Clients — WinStream SA" },
+      { title: "Clients — WinStream SA" },
       {
         name: "description",
-        content: "Add and manage sample clients in the free WinStream demo workspace.",
+        content: "Add and manage sample clients in the free WinStream workspace.",
       },
-      { property: "og:title", content: "Demo Clients — WinStream SA" },
+      { property: "og:title", content: "Clients — WinStream SA" },
       {
         property: "og:description",
         content: "Manage a client book in the WinStream sandbox, no signup required.",

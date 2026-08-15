@@ -20,7 +20,7 @@ export const draftDemoDocument = createServerFn({ method: "POST" })
       req?.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
       "anonymous";
     if (!demoRateLimit(ip)) {
-      throw new Error("Demo AI limit reached. Sign up free to keep generating.");
+      throw new Error("AI drafting limit reached. Sign up free to keep generating.");
     }
     return demoDraftDocument(data.brief, data.clientName ?? "");
   });

@@ -34,12 +34,12 @@ type NavItem = {
 };
 
 const items: NavItem[] = [
-  { title: "Dashboard", url: "/demo", icon: LayoutDashboard, exact: true },
-  { title: "Clients", url: "/demo/clients", icon: Users },
-  { title: "Quotes", url: "/demo/quotes", icon: FileText },
-  { title: "Invoices", url: "/demo/invoices", icon: Receipt },
-  { title: "Proposals", url: "/demo/proposals", icon: FileSignature },
-  { title: "Settings", url: "/demo/settings", icon: Settings },
+  { title: "Dashboard", url: "/try", icon: LayoutDashboard, exact: true },
+  { title: "Clients", url: "/try/clients", icon: Users },
+  { title: "Quotes", url: "/try/quotes", icon: FileText },
+  { title: "Invoices", url: "/try/invoices", icon: Receipt },
+  { title: "Proposals", url: "/try/proposals", icon: FileSignature },
+  { title: "Settings", url: "/try/settings", icon: Settings },
 ];
 
 export function DemoSidebar() {
@@ -63,7 +63,7 @@ export function DemoSidebar() {
             <div className="leading-tight">
               <div className="text-sm font-semibold tracking-tight">WinStream</div>
               <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                Demo workspace
+                Free workspace
               </div>
             </div>
           )}
@@ -78,7 +78,7 @@ export function DemoSidebar() {
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild isActive={isActive(item.url, item.exact)}>
-                    <Link to={item.url as "/demo"} onClick={handleNavClick} className="flex items-center gap-2">
+                    <Link to={item.url as "/try"} onClick={handleNavClick} className="flex items-center gap-2">
                       <item.icon className="h-4 w-4" />
                       {!collapsed && <span>{item.title}</span>}
                     </Link>
@@ -105,11 +105,11 @@ export function DemoSidebar() {
             <SidebarMenuButton
               onClick={() => {
                 resetDemo();
-                toast.success("Demo data reset");
+                toast.success("Sample data reset");
               }}
             >
               <RotateCcw className="h-4 w-4" />
-              {!collapsed && <span>Reset demo</span>}
+              {!collapsed && <span>Reset sample data</span>}
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

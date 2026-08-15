@@ -317,7 +317,7 @@ function DocForm({ type, onDone }: { type: DemoDocType; onDone: () => void }) {
       return;
     }
     if (aiLeft <= 0) {
-      toast.error("Demo AI limit reached — sign up free to keep drafting");
+      toast.error("AI drafting limit reached — sign up free to keep drafting");
       return;
     }
     setDrafting(true);
@@ -368,7 +368,7 @@ function DocForm({ type, onDone }: { type: DemoDocType; onDone: () => void }) {
       <div className="rounded-lg border border-primary/25 bg-primary/5 p-3">
         <Label className="flex items-center gap-1.5 text-xs font-semibold">
           <Sparkles className="h-3.5 w-3.5 text-primary" />
-          Draft with AI · {aiLeft} left in demo
+          Draft with AI · {aiLeft} left
         </Label>
         <div className="mt-2 flex flex-col gap-2 sm:flex-row">
           <Input
@@ -383,7 +383,7 @@ function DocForm({ type, onDone }: { type: DemoDocType; onDone: () => void }) {
         </div>
         {aiLeft <= 0 && (
           <p className="mt-2 text-xs text-muted-foreground">
-            Demo limit reached.{" "}
+            Limit reached.{" "}
             <Link to="/auth" className="font-medium text-primary hover:underline">
               Sign up free
             </Link>{" "}

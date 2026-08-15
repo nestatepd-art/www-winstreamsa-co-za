@@ -8,13 +8,13 @@ import { clientName, docTotals, money, useDemoState } from "@/lib/demo-store";
 export const Route = createFileRoute("/try/")({
   head: () => ({
     meta: [
-      { title: "Try WinStream Free — Demo Workspace, No Signup" },
+      { title: "Try WinStream Free — Full Workspace, No Signup" },
       {
         name: "description",
         content:
           "Explore the full WinStream workspace with sample data. Create quotes, invoices and proposals with AI — no account or card needed.",
       },
-      { property: "og:title", content: "Try WinStream Free — No Signup Demo" },
+      { property: "og:title", content: "Try WinStream Free — No Signup Required" },
       {
         property: "og:description",
         content: "Test quotes, invoices and AI drafting in a live sandbox before you sign up.",
@@ -42,7 +42,7 @@ function DemoDashboard() {
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
-      <h1 className="text-2xl font-semibold tracking-tight">Welcome to the demo</h1>
+      <h1 className="text-2xl font-semibold tracking-tight">Welcome to WinStream</h1>
       <p className="mt-1 text-sm text-muted-foreground">
         This is the real WinStream interface loaded with sample data for{" "}
         <span className="font-medium text-foreground">{state.profile.businessName}</span>. Change
@@ -77,7 +77,7 @@ function DemoDashboard() {
             </div>
           </div>
           <Button asChild>
-            <Link to="/demo/quotes">Create a quote</Link>
+            <Link to="/try/quotes">Create a quote</Link>
           </Button>
         </CardContent>
       </Card>
