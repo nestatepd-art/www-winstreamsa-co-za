@@ -150,13 +150,22 @@ function ClientsPage() {
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-start justify-between gap-2">
                   <span className="truncate">{c.name}</span>
-                  <button
-                    onClick={() => confirm(`Delete ${c.name}?`) && deleteMut.mutate(c.id)}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
-                    aria-label="Delete client"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
+                  <span className="flex items-center gap-2 shrink-0">
+                    <button
+                      onClick={() => startEdit(c)}
+                      className="text-muted-foreground hover:text-primary transition-colors"
+                      aria-label="Edit client"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => confirm(`Delete ${c.name}?`) && deleteMut.mutate(c.id)}
+                      className="text-muted-foreground hover:text-destructive transition-colors"
+                      aria-label="Delete client"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </span>
                 </CardTitle>
                 {c.contact_person && <CardDescription>{c.contact_person}</CardDescription>}
               </CardHeader>
