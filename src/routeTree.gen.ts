@@ -39,6 +39,7 @@ import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AuthenticatedWriteReviewRouteImport } from './routes/_authenticated/write-review'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedRemindersRouteImport } from './routes/_authenticated/reminders'
+import { Route as AuthenticatedRecurringRouteImport } from './routes/_authenticated/recurring'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedClientsRouteImport } from './routes/_authenticated/clients'
 import { Route as AuthenticatedChatRouteImport } from './routes/_authenticated/chat'
@@ -217,6 +218,11 @@ const AuthenticatedRemindersRoute = AuthenticatedRemindersRouteImport.update({
   path: '/reminders',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedRecurringRoute = AuthenticatedRecurringRouteImport.update({
+  id: '/recurring',
+  path: '/recurring',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -389,6 +395,7 @@ export interface FileRoutesByFullPath {
   '/chat': typeof AuthenticatedChatRouteWithChildren
   '/clients': typeof AuthenticatedClientsRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/recurring': typeof AuthenticatedRecurringRoute
   '/reminders': typeof AuthenticatedRemindersRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/write-review': typeof AuthenticatedWriteReviewRoute
@@ -445,6 +452,7 @@ export interface FileRoutesByTo {
   '/billing': typeof AuthenticatedBillingRoute
   '/clients': typeof AuthenticatedClientsRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/recurring': typeof AuthenticatedRecurringRoute
   '/reminders': typeof AuthenticatedRemindersRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/write-review': typeof AuthenticatedWriteReviewRoute
@@ -505,6 +513,7 @@ export interface FileRoutesById {
   '/_authenticated/chat': typeof AuthenticatedChatRouteWithChildren
   '/_authenticated/clients': typeof AuthenticatedClientsRouteWithChildren
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/recurring': typeof AuthenticatedRecurringRoute
   '/_authenticated/reminders': typeof AuthenticatedRemindersRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/write-review': typeof AuthenticatedWriteReviewRoute
@@ -565,6 +574,7 @@ export interface FileRouteTypes {
     | '/chat'
     | '/clients'
     | '/dashboard'
+    | '/recurring'
     | '/reminders'
     | '/settings'
     | '/write-review'
@@ -621,6 +631,7 @@ export interface FileRouteTypes {
     | '/billing'
     | '/clients'
     | '/dashboard'
+    | '/recurring'
     | '/reminders'
     | '/settings'
     | '/write-review'
@@ -680,6 +691,7 @@ export interface FileRouteTypes {
     | '/_authenticated/chat'
     | '/_authenticated/clients'
     | '/_authenticated/dashboard'
+    | '/_authenticated/recurring'
     | '/_authenticated/reminders'
     | '/_authenticated/settings'
     | '/_authenticated/write-review'
@@ -960,6 +972,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRemindersRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/recurring': {
+      id: '/_authenticated/recurring'
+      path: '/recurring'
+      fullPath: '/recurring'
+      preLoaderRoute: typeof AuthenticatedRecurringRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -1210,6 +1229,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedChatRoute: typeof AuthenticatedChatRouteWithChildren
   AuthenticatedClientsRoute: typeof AuthenticatedClientsRouteWithChildren
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedRecurringRoute: typeof AuthenticatedRecurringRoute
   AuthenticatedRemindersRoute: typeof AuthenticatedRemindersRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedWriteReviewRoute: typeof AuthenticatedWriteReviewRoute
@@ -1231,6 +1251,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedChatRoute: AuthenticatedChatRouteWithChildren,
   AuthenticatedClientsRoute: AuthenticatedClientsRouteWithChildren,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedRecurringRoute: AuthenticatedRecurringRoute,
   AuthenticatedRemindersRoute: AuthenticatedRemindersRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedWriteReviewRoute: AuthenticatedWriteReviewRoute,
