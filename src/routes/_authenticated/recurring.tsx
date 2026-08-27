@@ -25,9 +25,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Trash2, Repeat, Send } from "lucide-react";
+import { Plus, Trash2, Repeat, Send, Download } from "lucide-react";
 import { toast } from "sonner";
 import { formatZAR, computeQuoteTotals } from "@/lib/format";
+import { DocumentPreview } from "@/components/DocumentPreview";
+import { generateDocumentPdf, downloadBlob } from "@/lib/pdf-export";
+import { useLogoAsset } from "@/hooks/use-logo-asset";
+import { useCreditStatus } from "@/hooks/use-credits";
+import { DEFAULT_RECURRING_BODY, DEFAULT_RECURRING_SUBJECT } from "@/lib/recurring-defaults";
 
 export const Route = createFileRoute("/_authenticated/recurring")({
   head: () => ({
