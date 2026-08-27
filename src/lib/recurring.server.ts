@@ -155,6 +155,25 @@ export async function runSchedule(
   const today = new Date();
   const issueDate = today.toISOString().slice(0, 10);
   const number = invoiceNumber();
+  const dueDate = addDays(today, schedule.due_days ?? 14);
+
+  const { data: profileEarly } = await supabase
+    .from("business_profiles")
+    .select("*")
+    .eq("user_id", schedule.user_id)
+    .maybeSingle();
+  const bizName = profileEarly?.business_name || "our team";
+  const templateVars = {
+    invoice_number: number,
+    total: formatZAR(totals.total),
+    due_date: formatDate(dueDate),
+    business_name: bizName,
+  };
+  // The reminder message the user edits lives on email_body; notes is the legacy/optional override.
+  const messageTemplate =
+    (schedule.email_body ?? "").trim() || (schedule.notes ?? "").trim() || DEFAULT_RECURRING_BODY;
+  const filledMessage = fillRecurringTemplate(messageTemplate, templateVars);
+
 
   const { data: invoice, error } = await supabase
     .from("invoices")
