@@ -305,24 +305,74 @@ function RecurringPage() {
               </div>
 
               <div className="space-y-2">
-                <Label>Email subject (optional — {"{invoice_number}"} is replaced)</Label>
-                <Input value={form.email_subject} placeholder="Invoice {invoice_number} — monthly service"
+                <Label>Email subject — the invoice number is generated automatically</Label>
+                <Input value={form.email_subject} placeholder={DEFAULT_RECURRING_SUBJECT}
                   onChange={(e) => setForm((f) => ({ ...f, email_subject: e.target.value }))} />
+                <p className="text-xs text-muted-foreground">
+                  {"{invoice_number}"}, {"{total}"}, {"{due_date}"} and {"{business_name}"} are filled in when the
+                  invoice fires.
+                </p>
               </div>
               <div className="space-y-2">
-                <Label>Email message (optional)</Label>
-                <Textarea rows={4} value={form.email_body}
-                  placeholder="Leave blank to use the standard payment reminder wording."
+                <Label>Reminder message (prefilled — edit if you wish)</Label>
+                <Textarea rows={9} value={form.email_body}
+                  placeholder={DEFAULT_RECURRING_BODY}
                   onChange={(e) => setForm((f) => ({ ...f, email_body: e.target.value }))} />
               </div>
 
               <div className="flex items-center justify-between rounded-lg border p-3">
                 <div>
                   <p className="text-sm font-medium">Email the invoice automatically</p>
-                  <p className="text-xs text-muted-foreground">Off = the invoice is created as a draft only.</p>
+                  <p className="text-xs text-muted-foreground">
+                    On = the invoice PDF is attached and emailed to your client each month.
+                  </p>
                 </div>
                 <Switch checked={form.auto_send} onCheckedChange={(v) => setForm((f) => ({ ...f, auto_send: v }))} />
               </div>
+
+              <div className="space-y-3 rounded-lg border p-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <p className="text-sm font-medium">PDF preview</p>
+                    <p className="text-xs text-muted-foreground">
+                      Exactly what your client receives attached to the monthly email.
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" onClick={() => setShowPreview((v) => !v)}>
+                      {showPreview ? "Hide preview" : "Show preview"}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => downloadBlob(buildPreviewPdf(), `Invoice-preview-${previewNumber}.pdf`)}
+                    >
+                      <Download className="h-3 w-3 mr-1" /> PDF
+                    </Button>
+                  </div>
+                </div>
+                {showPreview && (
+                  <DocumentPreview
+                    kind="Invoice"
+                    number={previewNumber}
+                    title={form.title}
+                    status="preview"
+                    issueDate={previewIssue}
+                    dueDate={previewDue}
+                    subtotal={totals.subtotal}
+                    vatRate={form.vat_rate}
+                    vatAmount={totals.vat_amount}
+                    total={totals.total}
+                    notes={form.notes || null}
+                    terms={form.terms || null}
+                    items={previewItems}
+                    client={previewClient}
+                    profile={profile}
+                    logoUrl={logoAsset?.url ?? null}
+                  />
+                )}
+              </div>
+
 
               <div className="flex justify-end gap-2">
                 <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
