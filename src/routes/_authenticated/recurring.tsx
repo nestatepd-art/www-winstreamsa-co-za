@@ -166,9 +166,18 @@ function RecurringPage() {
 
   const refresh = () => qc.invalidateQueries({ queryKey: ["recurring"] });
 
+  const validItems = numericItems.filter((i) => i.description.trim());
+
   const saveMut = useMutation({
-    mutationFn: () =>
-      save({
+    mutationFn: () => {
+      if (!validItems.length) {
+        throw new Error("Add at least one line item with a description before saving.");
+      }
+      if (totals.total <= 0) {
+        throw new Error("Line item prices add up to R 0.00 — check the quantity and unit price.");
+      }
+      return save({
+
         data: {
           id: form.id,
           client_id: form.client_id || null,
