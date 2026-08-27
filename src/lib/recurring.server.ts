@@ -25,9 +25,11 @@ async function buildInvoicePdfBase64(input: {
     const blob = generateDocumentPdf({
       kind: "Invoice",
       number: input.number,
-      title: input.title,
+      // Internal schedule title stays off the client-facing document.
+      title: "",
       status: "sent",
       issue_date: input.issueDate,
+
       due_date: input.dueDate,
       subtotal: input.totals.subtotal,
       vat_rate: input.vatRate,
