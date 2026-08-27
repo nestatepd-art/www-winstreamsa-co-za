@@ -184,8 +184,9 @@ export async function runSchedule(
       title: schedule.title || "Monthly invoice",
       status: schedule.auto_send ? "sent" : "draft",
       issue_date: issueDate,
-      due_date: addDays(today, schedule.due_days ?? 14),
-      notes: schedule.notes ?? schedule.email_body ?? null,
+      due_date: dueDate,
+      notes: filledMessage,
+
       terms: schedule.terms,
       vat_rate: schedule.vat_rate ?? 15,
       subtotal: totals.subtotal,
