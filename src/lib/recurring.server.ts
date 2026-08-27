@@ -258,11 +258,13 @@ export async function runSchedule(
     items: clean,
     totals,
     vatRate: schedule.vat_rate ?? 15,
-    notes: schedule.notes ?? schedule.email_body ?? null,
+    notes: filledMessage,
     terms: schedule.terms,
     client,
     profile,
+    logoDataUrl,
   });
+
 
   try {
     await sendViaResend({
