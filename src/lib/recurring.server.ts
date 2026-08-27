@@ -1,4 +1,60 @@
 import { sendViaResend, brandedEmailHtml } from "./resend-send.server";
+import { formatZAR, formatDate } from "./format";
+import { generateDocumentPdf } from "./pdf-export";
+import {
+  DEFAULT_RECURRING_BODY,
+  DEFAULT_RECURRING_SUBJECT,
+  fillRecurringTemplate,
+} from "./recurring-defaults";
+
+/** Renders the invoice PDF server-side so the automated email always carries the document. */
+async function buildInvoicePdfBase64(input: {
+  number: string;
+  title: string;
+  issueDate: string;
+  dueDate: string;
+  items: RecurringItem[];
+  totals: { subtotal: number; vat_amount: number; total: number };
+  vatRate: number;
+  notes?: string | null;
+  terms?: string | null;
+  client: any;
+  profile: any;
+}): Promise<string | null> {
+  try {
+    const blob = generateDocumentPdf({
+      kind: "Invoice",
+      number: input.number,
+      title: input.title,
+      status: "sent",
+      issue_date: input.issueDate,
+      due_date: input.dueDate,
+      subtotal: input.totals.subtotal,
+      vat_rate: input.vatRate,
+      vat_amount: input.totals.vat_amount,
+      total: input.totals.total,
+      notes: input.notes ?? null,
+      terms: input.terms ?? null,
+      items: input.items.map((it) => ({
+        description: it.description,
+        quantity: it.quantity,
+        unit_price: it.unit_price,
+        line_total: +((Number(it.quantity) || 0) * (Number(it.unit_price) || 0)).toFixed(2),
+      })),
+      client: input.client ?? null,
+      profile: input.profile ?? null,
+    });
+    const bytes = new Uint8Array(await blob.arrayBuffer());
+    let bin = "";
+    const chunk = 0x8000;
+    for (let i = 0; i < bytes.length; i += chunk) {
+      bin += String.fromCharCode(...Array.from(bytes.subarray(i, i + chunk)));
+    }
+    return btoa(bin);
+  } catch {
+    return null;
+  }
+}
 
 export type RecurringItem = { description: string; quantity: number; unit_price: number };
 
@@ -95,7 +151,7 @@ export async function runSchedule(
 
   const { data: profile } = await supabase
     .from("business_profiles")
-    .select("business_name, email")
+    .select("*")
     .eq("user_id", schedule.user_id)
     .maybeSingle();
   const businessName = profile?.business_name || "our team";
@@ -113,20 +169,35 @@ export async function runSchedule(
     return { invoiceId: invoice.id, emailed: false, emailError: "no client email" };
   }
 
-  const subject = (schedule.email_subject || `Invoice ${number} from ${businessName}`).replace(
-    "{invoice_number}",
-    number,
-  );
-  const bodyText = (
-    schedule.email_body ||
-    `Please find your invoice ${number} for this month, totalling R ${totals.total.toFixed(2)}.\n\nPayment is due by ${addDays(today, schedule.due_days ?? 14)}.\n\nThank you for your continued business.`
-  ).replace(/\{invoice_number\}/g, number);
+  const dueDate = addDays(today, schedule.due_days ?? 14);
+  const vars = {
+    invoice_number: number,
+    total: formatZAR(totals.total),
+    due_date: formatDate(dueDate),
+    business_name: businessName,
+  };
+  const subject = fillRecurringTemplate(schedule.email_subject || DEFAULT_RECURRING_SUBJECT, vars);
+  const bodyText = fillRecurringTemplate(schedule.email_body || DEFAULT_RECURRING_BODY, vars);
 
   const html = brandedEmailHtml({
     businessName,
     greeting: `Hi ${client?.contact_person || client?.name || "there"},`,
     bodyText,
     footerNote: `Sent automatically via WinStream on behalf of ${businessName}.`,
+  });
+
+  const pdfBase64 = await buildInvoicePdfBase64({
+    number,
+    title: schedule.title || "Monthly invoice",
+    issueDate,
+    dueDate,
+    items: clean,
+    totals,
+    vatRate: schedule.vat_rate ?? 15,
+    notes: schedule.notes,
+    terms: schedule.terms,
+    client,
+    profile,
   });
 
   try {
@@ -136,6 +207,9 @@ export async function runSchedule(
       html,
       fromName: businessName,
       replyTo: profile?.email ?? null,
+      attachments: pdfBase64
+        ? [{ filename: `Invoice-${number}.pdf`, content: pdfBase64 }]
+        : undefined,
     });
     await supabase.from("nudge_log").insert({
       user_id: schedule.user_id,
