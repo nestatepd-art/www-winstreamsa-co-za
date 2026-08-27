@@ -16,7 +16,7 @@ function sb() {
   return _sb;
 }
 
-async function process(limitTo?: string) {
+async function runDue(limitTo?: string) {
   const supabase = sb() as any;
   const today = new Date().toISOString().slice(0, 10);
   const results = { created: 0, emailed: 0, failed: 0, errors: [] as string[] };
@@ -92,7 +92,7 @@ export const Route = createFileRoute("/api/public/hooks/recurring-invoices")({
         } catch {
           /* empty body is fine */
         }
-        const results = await process(scheduleId);
+        const results = await runDue(scheduleId);
         return new Response(
           JSON.stringify({ ok: true, ...results, ran_at: new Date().toISOString() }),
           { headers: { "Content-Type": "application/json" } },
