@@ -294,7 +294,7 @@ function RecurringPage() {
                     <div className="col-span-4 sm:col-span-2">
                       <Label className="text-xs text-muted-foreground">Qty</Label>
                       <Input type="number" value={it.quantity}
-                        onChange={(e) => setItem(i, { quantity: Number(e.target.value) })} />
+                        onChange={(e) => setItem(i, { quantity: e.target.value })} />
                     </div>
                     <div className="col-span-5 sm:col-span-3">
                       <Label className="text-xs text-muted-foreground">Unit price (R)</Label>
