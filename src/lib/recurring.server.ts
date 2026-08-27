@@ -1,4 +1,60 @@
 import { sendViaResend, brandedEmailHtml } from "./resend-send.server";
+import { formatZAR, formatDate } from "./format";
+import { generateDocumentPdf } from "./pdf-export";
+import {
+  DEFAULT_RECURRING_BODY,
+  DEFAULT_RECURRING_SUBJECT,
+  fillRecurringTemplate,
+} from "./recurring-defaults";
+
+/** Renders the invoice PDF server-side so the automated email always carries the document. */
+async function buildInvoicePdfBase64(input: {
+  number: string;
+  title: string;
+  issueDate: string;
+  dueDate: string;
+  items: RecurringItem[];
+  totals: { subtotal: number; vat_amount: number; total: number };
+  vatRate: number;
+  notes?: string | null;
+  terms?: string | null;
+  client: any;
+  profile: any;
+}): Promise<string | null> {
+  try {
+    const blob = generateDocumentPdf({
+      kind: "Invoice",
+      number: input.number,
+      title: input.title,
+      status: "sent",
+      issue_date: input.issueDate,
+      due_date: input.dueDate,
+      subtotal: input.totals.subtotal,
+      vat_rate: input.vatRate,
+      vat_amount: input.totals.vat_amount,
+      total: input.totals.total,
+      notes: input.notes ?? null,
+      terms: input.terms ?? null,
+      items: input.items.map((it) => ({
+        description: it.description,
+        quantity: it.quantity,
+        unit_price: it.unit_price,
+        line_total: +((Number(it.quantity) || 0) * (Number(it.unit_price) || 0)).toFixed(2),
+      })),
+      client: input.client ?? null,
+      profile: input.profile ?? null,
+    });
+    const bytes = new Uint8Array(await blob.arrayBuffer());
+    let bin = "";
+    const chunk = 0x8000;
+    for (let i = 0; i < bytes.length; i += chunk) {
+      bin += String.fromCharCode(...Array.from(bytes.subarray(i, i + chunk)));
+    }
+    return btoa(bin);
+  } catch {
+    return null;
+  }
+}
 
 export type RecurringItem = { description: string; quantity: number; unit_price: number };
 
