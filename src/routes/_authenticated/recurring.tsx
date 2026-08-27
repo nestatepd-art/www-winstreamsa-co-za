@@ -54,7 +54,13 @@ export const Route = createFileRoute("/_authenticated/recurring")({
   component: RecurringPage,
 });
 
-type Item = { description: string; quantity: number; unit_price: number };
+type Item = { description: string; quantity: number | string; unit_price: number | string };
+
+/** Tolerant numeric parse — accepts "1 500", "1,500.50", "R1500". */
+const num = (v: unknown) => {
+  const n = Number(String(v ?? "").replace(/[^\d.-]/g, ""));
+  return Number.isFinite(n) ? n : 0;
+};
 
 const emptyForm = () => ({
   id: undefined as string | undefined,
@@ -64,13 +70,14 @@ const emptyForm = () => ({
   items: [{ description: "", quantity: 1, unit_price: 0 }] as Item[],
   vat_rate: 15,
   due_days: 14,
-  notes: "",
+  notes: DEFAULT_RECURRING_BODY,
   terms: "",
   email_subject: DEFAULT_RECURRING_SUBJECT,
   email_body: DEFAULT_RECURRING_BODY,
   auto_send: true,
   active: true,
 });
+
 
 /** Preview placeholder — the real number is generated when the invoice fires. */
 function previewInvoiceNumber() {
