@@ -204,9 +204,9 @@ export async function runSchedule(
       user_id: schedule.user_id,
       position: idx,
       description: it.description,
-      quantity: Number(it.quantity) || 0,
-      unit_price: Number(it.unit_price) || 0,
-      line_total: +((Number(it.quantity) || 0) * (Number(it.unit_price) || 0)).toFixed(2),
+      quantity: it.quantity,
+      unit_price: it.unit_price,
+      line_total: +(it.quantity * it.unit_price).toFixed(2),
     }));
     await supabase.from("invoice_items").insert(rows);
   }
@@ -220,12 +220,8 @@ export async function runSchedule(
     .maybeSingle();
   const toEmail: string | undefined = client?.email;
 
-  const { data: profile } = await supabase
-    .from("business_profiles")
-    .select("*")
-    .eq("user_id", schedule.user_id)
-    .maybeSingle();
-  const businessName = profile?.business_name || "our team";
+  const profile = profileEarly;
+  const businessName = bizName;
 
   if (!toEmail) {
     await supabase.from("nudge_log").insert({
@@ -240,15 +236,9 @@ export async function runSchedule(
     return { invoiceId: invoice.id, emailed: false, emailError: "no client email" };
   }
 
-  const dueDate = addDays(today, schedule.due_days ?? 14);
-  const vars = {
-    invoice_number: number,
-    total: formatZAR(totals.total),
-    due_date: formatDate(dueDate),
-    business_name: businessName,
-  };
+  const vars = templateVars;
   const subject = fillRecurringTemplate(schedule.email_subject || DEFAULT_RECURRING_SUBJECT, vars);
-  const bodyText = fillRecurringTemplate(schedule.email_body || DEFAULT_RECURRING_BODY, vars);
+  const bodyText = filledMessage;
 
   const html = brandedEmailHtml({
     businessName,
@@ -256,6 +246,9 @@ export async function runSchedule(
     bodyText,
     footerNote: `Sent automatically via WinStream on behalf of ${businessName}.`,
   });
+
+  const logoDataUrl = await loadLogoDataUrl(supabase, profile?.logo_url ?? null);
+
 
   const pdfBase64 = await buildInvoicePdfBase64({
     number,
