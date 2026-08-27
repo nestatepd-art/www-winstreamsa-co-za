@@ -12,6 +12,7 @@ import {
   Newspaper,
   BellRing,
   Star,
+  Repeat,
   Lock,
 } from "lucide-react";
 import winstreamLogo from "@/assets/winstream-logo.png.asset.json";
