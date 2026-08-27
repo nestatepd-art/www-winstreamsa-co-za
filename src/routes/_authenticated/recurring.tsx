@@ -98,9 +98,57 @@ function RecurringPage() {
     },
   });
 
+  const { data: profile } = useQuery({
+    queryKey: ["business-profile"],
+    queryFn: async () => {
+      const { data } = await supabase.from("business_profiles").select("*").maybeSingle();
+      return data;
+    },
+  });
+  const { data: logoAsset } = useLogoAsset(profile?.logo_url ?? null);
+  const { data: creditStatus } = useCreditStatus();
+  const showBranding = (creditStatus?.plan ?? "free") !== "pro";
+
   const [open, setOpen] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
   const [form, setForm] = useState(emptyForm());
   const totals = computeQuoteTotals(form.items, form.vat_rate);
+
+  const previewNumber = previewInvoiceNumber();
+  const previewClient = (clients as any[]).find((c) => c.id === form.client_id) ?? null;
+  const previewItems = form.items
+    .filter((i) => i.description.trim())
+    .map((i) => ({
+      description: i.description,
+      quantity: i.quantity,
+      unit_price: i.unit_price,
+      line_total: +((Number(i.quantity) || 0) * (Number(i.unit_price) || 0)).toFixed(2),
+    }));
+  const previewIssue = new Date().toISOString().slice(0, 10);
+  const previewDue = new Date(Date.now() + (Number(form.due_days) || 14) * 86400000)
+    .toISOString()
+    .slice(0, 10);
+
+  const buildPreviewPdf = () =>
+    generateDocumentPdf({
+      kind: "Invoice",
+      number: previewNumber,
+      title: form.title,
+      status: "draft",
+      issue_date: previewIssue,
+      due_date: previewDue,
+      subtotal: totals.subtotal,
+      vat_rate: form.vat_rate,
+      vat_amount: totals.vat_amount,
+      total: totals.total,
+      notes: form.notes || null,
+      terms: form.terms || null,
+      items: previewItems as any,
+      client: previewClient,
+      profile,
+      showBranding,
+      logoDataUrl: logoAsset?.dataUrl ?? null,
+    });
 
   const refresh = () => qc.invalidateQueries({ queryKey: ["recurring"] });
 
