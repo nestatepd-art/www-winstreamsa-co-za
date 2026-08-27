@@ -95,7 +95,7 @@ export async function runSchedule(
 
   const { data: profile } = await supabase
     .from("business_profiles")
-    .select("business_name, email")
+    .select("*")
     .eq("user_id", schedule.user_id)
     .maybeSingle();
   const businessName = profile?.business_name || "our team";
