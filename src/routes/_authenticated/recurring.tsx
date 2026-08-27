@@ -201,8 +201,8 @@ function RecurringPage() {
       due_days: s.due_days,
       notes: s.notes ?? "",
       terms: s.terms ?? "",
-      email_subject: s.email_subject ?? "",
-      email_body: s.email_body ?? "",
+      email_subject: s.email_subject || DEFAULT_RECURRING_SUBJECT,
+      email_body: s.email_body || DEFAULT_RECURRING_BODY,
       auto_send: s.auto_send,
       active: s.active,
     });
