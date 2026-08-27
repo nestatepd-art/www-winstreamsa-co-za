@@ -54,7 +54,13 @@ export const Route = createFileRoute("/_authenticated/recurring")({
   component: RecurringPage,
 });
 
-type Item = { description: string; quantity: number; unit_price: number };
+type Item = { description: string; quantity: number | string; unit_price: number | string };
+
+/** Tolerant numeric parse — accepts "1 500", "1,500.50", "R1500". */
+const num = (v: unknown) => {
+  const n = Number(String(v ?? "").replace(/[^\d.-]/g, ""));
+  return Number.isFinite(n) ? n : 0;
+};
 
 const emptyForm = () => ({
   id: undefined as string | undefined,
@@ -64,13 +70,14 @@ const emptyForm = () => ({
   items: [{ description: "", quantity: 1, unit_price: 0 }] as Item[],
   vat_rate: 15,
   due_days: 14,
-  notes: "",
+  notes: DEFAULT_RECURRING_BODY,
   terms: "",
   email_subject: DEFAULT_RECURRING_SUBJECT,
   email_body: DEFAULT_RECURRING_BODY,
   auto_send: true,
   active: true,
 });
+
 
 /** Preview placeholder — the real number is generated when the invoice fires. */
 function previewInvoiceNumber() {
@@ -112,20 +119,25 @@ function RecurringPage() {
   const [open, setOpen] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [form, setForm] = useState(emptyForm());
-  const totals = computeQuoteTotals(form.items, form.vat_rate);
+  const numericItems = form.items.map((i) => ({
+    description: i.description,
+    quantity: num(i.quantity),
+    unit_price: num(i.unit_price),
+  }));
+  const totals = computeQuoteTotals(numericItems, num(form.vat_rate));
 
   const previewNumber = previewInvoiceNumber();
   const previewClient = (clients as any[]).find((c) => c.id === form.client_id) ?? null;
-  const previewItems = form.items
+  const previewItems = numericItems
     .filter((i) => i.description.trim())
     .map((i) => ({
       description: i.description,
       quantity: i.quantity,
       unit_price: i.unit_price,
-      line_total: +((Number(i.quantity) || 0) * (Number(i.unit_price) || 0)).toFixed(2),
+      line_total: +(i.quantity * i.unit_price).toFixed(2),
     }));
   const previewIssue = new Date().toISOString().slice(0, 10);
-  const previewDue = new Date(Date.now() + (Number(form.due_days) || 14) * 86400000)
+  const previewDue = new Date(Date.now() + (num(form.due_days) || 14) * 86400000)
     .toISOString()
     .slice(0, 10);
 
@@ -133,7 +145,9 @@ function RecurringPage() {
     generateDocumentPdf({
       kind: "Invoice",
       number: previewNumber,
-      title: form.title,
+      // Internal schedule title (e.g. "Monthly retainer") stays off the client document.
+      title: "",
+
       status: "draft",
       issue_date: previewIssue,
       due_date: previewDue,
@@ -141,7 +155,7 @@ function RecurringPage() {
       vat_rate: form.vat_rate,
       vat_amount: totals.vat_amount,
       total: totals.total,
-      notes: form.notes || null,
+      notes: form.notes || form.email_body || null,
       terms: form.terms || null,
       items: previewItems as any,
       client: previewClient,
@@ -159,11 +173,12 @@ function RecurringPage() {
           id: form.id,
           client_id: form.client_id || null,
           title: form.title,
-          day_of_month: Number(form.day_of_month) || 1,
-          items: form.items.filter((i) => i.description.trim()),
-          vat_rate: Number(form.vat_rate) || 0,
-          due_days: Number(form.due_days) || 14,
-          notes: form.notes || null,
+          day_of_month: num(form.day_of_month) || 1,
+          items: numericItems.filter((i) => i.description.trim()),
+          vat_rate: num(form.vat_rate),
+          due_days: num(form.due_days) || 14,
+          notes: (form.notes || form.email_body || "").trim() || null,
+
           terms: form.terms || null,
           email_subject: form.email_subject || null,
           email_body: form.email_body || null,
@@ -199,7 +214,7 @@ function RecurringPage() {
       items: Array.isArray(s.items) && s.items.length ? s.items : [{ description: "", quantity: 1, unit_price: 0 }],
       vat_rate: Number(s.vat_rate),
       due_days: s.due_days,
-      notes: s.notes ?? "",
+      notes: s.notes ?? s.email_body ?? DEFAULT_RECURRING_BODY,
       terms: s.terms ?? "",
       email_subject: s.email_subject || DEFAULT_RECURRING_SUBJECT,
       email_body: s.email_body || DEFAULT_RECURRING_BODY,
@@ -279,12 +294,12 @@ function RecurringPage() {
                     <div className="col-span-4 sm:col-span-2">
                       <Label className="text-xs text-muted-foreground">Qty</Label>
                       <Input type="number" value={it.quantity}
-                        onChange={(e) => setItem(i, { quantity: Number(e.target.value) })} />
+                        onChange={(e) => setItem(i, { quantity: e.target.value })} />
                     </div>
                     <div className="col-span-5 sm:col-span-3">
                       <Label className="text-xs text-muted-foreground">Unit price (R)</Label>
                       <Input type="number" value={it.unit_price}
-                        onChange={(e) => setItem(i, { unit_price: Number(e.target.value) })} />
+                        onChange={(e) => setItem(i, { unit_price: e.target.value })} />
                     </div>
                     <div className="col-span-3 sm:col-span-1 flex justify-end">
                       <Button variant="ghost" size="icon"
@@ -317,8 +332,19 @@ function RecurringPage() {
                 <Label>Reminder message (prefilled — edit if you wish)</Label>
                 <Textarea rows={9} value={form.email_body}
                   placeholder={DEFAULT_RECURRING_BODY}
-                  onChange={(e) => setForm((f) => ({ ...f, email_body: e.target.value }))} />
+                  onChange={(e) =>
+                    setForm((f) => ({
+                      ...f,
+                      email_body: e.target.value,
+                      // Keep the invoice message in step with the email unless it was edited separately.
+                      notes: f.notes === f.email_body ? e.target.value : f.notes,
+                    }))
+                  } />
+                <p className="text-xs text-muted-foreground">
+                  This message is used in the email and printed on the invoice itself.
+                </p>
               </div>
+
 
               <div className="flex items-center justify-between rounded-lg border p-3">
                 <div>
@@ -355,15 +381,16 @@ function RecurringPage() {
                   <DocumentPreview
                     kind="Invoice"
                     number={previewNumber}
-                    title={form.title}
+                    title={null}
                     status="preview"
                     issueDate={previewIssue}
                     dueDate={previewDue}
                     subtotal={totals.subtotal}
-                    vatRate={form.vat_rate}
+                    vatRate={num(form.vat_rate)}
                     vatAmount={totals.vat_amount}
                     total={totals.total}
-                    notes={form.notes || null}
+                    notes={form.notes || form.email_body || null}
+
                     terms={form.terms || null}
                     items={previewItems}
                     client={previewClient}
