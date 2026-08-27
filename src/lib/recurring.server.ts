@@ -7,6 +7,41 @@ import {
   fillRecurringTemplate,
 } from "./recurring-defaults";
 
+/** Tolerant numeric parse — accepts "1 500", "1,500.50", "R1500". */
+export const num = (v: unknown): number => {
+  const n = Number(String(v ?? "").replace(/[^\d.-]/g, ""));
+  return Number.isFinite(n) ? n : 0;
+};
+
+/** Downloads the business logo from storage and returns a data URL for the PDF header. */
+async function loadLogoDataUrl(supabase: any, logoRef?: string | null): Promise<string | null> {
+  if (!logoRef) return null;
+  if (logoRef.startsWith("data:")) return logoRef;
+  try {
+    let bytes: Uint8Array;
+    let mime = "image/png";
+    if (/^https?:/i.test(logoRef)) {
+      const res = await fetch(logoRef);
+      if (!res.ok) return null;
+      mime = res.headers.get("content-type") || mime;
+      bytes = new Uint8Array(await res.arrayBuffer());
+    } else {
+      const { data, error } = await supabase.storage.from("business-logos").download(logoRef);
+      if (error || !data) return null;
+      mime = (data as Blob).type || (logoRef.endsWith(".jpg") || logoRef.endsWith(".jpeg") ? "image/jpeg" : "image/png");
+      bytes = new Uint8Array(await (data as Blob).arrayBuffer());
+    }
+    let bin = "";
+    const chunk = 0x8000;
+    for (let i = 0; i < bytes.length; i += chunk) {
+      bin += String.fromCharCode(...Array.from(bytes.subarray(i, i + chunk)));
+    }
+    return `data:${mime};base64,${btoa(bin)}`;
+  } catch {
+    return null;
+  }
+}
+
 /** Renders the invoice PDF server-side so the automated email always carries the document. */
 async function buildInvoicePdfBase64(input: {
   number: string;
@@ -20,7 +55,9 @@ async function buildInvoicePdfBase64(input: {
   terms?: string | null;
   client: any;
   profile: any;
+  logoDataUrl?: string | null;
 }): Promise<string | null> {
+
   try {
     const blob = generateDocumentPdf({
       kind: "Invoice",
