@@ -76,12 +76,13 @@ async function buildInvoicePdfBase64(input: {
       terms: input.terms ?? null,
       items: input.items.map((it) => ({
         description: it.description,
-        quantity: it.quantity,
-        unit_price: it.unit_price,
-        line_total: +((Number(it.quantity) || 0) * (Number(it.unit_price) || 0)).toFixed(2),
+        quantity: num(it.quantity),
+        unit_price: num(it.unit_price),
+        line_total: +(num(it.quantity) * num(it.unit_price)).toFixed(2),
       })),
       client: input.client ?? null,
       profile: input.profile ?? null,
+      logoDataUrl: input.logoDataUrl ?? null,
     });
     const bytes = new Uint8Array(await blob.arrayBuffer());
     let bin = "";
@@ -99,12 +100,13 @@ export type RecurringItem = { description: string; quantity: number; unit_price:
 
 export function computeTotals(items: RecurringItem[], vatRate: number) {
   const subtotal = +items
-    .reduce((s, it) => s + Number(it.quantity || 0) * Number(it.unit_price || 0), 0)
+    .reduce((s, it) => s + num(it.quantity) * num(it.unit_price), 0)
     .toFixed(2);
-  const vat_amount = +((subtotal * Number(vatRate || 0)) / 100).toFixed(2);
+  const vat_amount = +((subtotal * num(vatRate)) / 100).toFixed(2);
   const total = +(subtotal + vat_amount).toFixed(2);
   return { subtotal, vat_amount, total };
 }
+
 
 export function invoiceNumber(): string {
   const d = new Date();
