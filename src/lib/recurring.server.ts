@@ -140,8 +140,18 @@ export async function runSchedule(
   schedule: any,
 ): Promise<{ invoiceId: string; emailed: boolean; emailError?: string }> {
   const items: RecurringItem[] = Array.isArray(schedule.items) ? schedule.items : [];
-  const clean = items.filter((it) => (it.description ?? "").trim());
+  const clean = items
+    .filter((it) => (it.description ?? "").trim())
+    .map((it) => ({
+      description: String(it.description).trim(),
+      quantity: num(it.quantity),
+      unit_price: num(it.unit_price),
+    }));
+  if (!clean.length) {
+    throw new Error("This schedule has no line items — add at least one description with a price.");
+  }
   const totals = computeTotals(clean, schedule.vat_rate ?? 15);
+
   const today = new Date();
   const issueDate = today.toISOString().slice(0, 10);
   const number = invoiceNumber();
