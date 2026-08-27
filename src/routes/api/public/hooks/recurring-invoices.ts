@@ -9,8 +9,8 @@ let _sb: ReturnType<typeof createClient<Database>> | null = null;
 function sb() {
   if (!_sb) {
     _sb = createClient<Database>(
-      (globalThis as any).process.env.SUPABASE_URL!,
-      (globalThis as any).process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      process.env.SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
     );
   }
   return _sb;
@@ -74,11 +74,8 @@ export const Route = createFileRoute("/api/public/hooks/recurring-invoices")({
     handlers: {
       POST: async ({ request }) => {
         const apikey = request.headers.get("apikey") || request.headers.get("x-api-key");
-        const env = ((globalThis as any).process?.env ?? {}) as Record<string, string | undefined>;
         const expected =
-          env.SUPABASE_PUBLISHABLE_KEY ||
-          env.VITE_SUPABASE_PUBLISHABLE_KEY ||
-          import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+          process.env.SUPABASE_PUBLISHABLE_KEY || process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
         if (!expected || apikey !== expected) {
           return new Response(JSON.stringify({ error: "Unauthorized" }), {
             status: 401,
