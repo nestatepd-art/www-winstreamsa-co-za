@@ -66,11 +66,17 @@ const emptyForm = () => ({
   due_days: 14,
   notes: "",
   terms: "",
-  email_subject: "",
-  email_body: "",
+  email_subject: DEFAULT_RECURRING_SUBJECT,
+  email_body: DEFAULT_RECURRING_BODY,
   auto_send: true,
   active: true,
 });
+
+/** Preview placeholder — the real number is generated when the invoice fires. */
+function previewInvoiceNumber() {
+  const d = new Date();
+  return `INV-${d.getFullYear().toString().slice(-2)}${String(d.getMonth() + 1).padStart(2, "0")}-0001`;
+}
 
 function RecurringPage() {
   const qc = useQueryClient();
