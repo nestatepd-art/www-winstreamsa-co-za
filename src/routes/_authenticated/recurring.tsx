@@ -214,7 +214,7 @@ function RecurringPage() {
       items: Array.isArray(s.items) && s.items.length ? s.items : [{ description: "", quantity: 1, unit_price: 0 }],
       vat_rate: Number(s.vat_rate),
       due_days: s.due_days,
-      notes: s.notes ?? "",
+      notes: s.notes ?? s.email_body ?? DEFAULT_RECURRING_BODY,
       terms: s.terms ?? "",
       email_subject: s.email_subject || DEFAULT_RECURRING_SUBJECT,
       email_body: s.email_body || DEFAULT_RECURRING_BODY,
