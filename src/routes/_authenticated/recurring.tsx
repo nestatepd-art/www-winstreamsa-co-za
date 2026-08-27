@@ -332,8 +332,19 @@ function RecurringPage() {
                 <Label>Reminder message (prefilled — edit if you wish)</Label>
                 <Textarea rows={9} value={form.email_body}
                   placeholder={DEFAULT_RECURRING_BODY}
-                  onChange={(e) => setForm((f) => ({ ...f, email_body: e.target.value }))} />
+                  onChange={(e) =>
+                    setForm((f) => ({
+                      ...f,
+                      email_body: e.target.value,
+                      // Keep the invoice message in step with the email unless it was edited separately.
+                      notes: f.notes === f.email_body ? e.target.value : f.notes,
+                    }))
+                  } />
+                <p className="text-xs text-muted-foreground">
+                  This message is used in the email and printed on the invoice itself.
+                </p>
               </div>
+
 
               <div className="flex items-center justify-between rounded-lg border p-3">
                 <div>
