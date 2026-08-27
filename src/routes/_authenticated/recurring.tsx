@@ -381,15 +381,16 @@ function RecurringPage() {
                   <DocumentPreview
                     kind="Invoice"
                     number={previewNumber}
-                    title={form.title}
+                    title={null}
                     status="preview"
                     issueDate={previewIssue}
                     dueDate={previewDue}
                     subtotal={totals.subtotal}
-                    vatRate={form.vat_rate}
+                    vatRate={num(form.vat_rate)}
                     vatAmount={totals.vat_amount}
                     total={totals.total}
-                    notes={form.notes || null}
+                    notes={form.notes || form.email_body || null}
+
                     terms={form.terms || null}
                     items={previewItems}
                     client={previewClient}
