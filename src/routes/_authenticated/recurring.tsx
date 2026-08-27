@@ -119,20 +119,25 @@ function RecurringPage() {
   const [open, setOpen] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [form, setForm] = useState(emptyForm());
-  const totals = computeQuoteTotals(form.items, form.vat_rate);
+  const numericItems = form.items.map((i) => ({
+    description: i.description,
+    quantity: num(i.quantity),
+    unit_price: num(i.unit_price),
+  }));
+  const totals = computeQuoteTotals(numericItems, num(form.vat_rate));
 
   const previewNumber = previewInvoiceNumber();
   const previewClient = (clients as any[]).find((c) => c.id === form.client_id) ?? null;
-  const previewItems = form.items
+  const previewItems = numericItems
     .filter((i) => i.description.trim())
     .map((i) => ({
       description: i.description,
       quantity: i.quantity,
       unit_price: i.unit_price,
-      line_total: +((Number(i.quantity) || 0) * (Number(i.unit_price) || 0)).toFixed(2),
+      line_total: +(i.quantity * i.unit_price).toFixed(2),
     }));
   const previewIssue = new Date().toISOString().slice(0, 10);
-  const previewDue = new Date(Date.now() + (Number(form.due_days) || 14) * 86400000)
+  const previewDue = new Date(Date.now() + (num(form.due_days) || 14) * 86400000)
     .toISOString()
     .slice(0, 10);
 
@@ -140,7 +145,9 @@ function RecurringPage() {
     generateDocumentPdf({
       kind: "Invoice",
       number: previewNumber,
-      title: form.title,
+      // Internal schedule title (e.g. "Monthly retainer") stays off the client document.
+      title: "",
+
       status: "draft",
       issue_date: previewIssue,
       due_date: previewDue,
