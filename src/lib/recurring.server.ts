@@ -113,20 +113,35 @@ export async function runSchedule(
     return { invoiceId: invoice.id, emailed: false, emailError: "no client email" };
   }
 
-  const subject = (schedule.email_subject || `Invoice ${number} from ${businessName}`).replace(
-    "{invoice_number}",
-    number,
-  );
-  const bodyText = (
-    schedule.email_body ||
-    `Please find your invoice ${number} for this month, totalling R ${totals.total.toFixed(2)}.\n\nPayment is due by ${addDays(today, schedule.due_days ?? 14)}.\n\nThank you for your continued business.`
-  ).replace(/\{invoice_number\}/g, number);
+  const dueDate = addDays(today, schedule.due_days ?? 14);
+  const vars = {
+    invoice_number: number,
+    total: formatZAR(totals.total),
+    due_date: formatDate(dueDate),
+    business_name: businessName,
+  };
+  const subject = fillRecurringTemplate(schedule.email_subject || DEFAULT_RECURRING_SUBJECT, vars);
+  const bodyText = fillRecurringTemplate(schedule.email_body || DEFAULT_RECURRING_BODY, vars);
 
   const html = brandedEmailHtml({
     businessName,
     greeting: `Hi ${client?.contact_person || client?.name || "there"},`,
     bodyText,
     footerNote: `Sent automatically via WinStream on behalf of ${businessName}.`,
+  });
+
+  const pdfBase64 = await buildInvoicePdfBase64({
+    number,
+    title: schedule.title || "Monthly invoice",
+    issueDate,
+    dueDate,
+    items: clean,
+    totals,
+    vatRate: schedule.vat_rate ?? 15,
+    notes: schedule.notes,
+    terms: schedule.terms,
+    client,
+    profile,
   });
 
   try {
@@ -136,6 +151,9 @@ export async function runSchedule(
       html,
       fromName: businessName,
       replyTo: profile?.email ?? null,
+      attachments: pdfBase64
+        ? [{ filename: `Invoice-${number}.pdf`, content: pdfBase64 }]
+        : undefined,
     });
     await supabase.from("nudge_log").insert({
       user_id: schedule.user_id,
