@@ -155,7 +155,7 @@ function RecurringPage() {
       vat_rate: form.vat_rate,
       vat_amount: totals.vat_amount,
       total: totals.total,
-      notes: form.notes || null,
+      notes: form.notes || form.email_body || null,
       terms: form.terms || null,
       items: previewItems as any,
       client: previewClient,
