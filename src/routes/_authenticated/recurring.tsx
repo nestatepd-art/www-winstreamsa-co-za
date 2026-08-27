@@ -299,7 +299,7 @@ function RecurringPage() {
                     <div className="col-span-5 sm:col-span-3">
                       <Label className="text-xs text-muted-foreground">Unit price (R)</Label>
                       <Input type="number" value={it.unit_price}
-                        onChange={(e) => setItem(i, { unit_price: Number(e.target.value) })} />
+                        onChange={(e) => setItem(i, { unit_price: e.target.value })} />
                     </div>
                     <div className="col-span-3 sm:col-span-1 flex justify-end">
                       <Button variant="ghost" size="icon"
