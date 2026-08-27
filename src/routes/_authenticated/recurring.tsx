@@ -183,18 +183,20 @@ function RecurringPage() {
           client_id: form.client_id || null,
           title: form.title,
           day_of_month: num(form.day_of_month) || 1,
-          items: numericItems.filter((i) => i.description.trim()),
+          items: validItems,
           vat_rate: num(form.vat_rate),
           due_days: num(form.due_days) || 14,
-          notes: (form.notes || form.email_body || "").trim() || null,
+          notes: (form.email_body || form.notes || "").trim() || null,
 
           terms: form.terms || null,
           email_subject: form.email_subject || null,
-          email_body: form.email_body || null,
+          email_body: (form.email_body || form.notes || "").trim() || null,
           auto_send: form.auto_send,
           active: form.active,
         },
-      }),
+      });
+    },
+
     onSuccess: () => {
       toast.success("Recurring invoice saved");
       setOpen(false);
