@@ -32,7 +32,7 @@ import { DocumentPreview } from "@/components/DocumentPreview";
 import { generateDocumentPdf, downloadBlob } from "@/lib/pdf-export";
 import { useLogoAsset } from "@/hooks/use-logo-asset";
 import { useCreditStatus } from "@/hooks/use-credits";
-import { DEFAULT_RECURRING_BODY, DEFAULT_RECURRING_SUBJECT } from "@/lib/recurring-defaults";
+import { DEFAULT_RECURRING_BODY, DEFAULT_RECURRING_SUBJECT, fillRecurringTemplate } from "@/lib/recurring-defaults";
 
 export const Route = createFileRoute("/_authenticated/recurring")({
   head: () => ({
@@ -141,6 +141,16 @@ function RecurringPage() {
     .toISOString()
     .slice(0, 10);
 
+  const previewMessage = fillRecurringTemplate(
+    (form.email_body || form.notes || DEFAULT_RECURRING_BODY),
+    {
+      invoice_number: previewNumber,
+      total: formatZAR(totals.total),
+      due_date: previewDue,
+      business_name: profile?.business_name || "your business",
+    },
+  );
+
   const buildPreviewPdf = () =>
     generateDocumentPdf({
       kind: "Invoice",
@@ -155,7 +165,7 @@ function RecurringPage() {
       vat_rate: form.vat_rate,
       vat_amount: totals.vat_amount,
       total: totals.total,
-      notes: form.notes || form.email_body || null,
+      notes: previewMessage,
       terms: form.terms || null,
       items: previewItems as any,
       client: previewClient,
@@ -166,26 +176,37 @@ function RecurringPage() {
 
   const refresh = () => qc.invalidateQueries({ queryKey: ["recurring"] });
 
+  const validItems = numericItems.filter((i) => i.description.trim());
+
   const saveMut = useMutation({
-    mutationFn: () =>
-      save({
+    mutationFn: () => {
+      if (!validItems.length) {
+        throw new Error("Add at least one line item with a description before saving.");
+      }
+      if (totals.total <= 0) {
+        throw new Error("Line item prices add up to R 0.00 — check the quantity and unit price.");
+      }
+      return save({
+
         data: {
           id: form.id,
           client_id: form.client_id || null,
           title: form.title,
           day_of_month: num(form.day_of_month) || 1,
-          items: numericItems.filter((i) => i.description.trim()),
+          items: validItems,
           vat_rate: num(form.vat_rate),
           due_days: num(form.due_days) || 14,
-          notes: (form.notes || form.email_body || "").trim() || null,
+          notes: (form.email_body || form.notes || "").trim() || null,
 
           terms: form.terms || null,
           email_subject: form.email_subject || null,
-          email_body: form.email_body || null,
+          email_body: (form.email_body || form.notes || "").trim() || null,
           auto_send: form.auto_send,
           active: form.active,
         },
-      }),
+      });
+    },
+
     onSuccess: () => {
       toast.success("Recurring invoice saved");
       setOpen(false);
@@ -389,7 +410,7 @@ function RecurringPage() {
                     vatRate={num(form.vat_rate)}
                     vatAmount={totals.vat_amount}
                     total={totals.total}
-                    notes={form.notes || form.email_body || null}
+                    notes={previewMessage}
 
                     terms={form.terms || null}
                     items={previewItems}
