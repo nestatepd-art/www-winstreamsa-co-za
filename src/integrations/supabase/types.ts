@@ -1000,6 +1000,93 @@ export type Database = {
           },
         ]
       }
+      recurring_invoices: {
+        Row: {
+          active: boolean
+          auto_send: boolean
+          client_id: string | null
+          created_at: string
+          day_of_month: number
+          due_days: number
+          email_body: string | null
+          email_subject: string | null
+          id: string
+          items: Json
+          last_error: string | null
+          last_invoice_id: string | null
+          last_run_at: string | null
+          next_run_date: string
+          notes: string | null
+          run_count: number
+          terms: string | null
+          title: string
+          updated_at: string
+          user_id: string
+          vat_rate: number
+        }
+        Insert: {
+          active?: boolean
+          auto_send?: boolean
+          client_id?: string | null
+          created_at?: string
+          day_of_month?: number
+          due_days?: number
+          email_body?: string | null
+          email_subject?: string | null
+          id?: string
+          items?: Json
+          last_error?: string | null
+          last_invoice_id?: string | null
+          last_run_at?: string | null
+          next_run_date: string
+          notes?: string | null
+          run_count?: number
+          terms?: string | null
+          title?: string
+          updated_at?: string
+          user_id: string
+          vat_rate?: number
+        }
+        Update: {
+          active?: boolean
+          auto_send?: boolean
+          client_id?: string | null
+          created_at?: string
+          day_of_month?: number
+          due_days?: number
+          email_body?: string | null
+          email_subject?: string | null
+          id?: string
+          items?: Json
+          last_error?: string | null
+          last_invoice_id?: string | null
+          last_run_at?: string | null
+          next_run_date?: string
+          notes?: string | null
+          run_count?: number
+          terms?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+          vat_rate?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recurring_invoices_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recurring_invoices_last_invoice_id_fkey"
+            columns: ["last_invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reviews: {
         Row: {
           approved: boolean
@@ -1237,6 +1324,10 @@ export type Database = {
           msg_id: number
           read_ct: number
         }[]
+      }
+      recurring_next_run: {
+        Args: { _day: number; _from: string }
+        Returns: string
       }
       set_user_plan: { Args: { _plan: string }; Returns: string }
       topup_credits: { Args: { _credits: number }; Returns: number }
