@@ -66,7 +66,7 @@ const emptyForm = () => ({
   id: undefined as string | undefined,
   client_id: "",
   title: "Monthly retainer",
-  day_of_month: 1,
+  day_of_month: 7,
   items: [{ description: "", quantity: 1, unit_price: 0 }] as Item[],
   vat_rate: 15,
   due_days: 14,
