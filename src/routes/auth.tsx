@@ -36,6 +36,41 @@ function AuthPage() {
   const [businessName, setBusinessName] = useState("");
   const [inIframe, setInIframe] = useState(false);
   const [forgotOpen, setForgotOpen] = useState(false);
+  const [pendingEmail, setPendingEmail] = useState<string | null>(null);
+  const [resendCooldown, setResendCooldown] = useState(0);
+
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const t = setTimeout(() => setResendCooldown((s) => s - 1), 1000);
+    return () => clearTimeout(t);
+  }, [resendCooldown]);
+
+  const resendVerification = async () => {
+    const target = (pendingEmail || email).trim();
+    if (!target) return toast.error("Enter your email above first");
+    setLoading(true);
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email: target,
+      options: { emailRedirectTo: `${window.location.origin}/dashboard` },
+    });
+    setLoading(false);
+    if (error) {
+      if (/already confirmed|already been confirmed/i.test(error.message)) {
+        setPendingEmail(null);
+        return toast.success("This account is already verified — you can sign in.");
+      }
+      if (/rate|seconds|too many/i.test(error.message)) {
+        setResendCooldown(60);
+        return toast.error("Please wait a minute before requesting another email.");
+      }
+      return toast.error(error.message);
+    }
+    setPendingEmail(target);
+    setResendCooldown(60);
+    toast.success("Verification email sent", { description: `Check the inbox (and spam) for ${target}.`, duration: 7000 });
+  };
+
 
   useEffect(() => {
     setInIframe(window.self !== window.top);
@@ -47,11 +82,19 @@ function AuthPage() {
     const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
     setLoading(false);
     if (error) {
+      if (/not confirmed|confirm your email/i.test(error.message)) {
+        setPendingEmail(email.trim());
+        return toast.error("Your email isn't verified yet", {
+          description: "Use the 'Resend verification email' button below.",
+          duration: 7000,
+        });
+      }
       const msg = /invalid login/i.test(error.message)
         ? "Email or password is incorrect. If you signed up with Google, use 'Continue with Google'. Otherwise use 'Forgot password' below."
         : error.message;
       return toast.error(msg);
     }
+
     toast.success("Welcome back");
     // Full document navigation: the router/query caches were built for the
     // signed-out session, and invalidating them mid-flight is what used to
@@ -94,8 +137,14 @@ function AuthPage() {
     toast.success("Account created — please check your mailbox to verify your account before signing in.", {
       duration: 7000,
     });
+    if (!data.session) {
+      setPendingEmail(email.trim());
+      setResendCooldown(30);
+      return;
+    }
     navigate({ to: "/settings" });
   };
+
 
   const signInGoogle = async () => {
     // Lovable preview runs inside an iframe — OAuth popups/redirects can be blocked
@@ -231,6 +280,36 @@ function AuthPage() {
                 </form>
               </TabsContent>
             </Tabs>
+
+            <div className="mt-6 rounded-md border border-border bg-muted/30 p-3 space-y-2">
+              {pendingEmail ? (
+                <p className="text-sm text-muted-foreground">
+                  We sent a verification link to{" "}
+                  <span className="font-medium text-foreground">{pendingEmail}</span>. Didn't get it? Check spam, then resend below.
+                </p>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  Didn't receive your account verification email? Enter your address above and resend it.
+                </p>
+              )}
+              <Button
+                type="button"
+                size="sm"
+                variant="secondary"
+                className="w-full"
+                disabled={loading || resendCooldown > 0}
+                onClick={resendVerification}
+              >
+                {loading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : resendCooldown > 0 ? (
+                  `Resend verification email (${resendCooldown}s)`
+                ) : (
+                  "Resend verification email"
+                )}
+              </Button>
+            </div>
+
 
             <div className="relative my-6">
               <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-border" /></div>
