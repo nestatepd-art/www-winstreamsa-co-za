@@ -137,8 +137,14 @@ function AuthPage() {
     toast.success("Account created — please check your mailbox to verify your account before signing in.", {
       duration: 7000,
     });
+    if (!data.session) {
+      setPendingEmail(email.trim());
+      setResendCooldown(30);
+      return;
+    }
     navigate({ to: "/settings" });
   };
+
 
   const signInGoogle = async () => {
     // Lovable preview runs inside an iframe — OAuth popups/redirects can be blocked
