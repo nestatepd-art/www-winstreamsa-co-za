@@ -32,9 +32,27 @@ function ResetPasswordPage() {
     setLoading(true);
     const { error } = await supabase.auth.updateUser({ password });
     setLoading(false);
-    if (error) return toast.error(error.message);
+    if (error) {
+      // "New password should be different from the old password" means the
+      // password they typed is already the correct one — they're signed in via
+      // the recovery link, so just let them through instead of blocking.
+      if (/different from the old password|same_password/i.test(error.message)) {
+        const { data } = await supabase.auth.getUser();
+        if (data.user) {
+          toast.success("That's already your password — signing you in.");
+          window.location.assign("/dashboard");
+          return;
+        }
+      }
+      if (/session|expired|invalid/i.test(error.message)) {
+        return toast.error("This reset link has expired", {
+          description: "Request a new reset link from the sign-in page.",
+        });
+      }
+      return toast.error(error.message);
+    }
     toast.success("Password updated");
-    navigate({ to: "/dashboard" });
+    window.location.assign("/dashboard");
   };
 
   return (

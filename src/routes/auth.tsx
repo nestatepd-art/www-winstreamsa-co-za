@@ -79,7 +79,13 @@ function AuthPage() {
   const signIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+    const cleanEmail = email.trim().toLowerCase();
+    let { error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password });
+    // Autofill/copy-paste frequently adds stray whitespace to the password.
+    // Retry once with a trimmed password before telling the user it's wrong.
+    if (error && /invalid login/i.test(error.message) && password !== password.trim()) {
+      ({ error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password: password.trim() }));
+    }
     setLoading(false);
     if (error) {
       if (/not confirmed|confirm your email/i.test(error.message)) {
