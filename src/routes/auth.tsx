@@ -82,11 +82,19 @@ function AuthPage() {
     const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
     setLoading(false);
     if (error) {
+      if (/not confirmed|confirm your email/i.test(error.message)) {
+        setPendingEmail(email.trim());
+        return toast.error("Your email isn't verified yet", {
+          description: "Use the 'Resend verification email' button below.",
+          duration: 7000,
+        });
+      }
       const msg = /invalid login/i.test(error.message)
         ? "Email or password is incorrect. If you signed up with Google, use 'Continue with Google'. Otherwise use 'Forgot password' below."
         : error.message;
       return toast.error(msg);
     }
+
     toast.success("Welcome back");
     // Full document navigation: the router/query caches were built for the
     // signed-out session, and invalidating them mid-flight is what used to
