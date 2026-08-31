@@ -21,6 +21,11 @@ type Profile = {
 
 type Client = {
   name?: string | null;
+  address_line1?: string | null;
+  address_line2?: string | null;
+  city?: string | null;
+  province?: string | null;
+  postal_code?: string | null;
   contact_person?: string | null;
   email?: string | null;
   phone?: string | null;
@@ -69,7 +74,7 @@ function getBusinessInitials(name?: string | null): string {
   if (!clean) return "B";
   const parts = clean.split(/\s+/).filter(Boolean);
   const letters = parts.slice(0, 2).map((p) => p[0]?.toUpperCase() ?? "").join("");
-  return letters || clean[0]!.toUpperCase();
+  return letters || clean.charAt(0).toUpperCase();
 }
 
 export function generateDocumentPdf(data: DocumentData): Blob {
@@ -158,6 +163,10 @@ export function generateDocumentPdf(data: DocumentData): Blob {
   y += 14;
   doc.setFontSize(9);
   doc.setTextColor(90);
+  if (data.client?.address_line1) { doc.text(data.client.address_line1, MARGIN, y); y += 12; }
+  if (data.client?.address_line2) { doc.text(data.client.address_line2, MARGIN, y); y += 12; }
+  const clientLocality = [data.client?.city, data.client?.province, data.client?.postal_code].filter(Boolean).join(", ");
+  if (clientLocality) { doc.text(clientLocality, MARGIN, y); y += 12; }
   if (data.client?.contact_person) { doc.text(data.client.contact_person, MARGIN, y); y += 12; }
   if (data.client?.email) { doc.text(data.client.email, MARGIN, y); y += 12; }
 
