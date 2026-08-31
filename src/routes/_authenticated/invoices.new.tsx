@@ -8,9 +8,13 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Trash2, Plus, ArrowLeft } from "lucide-react";
+import { Trash2, Plus, ArrowLeft, Sparkles, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { cleanDocumentText, cleanDocumentTitle, formatZAR, computeQuoteTotals, generateInvoiceNumber } from "@/lib/format";
+import { useServerFn } from "@tanstack/react-start";
+import { draftQuoteItem, draftQuoteNotes } from "@/lib/ai.functions";
+import { useConsumeQuota } from "@/hooks/use-credits";
+import { AiDraftedBanner } from "@/components/AiDraftedBanner";
 
 export const Route = createFileRoute("/_authenticated/invoices/new")({
   component: NewInvoicePage,
