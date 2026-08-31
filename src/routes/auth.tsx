@@ -36,6 +36,41 @@ function AuthPage() {
   const [businessName, setBusinessName] = useState("");
   const [inIframe, setInIframe] = useState(false);
   const [forgotOpen, setForgotOpen] = useState(false);
+  const [pendingEmail, setPendingEmail] = useState<string | null>(null);
+  const [resendCooldown, setResendCooldown] = useState(0);
+
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const t = setTimeout(() => setResendCooldown((s) => s - 1), 1000);
+    return () => clearTimeout(t);
+  }, [resendCooldown]);
+
+  const resendVerification = async () => {
+    const target = (pendingEmail || email).trim();
+    if (!target) return toast.error("Enter your email above first");
+    setLoading(true);
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email: target,
+      options: { emailRedirectTo: `${window.location.origin}/dashboard` },
+    });
+    setLoading(false);
+    if (error) {
+      if (/already confirmed|already been confirmed/i.test(error.message)) {
+        setPendingEmail(null);
+        return toast.success("This account is already verified — you can sign in.");
+      }
+      if (/rate|seconds|too many/i.test(error.message)) {
+        setResendCooldown(60);
+        return toast.error("Please wait a minute before requesting another email.");
+      }
+      return toast.error(error.message);
+    }
+    setPendingEmail(target);
+    setResendCooldown(60);
+    toast.success("Verification email sent", { description: `Check the inbox (and spam) for ${target}.`, duration: 7000 });
+  };
+
 
   useEffect(() => {
     setInIframe(window.self !== window.top);
