@@ -27,7 +27,7 @@ export const Route = createFileRoute("/_authenticated/clients/new")({
 function NewClientPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [form, setForm] = useState({ name: "", contact_person: "", email: "", phone: "", city: "", notes: "" });
+  const [form, setForm] = useState({ name: "", address_line1: "", contact_person: "", email: "", phone: "", city: "", notes: "" });
 
   const createClient = useMutation({
     mutationFn: async () => {
@@ -70,6 +70,9 @@ function NewClientPage() {
         <CardContent className="grid gap-4 sm:grid-cols-2">
           <Field label="Business / client name *" className="sm:col-span-2">
             <Input value={form.name} onChange={(event) => update("name", event.target.value)} autoFocus />
+          </Field>
+          <Field label="Address" className="sm:col-span-2">
+            <Input value={form.address_line1} onChange={(event) => update("address_line1", event.target.value)} placeholder="Street address" />
           </Field>
           <Field label="Contact person"><Input value={form.contact_person} onChange={(event) => update("contact_person", event.target.value)} /></Field>
           <Field label="Email"><Input type="email" value={form.email} onChange={(event) => update("email", event.target.value)} /></Field>

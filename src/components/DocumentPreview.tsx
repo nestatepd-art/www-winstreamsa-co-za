@@ -10,6 +10,11 @@ type LineItem = {
 
 type Client = {
   name?: string | null;
+  address_line1?: string | null;
+  address_line2?: string | null;
+  city?: string | null;
+  province?: string | null;
+  postal_code?: string | null;
   contact_person?: string | null;
   email?: string | null;
 };
@@ -55,7 +60,7 @@ function getBusinessInitials(name?: string | null): string {
   if (!clean) return "B";
   const parts = clean.split(/\s+/).filter(Boolean);
   const letters = parts.slice(0, 2).map((p) => p[0]?.toUpperCase() ?? "").join("");
-  return letters || clean[0]!.toUpperCase();
+  return letters || clean.charAt(0).toUpperCase();
 }
 
 export function DocumentPreview({
@@ -128,6 +133,13 @@ export function DocumentPreview({
           <div>
             <div className="text-xs font-medium uppercase text-document-muted">Billed to</div>
             <div className="mt-2 font-medium text-document-ink">{client?.name || "—"}</div>
+            {client?.address_line1 && <div className="mt-1 text-document-muted">{client.address_line1}</div>}
+            {client?.address_line2 && <div className="mt-1 text-document-muted">{client.address_line2}</div>}
+            {(client?.city || client?.province || client?.postal_code) && (
+              <div className="mt-1 text-document-muted">
+                {[client.city, client.province, client.postal_code].filter(Boolean).join(", ")}
+              </div>
+            )}
             {client?.contact_person && <div className="mt-1 text-document-muted">{client.contact_person}</div>}
             {client?.email && <div className="mt-1 break-all text-document-muted">{client.email}</div>}
           </div>

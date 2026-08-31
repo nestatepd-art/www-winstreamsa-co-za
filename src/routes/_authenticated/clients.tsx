@@ -20,7 +20,7 @@ function ClientsPage() {
   const qc = useQueryClient();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
-  const emptyForm = { name: "", contact_person: "", email: "", phone: "", city: "", notes: "" };
+  const emptyForm = { name: "", address_line1: "", contact_person: "", email: "", phone: "", city: "", notes: "" };
   const [form, setForm] = useState(emptyForm);
   const [editId, setEditId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState(emptyForm);
@@ -29,6 +29,7 @@ function ClientsPage() {
     setEditId(c.id);
     setEditForm({
       name: c.name ?? "",
+      address_line1: c.address_line1 ?? "",
       contact_person: c.contact_person ?? "",
       email: c.email ?? "",
       phone: c.phone ?? "",
@@ -60,7 +61,7 @@ function ClientsPage() {
       toast.success("Client added");
       import("@/lib/analytics").then(({ track }) => track("client_added"));
       setOpen(false);
-      setForm({ name: "", contact_person: "", email: "", phone: "", city: "", notes: "" });
+      setForm(emptyForm);
       qc.invalidateQueries({ queryKey: ["clients"] });
       qc.invalidateQueries({ queryKey: ["dashboard-stats"] });
       qc.invalidateQueries({ queryKey: ["onboarding-status"] });
@@ -118,6 +119,9 @@ function ClientsPage() {
             <div className="grid gap-4">
               <Field label="Business / client name *">
                 <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+              </Field>
+              <Field label="Address">
+                <Input value={form.address_line1} onChange={(e) => setForm({ ...form, address_line1: e.target.value })} placeholder="Street address" />
               </Field>
               <Field label="Contact person">
                 <Input value={form.contact_person} onChange={(e) => setForm({ ...form, contact_person: e.target.value })} />
@@ -185,6 +189,9 @@ function ClientsPage() {
           <div className="grid gap-4">
             <Field label="Business / client name *">
               <Input value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} required />
+            </Field>
+            <Field label="Address">
+              <Input value={editForm.address_line1} onChange={(e) => setEditForm({ ...editForm, address_line1: e.target.value })} placeholder="Street address" />
             </Field>
             <Field label="Contact person">
               <Input value={editForm.contact_person} onChange={(e) => setEditForm({ ...editForm, contact_person: e.target.value })} />
