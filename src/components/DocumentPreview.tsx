@@ -130,9 +130,11 @@ export function DocumentPreview({
         </div>
 
         <div className="mt-7 grid gap-6 text-sm sm:grid-cols-2">
-          <div>
+          <div className="min-w-0">
             <div className="text-xs font-medium uppercase text-document-muted">Billed to</div>
-            <div className="mt-2 font-medium text-document-ink">{client?.name || "—"}</div>
+            <div className="mt-2 max-w-[260px] font-medium break-words text-document-ink sm:max-w-[320px]">
+              {client?.name || "—"}
+            </div>
             {client?.address_line1 && <div className="mt-1 text-document-muted">{client.address_line1}</div>}
             {client?.address_line2 && <div className="mt-1 text-document-muted">{client.address_line2}</div>}
             {(client?.city || client?.province || client?.postal_code) && (
@@ -144,7 +146,7 @@ export function DocumentPreview({
             {client?.email && <div className="mt-1 break-all text-document-muted">{client.email}</div>}
           </div>
 
-          <div className="sm:text-right">
+          <div className="min-w-0 sm:text-right">
             <div className="text-xs font-medium uppercase text-document-muted">Issue date</div>
             <div className="mt-2 text-document-ink">{issueDate ? formatDate(issueDate) : "—"}</div>
             {dateValue && (

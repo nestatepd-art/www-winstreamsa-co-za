@@ -149,6 +149,7 @@ export function generateDocumentPdf(data: DocumentData): Blob {
 
   // Billed to / dates
   const colW = contentW / 2;
+  const billedToMaxW = colW - 24;
   doc.setFontSize(8);
   doc.setTextColor(130);
   doc.text("BILLED TO", MARGIN, y);
@@ -157,10 +158,16 @@ export function generateDocumentPdf(data: DocumentData): Blob {
   doc.setFontSize(10);
   doc.setTextColor(30);
   doc.setFont("helvetica", "bold");
-  doc.text(data.client?.name || "—", MARGIN, y);
+  const clientNameLines = wrapText(doc, data.client?.name || "—", billedToMaxW);
+  for (const line of clientNameLines) {
+    doc.text(line, MARGIN, y);
+    y += 12;
+  }
   doc.setFont("helvetica", "normal");
-  doc.text(data.issue_date ? formatDate(data.issue_date) : "—", MARGIN + colW, y);
-  y += 14;
+  // Keep issue date aligned with the first line of the client name block.
+  const issueDateY = MARGIN + 12 + 12;
+  doc.text(data.issue_date ? formatDate(data.issue_date) : "—", MARGIN + colW, issueDateY);
+  y = Math.max(y, issueDateY + 14);
   doc.setFontSize(9);
   doc.setTextColor(90);
   if (data.client?.address_line1) { doc.text(data.client.address_line1, MARGIN, y); y += 12; }
