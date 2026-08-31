@@ -281,6 +281,36 @@ function AuthPage() {
               </TabsContent>
             </Tabs>
 
+            <div className="mt-6 rounded-md border border-border bg-muted/30 p-3 space-y-2">
+              {pendingEmail ? (
+                <p className="text-sm text-muted-foreground">
+                  We sent a verification link to{" "}
+                  <span className="font-medium text-foreground">{pendingEmail}</span>. Didn't get it? Check spam, then resend below.
+                </p>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  Didn't receive your account verification email? Enter your address above and resend it.
+                </p>
+              )}
+              <Button
+                type="button"
+                size="sm"
+                variant="secondary"
+                className="w-full"
+                disabled={loading || resendCooldown > 0}
+                onClick={resendVerification}
+              >
+                {loading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : resendCooldown > 0 ? (
+                  `Resend verification email (${resendCooldown}s)`
+                ) : (
+                  "Resend verification email"
+                )}
+              </Button>
+            </div>
+
+
             <div className="relative my-6">
               <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-border" /></div>
               <div className="relative flex justify-center text-xs"><span className="bg-card px-2 text-muted-foreground">OR</span></div>
