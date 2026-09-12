@@ -9,6 +9,11 @@ type ServerEntry = {
 
 let serverEntryPromise: Promise<ServerEntry> | undefined;
 
+const RETIRED_URLS: Record<string, string> = {
+  "/blog/whatsapp-email-followups-sa-small-business-2026":
+    "/blog/whatsapp-email-follow-up-sequence-south-africa-2026",
+};
+
 async function getServerEntry(): Promise<ServerEntry> {
   if (!serverEntryPromise) {
     serverEntryPromise = import("@tanstack/react-start/server-entry").then(
@@ -58,6 +63,11 @@ export default {
         url.hostname = "www.winstreamsa.co.za";
         url.protocol = "https:";
         return Response.redirect(url.toString(), 301);
+      }
+      // Retired duplicate blog URLs -> canonical article (301 consolidates ranking signals).
+      const retiredUrl = RETIRED_URLS[url.pathname.replace(/\/+$/, "")];
+      if (retiredUrl) {
+        return Response.redirect(`https://www.winstreamsa.co.za${retiredUrl}`, 301);
       }
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
