@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
 import { Trash2, Plus, ArrowLeft, Sparkles, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { cleanDocumentText, cleanDocumentTitle, formatZAR, computeQuoteTotals, generateInvoiceNumber } from "@/lib/format";
@@ -50,7 +51,7 @@ function NewInvoicePage() {
   const { data: profile } = useQuery({
     queryKey: ["business-min"],
     queryFn: async () => {
-      const { data } = await supabase.from("business_profiles").select("business_name, brand_tone, default_quote_terms").maybeSingle();
+      const { data } = await supabase.from("business_profiles").select("business_name, brand_tone, default_quote_terms, vat_registered").maybeSingle();
       return data;
     },
   });
@@ -76,6 +77,10 @@ function NewInvoicePage() {
   const [scopeBrief, setScopeBrief] = useState("");
   const [draftingNotes, setDraftingNotes] = useState(false);
   const [aiUsed, setAiUsed] = useState(false);
+  const [vatOverride, setVatOverride] = useState<boolean | null>(null);
+
+  const vatEnabled = vatOverride ?? ((profile as any)?.vat_registered ?? true);
+  const vatRate = vatEnabled ? 15 : 0;
 
   useEffect(() => {
     if (sourceQuote?.quote) {
@@ -85,6 +90,7 @@ function NewInvoicePage() {
       setTitle(sourceTitle === "Services" ? "Invoice" : `Invoice - ${sourceTitle}`);
       setNotes(cleanDocumentText(q.notes));
       setTerms(cleanDocumentText(q.terms));
+      if (Number(q.vat_rate ?? 15) === 0) setVatOverride(false);
       if (sourceQuote.items.length) {
         setItems(
           sourceQuote.items.map((it: any) => ({
@@ -97,7 +103,7 @@ function NewInvoicePage() {
     }
   }, [sourceQuote]);
 
-  const totals = useMemo(() => computeQuoteTotals(items, 15), [items]);
+  const totals = useMemo(() => computeQuoteTotals(items, vatRate), [items, vatRate]);
 
   const updateItem = (i: number, patch: Partial<Item>) =>
     setItems((arr) => arr.map((it, idx) => (idx === i ? { ...it, ...patch } : it)));
@@ -160,6 +166,7 @@ function NewInvoicePage() {
           notes: cleanDocumentText(notes) || null,
           terms: cleanDocumentText(terms) || profile?.default_quote_terms || null,
           due_date: dueDate || null,
+          vat_rate: vatRate,
           subtotal: totals.subtotal,
           vat_amount: totals.vat_amount,
           total: totals.total,
@@ -207,7 +214,9 @@ function NewInvoicePage() {
         <p className="text-muted-foreground text-sm mt-1">
           {fromQuote
             ? "Line items copied from the quote — review and send."
-            : "Build your invoice. VAT is calculated at 15%."}
+            : vatEnabled
+              ? "Build your invoice. VAT is calculated at 15%."
+              : "Build your invoice. VAT is switched off."}
         </p>
       </div>
 
@@ -223,6 +232,15 @@ function NewInvoicePage() {
           <div className="space-y-2">
             <Label htmlFor="invoice-due-date">Due date</Label>
             <Input id="invoice-due-date" type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
+          </div>
+          <div className="sm:col-span-3 flex items-center justify-between gap-4 rounded-lg border border-border p-3">
+            <div>
+              <Label htmlFor="invoice-vat">Charge VAT (15%)</Label>
+              <p className="text-xs text-muted-foreground mt-1">
+                Switch off if you are not VAT registered — no VAT will show on the invoice.
+              </p>
+            </div>
+            <Switch id="invoice-vat" checked={vatEnabled} onCheckedChange={(v) => setVatOverride(v)} />
           </div>
           <div className="space-y-2 sm:col-span-3">
             <Label>Client</Label>
@@ -308,7 +326,7 @@ function NewInvoicePage() {
           <div className="flex justify-end pt-4 border-t">
             <div className="w-full max-w-xs space-y-1 text-sm">
               <div className="flex justify-between text-muted-foreground"><span>Subtotal</span><span className="tabular-nums">{formatZAR(totals.subtotal)}</span></div>
-              <div className="flex justify-between text-muted-foreground"><span>VAT (15%)</span><span className="tabular-nums">{formatZAR(totals.vat_amount)}</span></div>
+              {vatEnabled && (<div className="flex justify-between text-muted-foreground"><span>VAT (15%)</span><span className="tabular-nums">{formatZAR(totals.vat_amount)}</span></div>)}
               <div className="flex justify-between font-semibold text-base pt-2 border-t"><span>Total due</span><span className="tabular-nums">{formatZAR(totals.total)}</span></div>
             </div>
           </div>

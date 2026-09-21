@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Sparkles, Trash2, Plus, Loader2, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
@@ -39,7 +40,7 @@ function NewQuotePage() {
   const { data: profile } = useQuery({
     queryKey: ["business-min"],
     queryFn: async () => {
-      const { data } = await supabase.from("business_profiles").select("business_name, brand_tone, default_quote_validity_days, default_quote_terms").maybeSingle();
+      const { data } = await supabase.from("business_profiles").select("business_name, brand_tone, default_quote_validity_days, default_quote_terms, vat_registered").maybeSingle();
       return data;
     },
   });
@@ -52,8 +53,11 @@ function NewQuotePage() {
   const [scopeBrief, setScopeBrief] = useState("");
   const [draftingNotes, setDraftingNotes] = useState(false);
   const [aiUsed, setAiUsed] = useState(false);
+  const [vatOverride, setVatOverride] = useState<boolean | null>(null);
 
-  const totals = useMemo(() => computeQuoteTotals(items, 15), [items]);
+  const vatEnabled = vatOverride ?? ((profile as any)?.vat_registered ?? true);
+  const vatRate = vatEnabled ? 15 : 0;
+  const totals = useMemo(() => computeQuoteTotals(items, vatRate), [items, vatRate]);
 
   const updateItem = (i: number, patch: Partial<Item>) =>
     setItems((arr) => arr.map((it, idx) => (idx === i ? { ...it, ...patch } : it)));
@@ -118,6 +122,7 @@ function NewQuotePage() {
           title,
           status,
           notes,
+          vat_rate: vatRate,
           terms: terms || profile?.default_quote_terms || null,
           expiry_date: expiry.toISOString().slice(0, 10),
           subtotal: totals.subtotal,
@@ -182,6 +187,15 @@ function NewQuotePage() {
                 {clients.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
               </SelectContent>
             </Select>
+          </div>
+          <div className="sm:col-span-2 flex items-center justify-between gap-4 rounded-lg border border-border p-3">
+            <div>
+              <Label htmlFor="quote-vat">Charge VAT (15%)</Label>
+              <p className="text-xs text-muted-foreground mt-1">
+                Switch off if you are not VAT registered — no VAT will show on the quote.
+              </p>
+            </div>
+            <Switch id="quote-vat" checked={vatEnabled} onCheckedChange={(v) => setVatOverride(v)} />
           </div>
         </CardContent>
       </Card>
@@ -260,9 +274,11 @@ function NewQuotePage() {
             <div className="flex justify-between text-muted-foreground">
               <span>Subtotal</span><span className="tabular-nums">{formatZAR(totals.subtotal)}</span>
             </div>
-            <div className="flex justify-between text-muted-foreground">
-              <span>VAT (15%)</span><span className="tabular-nums">{formatZAR(totals.vat_amount)}</span>
-            </div>
+            {vatEnabled && (
+              <div className="flex justify-between text-muted-foreground">
+                <span>VAT (15%)</span><span className="tabular-nums">{formatZAR(totals.vat_amount)}</span>
+              </div>
+            )}
             <div className="flex justify-between font-semibold text-base pt-1">
               <span>Total</span><span className="tabular-nums">{formatZAR(totals.total)}</span>
             </div>
