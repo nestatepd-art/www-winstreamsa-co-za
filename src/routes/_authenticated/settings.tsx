@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { Loader2, Upload, Trash2, ImageIcon } from "lucide-react";
 import { useLogoAsset, LOGO_BUCKET, isStoragePath } from "@/hooks/use-logo-asset";
@@ -82,7 +83,22 @@ function SettingsPage() {
         <CardContent className="grid gap-4 sm:grid-cols-2">
           <F label="Business name" required><Input value={form.business_name ?? ""} onChange={(e) => set("business_name", e.target.value)} /></F>
           <F label="Trading as"><Input value={form.trading_name ?? ""} onChange={(e) => set("trading_name", e.target.value)} /></F>
-          <F label="VAT number"><Input value={form.vat_number ?? ""} onChange={(e) => set("vat_number", e.target.value)} /></F>
+          <div className="sm:col-span-2 flex items-center justify-between gap-4 rounded-lg border border-border p-3">
+            <div>
+              <Label htmlFor="vat-registered">VAT registered</Label>
+              <p className="text-xs text-muted-foreground mt-1">
+                Switch off if you are not VAT registered. New quotes and invoices will then be created without VAT.
+              </p>
+            </div>
+            <Switch
+              id="vat-registered"
+              checked={form.vat_registered ?? true}
+              onCheckedChange={(v) => set("vat_registered", v)}
+            />
+          </div>
+          {(form.vat_registered ?? true) && (
+            <F label="VAT number"><Input value={form.vat_number ?? ""} onChange={(e) => set("vat_number", e.target.value)} /></F>
+          )}
           <F label="Company registration"><Input value={form.registration_number ?? ""} onChange={(e) => set("registration_number", e.target.value)} /></F>
           <F label="Email"><Input type="email" value={form.email ?? ""} onChange={(e) => set("email", e.target.value)} /></F>
           <F label="Phone"><Input value={form.phone ?? ""} onChange={(e) => set("phone", e.target.value)} /></F>

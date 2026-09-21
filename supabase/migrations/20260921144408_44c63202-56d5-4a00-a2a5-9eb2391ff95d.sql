@@ -1,0 +1,1 @@
+ALTER TABLE public.business_profiles ADD COLUMN IF NOT EXISTS vat_registered boolean NOT NULL DEFAULT true;
