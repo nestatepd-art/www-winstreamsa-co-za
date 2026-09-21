@@ -272,7 +272,7 @@ function QuoteViewPage({ quoteId, quote, items, profile }: { quoteId: string; qu
           <div className="flex justify-end">
             <div className="w-full max-w-xs space-y-1 text-sm">
               <div className="flex justify-between text-muted-foreground"><span>Subtotal</span><span className="tabular-nums">{formatZAR(quote.subtotal)}</span></div>
-              <div className="flex justify-between text-muted-foreground"><span>VAT ({Number(quote.vat_rate)}%)</span><span className="tabular-nums">{formatZAR(quote.vat_amount)}</span></div>
+              {Number(quote.vat_rate) > 0 && (<div className="flex justify-between text-muted-foreground"><span>VAT ({Number(quote.vat_rate)}%)</span><span className="tabular-nums">{formatZAR(quote.vat_amount)}</span></div>)}
               <div className="flex justify-between font-semibold text-base pt-2 border-t border-border"><span>Total due</span><span className="tabular-nums">{formatZAR(quote.total)}</span></div>
             </div>
           </div>

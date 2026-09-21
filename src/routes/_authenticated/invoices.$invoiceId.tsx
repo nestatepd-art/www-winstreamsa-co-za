@@ -264,7 +264,7 @@ function InvoiceViewPage({ invoiceId, invoice, items, profile }: { invoiceId: st
           <div className="flex justify-end">
             <div className="w-full max-w-xs space-y-1 text-sm">
               <div className="flex justify-between text-muted-foreground"><span>Subtotal</span><span className="tabular-nums">{formatZAR(invoice.subtotal)}</span></div>
-              <div className="flex justify-between text-muted-foreground"><span>VAT ({Number(invoice.vat_rate)}%)</span><span className="tabular-nums">{formatZAR(invoice.vat_amount)}</span></div>
+              {Number(invoice.vat_rate) > 0 && (<div className="flex justify-between text-muted-foreground"><span>VAT ({Number(invoice.vat_rate)}%)</span><span className="tabular-nums">{formatZAR(invoice.vat_amount)}</span></div>)}
               <div className="flex justify-between font-semibold text-base pt-2 border-t border-border"><span>Total due</span><span className="tabular-nums">{formatZAR(invoice.total)}</span></div>
             </div>
           </div>

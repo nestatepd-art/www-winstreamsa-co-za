@@ -193,10 +193,12 @@ export function DocumentPreview({
               <span>Subtotal</span>
               <span className="tabular-nums">{formatZAR(subtotal)}</span>
             </div>
-            <div className="flex justify-between gap-4 text-document-muted">
-              <span>VAT ({Number(vatRate)}%)</span>
-              <span className="tabular-nums">{formatZAR(vatAmount)}</span>
-            </div>
+            {Number(vatRate) > 0 && (
+              <div className="flex justify-between gap-4 text-document-muted">
+                <span>VAT ({Number(vatRate)}%)</span>
+                <span className="tabular-nums">{formatZAR(vatAmount)}</span>
+              </div>
+            )}
             <div className="flex justify-between gap-4 border-t border-document-border pt-3 text-base font-semibold text-document-ink">
               <span>Total due</span>
               <span className="tabular-nums">{formatZAR(total)}</span>

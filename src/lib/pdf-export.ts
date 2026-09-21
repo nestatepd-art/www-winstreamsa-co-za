@@ -235,11 +235,13 @@ export function generateDocumentPdf(data: DocumentData): Blob {
   doc.text("Subtotal", totalsX, y);
   doc.setTextColor(30);
   doc.text(formatZAR(data.subtotal), PAGE_W - MARGIN, y, { align: "right" });
-  y += 16;
-  doc.setTextColor(90);
-  doc.text(`VAT (${Number(data.vat_rate)}%)`, totalsX, y);
-  doc.setTextColor(30);
-  doc.text(formatZAR(data.vat_amount), PAGE_W - MARGIN, y, { align: "right" });
+  if (Number(data.vat_rate) > 0) {
+    y += 16;
+    doc.setTextColor(90);
+    doc.text(`VAT (${Number(data.vat_rate)}%)`, totalsX, y);
+    doc.setTextColor(30);
+    doc.text(formatZAR(data.vat_amount), PAGE_W - MARGIN, y, { align: "right" });
+  }
   y += 8;
   doc.setDrawColor(200);
   doc.line(totalsX, y, PAGE_W - MARGIN, y);

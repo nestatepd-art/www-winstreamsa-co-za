@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
 import { Trash2, Plus, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { formatZAR, computeQuoteTotals } from "@/lib/format";
@@ -183,10 +184,20 @@ function EditQuotePage() {
             </Select>
           </div>
           <div className="space-y-2">
-            <Label>VAT rate (%)</Label>
-            <Input type="number" min={0} step="0.01" value={vatRate}
-              onChange={(e) => setVatRate(Number(e.target.value))} />
+            <Label htmlFor="quote-vat-on">Charge VAT</Label>
+            <div className="flex items-center gap-3 h-9">
+              <Switch id="quote-vat-on" checked={vatRate > 0}
+                onCheckedChange={(v) => setVatRate(v ? 15 : 0)} />
+              <span className="text-sm text-muted-foreground">{vatRate > 0 ? "On" : "Off (not VAT registered)"}</span>
+            </div>
           </div>
+          {vatRate > 0 && (
+            <div className="space-y-2 sm:col-span-3">
+              <Label>VAT rate (%)</Label>
+              <Input type="number" min={0} step="0.01" value={vatRate}
+                onChange={(e) => setVatRate(Number(e.target.value))} />
+            </div>
+          )}
           <div className="space-y-2 sm:col-span-3">
             <Label>Title</Label>
             <Input value={title} onChange={(e) => setTitle(e.target.value)} />
@@ -245,7 +256,7 @@ function EditQuotePage() {
           <div className="flex justify-end pt-4 border-t">
             <div className="w-full max-w-xs space-y-1 text-sm">
               <div className="flex justify-between text-muted-foreground"><span>Subtotal</span><span className="tabular-nums">{formatZAR(totals.subtotal)}</span></div>
-              <div className="flex justify-between text-muted-foreground"><span>VAT ({vatRate || 0}%)</span><span className="tabular-nums">{formatZAR(totals.vat_amount)}</span></div>
+              {vatRate > 0 && (<div className="flex justify-between text-muted-foreground"><span>VAT ({vatRate}%)</span><span className="tabular-nums">{formatZAR(totals.vat_amount)}</span></div>)}
               <div className="flex justify-between font-semibold text-base pt-2 border-t"><span>Total</span><span className="tabular-nums">{formatZAR(totals.total)}</span></div>
             </div>
           </div>
