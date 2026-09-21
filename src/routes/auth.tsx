@@ -80,16 +80,16 @@ function AuthPage() {
     e.preventDefault();
     setLoading(true);
     const cleanEmail = email.trim().toLowerCase();
-    let { error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password });
+    let { data, error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password });
     // Autofill/copy-paste frequently adds stray whitespace to the password.
     // Retry once with a trimmed password before telling the user it's wrong.
     if (error && /invalid login/i.test(error.message) && password !== password.trim()) {
-      ({ error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password: password.trim() }));
+      ({ data, error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password: password.trim() }));
     }
-    setLoading(false);
     if (error) {
+      setLoading(false);
       if (/not confirmed|confirm your email/i.test(error.message)) {
-        setPendingEmail(email.trim());
+        setPendingEmail(cleanEmail);
         return toast.error("Your email isn't verified yet", {
           description: "Use the 'Resend verification email' button below.",
           duration: 7000,
@@ -101,12 +101,29 @@ function AuthPage() {
       return toast.error(msg);
     }
 
+    // The session store can be asynchronous, so confirm the session is readable
+    // before navigating — otherwise the workspace bounces straight back here and
+    // a correct password looks rejected.
+    let stored = data.session ?? null;
+    for (let attempt = 0; attempt < 8 && !stored; attempt++) {
+      await new Promise((r) => setTimeout(r, 250));
+      stored = (await supabase.auth.getSession()).data.session;
+    }
+    setLoading(false);
+    if (!stored) {
+      return toast.error("Signed in, but your browser blocked the session", {
+        description: "Allow cookies/site data for this site (or try a normal window) and sign in again.",
+        duration: 9000,
+      });
+    }
+
     toast.success("Welcome back");
     // Full document navigation: the router/query caches were built for the
     // signed-out session, and invalidating them mid-flight is what used to
     // leave the app on a blank screen until a manual refresh.
     window.location.assign("/dashboard");
   };
+
 
   const sendReset = async () => {
     if (!email.trim()) return toast.error("Enter your email above first");
