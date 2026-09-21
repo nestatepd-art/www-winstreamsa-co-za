@@ -1,8 +1,7 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
@@ -10,6 +9,7 @@ import { PasswordInput } from "@/components/password-input";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/reset-password")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Reset password — WinStream SA" },
@@ -20,10 +20,43 @@ export const Route = createFileRoute("/reset-password")({
 });
 
 function ResetPasswordPage() {
-  const navigate = useNavigate();
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
+  const [ready, setReady] = useState<"checking" | "ok" | "expired">("checking");
+
+  // Establish the recovery session from whichever link format arrived:
+  // #access_token=... (implicit), ?code=... (PKCE) or ?token_hash=...&type=recovery.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+      const query = new URLSearchParams(window.location.search);
+
+      const access_token = hash.get("access_token");
+      const refresh_token = hash.get("refresh_token");
+      if (access_token && refresh_token) {
+        await supabase.auth.setSession({ access_token, refresh_token });
+      } else if (query.get("code")) {
+        await supabase.auth.exchangeCodeForSession(query.get("code")!);
+      } else if (query.get("token_hash")) {
+        await supabase.auth.verifyOtp({ type: "recovery", token_hash: query.get("token_hash")! });
+      }
+
+      for (let attempt = 0; attempt < 6; attempt++) {
+        const { data } = await supabase.auth.getSession();
+        if (data.session) {
+          if (!cancelled) setReady("ok");
+          return;
+        }
+        await new Promise((r) => setTimeout(r, 300));
+      }
+      if (!cancelled) setReady("expired");
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,6 +78,7 @@ function ResetPasswordPage() {
         }
       }
       if (/session|expired|invalid/i.test(error.message)) {
+        setReady("expired");
         return toast.error("This reset link has expired", {
           description: "Request a new reset link from the sign-in page.",
         });
@@ -54,6 +88,36 @@ function ResetPasswordPage() {
     toast.success("Password updated");
     window.location.assign("/dashboard");
   };
+
+
+  if (ready === "checking") {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6 text-muted-foreground">
+        <Loader2 className="h-5 w-5 animate-spin" />
+      </div>
+    );
+  }
+
+  if (ready === "expired") {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle className="text-2xl">This reset link has expired</CardTitle>
+            <CardDescription>
+              Reset links work once and only in the browser that requested them. Request a fresh one and open it in
+              this same browser.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button className="w-full" onClick={() => window.location.assign("/auth")}>
+              Back to sign in
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6">
@@ -81,3 +145,4 @@ function ResetPasswordPage() {
     </div>
   );
 }
+

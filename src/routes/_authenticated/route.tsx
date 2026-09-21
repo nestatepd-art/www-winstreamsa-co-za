@@ -9,19 +9,24 @@ import { isOnboardingAllowedPath, useOnboardingStatus } from "@/hooks/use-onboar
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
   beforeLoad: async () => {
-    // Prefer the locally persisted session: it resolves instantly and never waits
-    // on the network, which is what used to leave the app on a blank screen right
-    // after sign-in until the user hit refresh.
-    const { data: sessionData } = await supabase.auth.getSession();
-    if (sessionData.session?.user) return { user: sessionData.session.user };
+    // The session store can be asynchronous (brokered between preview surfaces),
+    // so a freshly signed-in user can briefly read back as "no session". Retry a
+    // few times before bouncing, otherwise a successful sign-in looks like a
+    // rejected one.
+    for (let attempt = 0; attempt < 4; attempt++) {
+      const { data } = await supabase.auth.getSession();
+      if (data.session?.user) return { user: data.session.user };
+      await new Promise((r) => setTimeout(r, 250));
+    }
 
-    // No local session — confirm with the server before bouncing to /auth.
-    const timeout = new Promise<null>((resolve) => setTimeout(() => resolve(null), 4000));
+    // Still nothing locally — confirm with the server before bouncing to /auth.
+    const timeout = new Promise<null>((resolve) => setTimeout(() => resolve(null), 6000));
     const result = await Promise.race([supabase.auth.getUser(), timeout]);
     if (result && !result.error && result.data.user) return { user: result.data.user };
 
     throw redirect({ to: "/auth" });
   },
+
 
   component: AuthedLayout,
 });
