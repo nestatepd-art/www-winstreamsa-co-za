@@ -11,6 +11,7 @@ import { Loader2 } from "lucide-react";
 import { PasswordInput } from "@/components/password-input";
 import winstreamLogo from "@/assets/winstream-logo.png.asset.json";
 import { toast } from "sonner";
+import { authRedirectUrl } from "@/lib/auth-redirect";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
@@ -52,7 +53,7 @@ function AuthPage() {
     const { error } = await supabase.auth.resend({
       type: "signup",
       email: target,
-      options: { emailRedirectTo: `${window.location.origin}/dashboard` },
+      options: { emailRedirectTo: authRedirectUrl("/auth-callback") },
     });
     setLoading(false);
     if (error) {
@@ -129,7 +130,7 @@ function AuthPage() {
     if (!email.trim()) return toast.error("Enter your email above first");
     setLoading(true);
     const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-      redirectTo: `${window.location.origin}/reset-password`,
+      redirectTo: authRedirectUrl("/reset-password"),
     });
     setLoading(false);
     if (error) return toast.error(error.message);
@@ -143,7 +144,7 @@ function AuthPage() {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { emailRedirectTo: `${window.location.origin}/dashboard` },
+      options: { emailRedirectTo: authRedirectUrl("/auth-callback") },
     });
     if (error) {
       setLoading(false);
@@ -184,7 +185,7 @@ function AuthPage() {
     setLoading(true);
     try {
       const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin + "/dashboard",
+        redirect_uri: window.location.origin + "/auth-callback",
       });
       if (result.error) {
         setLoading(false);

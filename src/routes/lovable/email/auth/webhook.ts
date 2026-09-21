@@ -131,12 +131,37 @@ export const Route = createFileRoute("/lovable/email/auth/webhook")({
           )
         }
 
+        // Supabase builds the link's redirect_to from whatever origin requested the
+        // email (and falls back to the project Site URL). Both can be a *.lovable.app
+        // preview host, which leaves real users on a domain where they have no session.
+        // Force every emailed link back to the live site.
+        const CANONICAL_ORIGIN = `https://www.${ROOT_DOMAIN}`
+        const ALLOWED_PATHS = ['/auth-callback', '/reset-password', '/auth']
+        function canonicalizeConfirmationUrl(raw: string | undefined | null): string {
+          if (!raw) return CANONICAL_ORIGIN
+          try {
+            const url = new URL(raw)
+            const target = url.searchParams.get('redirect_to')
+            let path = '/auth-callback'
+            if (target) {
+              try {
+                const targetPath = new URL(target).pathname
+                if (ALLOWED_PATHS.includes(targetPath)) path = targetPath
+              } catch { /* keep default */ }
+            }
+            url.searchParams.set('redirect_to', `${CANONICAL_ORIGIN}${path}`)
+            return url.toString()
+          } catch {
+            return raw
+          }
+        }
+
         // Build template props from payload.data (HookData structure)
         const templateProps = {
           siteName: SITE_NAME,
           siteUrl: `https://www.${ROOT_DOMAIN}`,
           recipient: payload.data.email,
-          confirmationUrl: payload.data.url,
+          confirmationUrl: canonicalizeConfirmationUrl(payload.data.url),
           token: payload.data.token,
           email: payload.data.email,
           oldEmail: payload.data.old_email,
