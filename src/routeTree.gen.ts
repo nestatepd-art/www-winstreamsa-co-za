@@ -21,6 +21,7 @@ import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as FeaturesRouteImport } from './routes/features'
 import { Route as DemoRouteImport } from './routes/demo'
 import { Route as ContactRouteImport } from './routes/contact'
+import { Route as AuthCallbackRouteImport } from './routes/auth-callback'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as TryRouteRouteImport } from './routes/try/route'
@@ -126,6 +127,11 @@ const DemoRoute = DemoRouteImport.update({
 const ContactRoute = ContactRouteImport.update({
   id: '/contact',
   path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthCallbackRoute = AuthCallbackRouteImport.update({
+  id: '/auth-callback',
+  path: '/auth-callback',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -379,6 +385,7 @@ export interface FileRoutesByFullPath {
   '/try': typeof TryRouteRouteWithChildren
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
+  '/auth-callback': typeof AuthCallbackRoute
   '/contact': typeof ContactRoute
   '/demo': typeof DemoRouteWithChildren
   '/features': typeof FeaturesRoute
@@ -437,6 +444,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
+  '/auth-callback': typeof AuthCallbackRoute
   '/contact': typeof ContactRoute
   '/demo': typeof DemoRouteWithChildren
   '/features': typeof FeaturesRoute
@@ -497,6 +505,7 @@ export interface FileRoutesById {
   '/try': typeof TryRouteRouteWithChildren
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
+  '/auth-callback': typeof AuthCallbackRoute
   '/contact': typeof ContactRoute
   '/demo': typeof DemoRouteWithChildren
   '/features': typeof FeaturesRoute
@@ -558,6 +567,7 @@ export interface FileRouteTypes {
     | '/try'
     | '/about'
     | '/auth'
+    | '/auth-callback'
     | '/contact'
     | '/demo'
     | '/features'
@@ -616,6 +626,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/auth'
+    | '/auth-callback'
     | '/contact'
     | '/demo'
     | '/features'
@@ -675,6 +686,7 @@ export interface FileRouteTypes {
     | '/try'
     | '/about'
     | '/auth'
+    | '/auth-callback'
     | '/contact'
     | '/demo'
     | '/features'
@@ -736,6 +748,7 @@ export interface RootRouteChildren {
   TryRouteRoute: typeof TryRouteRouteWithChildren
   AboutRoute: typeof AboutRoute
   AuthRoute: typeof AuthRoute
+  AuthCallbackRoute: typeof AuthCallbackRoute
   ContactRoute: typeof ContactRoute
   DemoRoute: typeof DemoRouteWithChildren
   FeaturesRoute: typeof FeaturesRoute
@@ -844,6 +857,13 @@ declare module '@tanstack/react-router' {
       path: '/contact'
       fullPath: '/contact'
       preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth-callback': {
+      id: '/auth-callback'
+      path: '/auth-callback'
+      fullPath: '/auth-callback'
+      preLoaderRoute: typeof AuthCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -1310,6 +1330,7 @@ const rootRouteChildren: RootRouteChildren = {
   TryRouteRoute: TryRouteRouteWithChildren,
   AboutRoute: AboutRoute,
   AuthRoute: AuthRoute,
+  AuthCallbackRoute: AuthCallbackRoute,
   ContactRoute: ContactRoute,
   DemoRoute: DemoRouteWithChildren,
   FeaturesRoute: FeaturesRoute,
