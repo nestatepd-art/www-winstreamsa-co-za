@@ -90,6 +90,35 @@ function ResetPasswordPage() {
   };
 
 
+  if (ready === "checking") {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6 text-muted-foreground">
+        <Loader2 className="h-5 w-5 animate-spin" />
+      </div>
+    );
+  }
+
+  if (ready === "expired") {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle className="text-2xl">This reset link has expired</CardTitle>
+            <CardDescription>
+              Reset links work once and only in the browser that requested them. Request a fresh one and open it in
+              this same browser.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button className="w-full" onClick={() => window.location.assign("/auth")}>
+              Back to sign in
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center p-6">
       <Card className="w-full max-w-md">
@@ -116,3 +145,4 @@ function ResetPasswordPage() {
     </div>
   );
 }
+
