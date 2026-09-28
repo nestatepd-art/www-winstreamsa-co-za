@@ -17,6 +17,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { draftQuoteItem, draftQuoteNotes } from "@/lib/ai.functions";
 import { useConsumeQuota } from "@/hooks/use-credits";
 import { AiDraftedBanner } from "@/components/AiDraftedBanner";
+import { useTaskbarDraft } from "@/lib/draft-tray";
+import { MinimizeButton } from "@/components/DraftTaskbar";
 
 export const Route = createFileRoute("/_authenticated/invoices/new")({
   component: NewInvoicePage,
@@ -107,6 +109,17 @@ function NewInvoicePage() {
 
   const totals = useMemo(() => computeQuoteTotals(items, vatRate), [items, vatRate]);
 
+  const tray = useTaskbarDraft({
+    kind: "invoice",
+    route: "/invoices/new",
+    title: `${title}${clients.find((c) => c.id === clientId)?.name ? " · " + clients.find((c) => c.id === clientId)!.name : ""}`,
+    data: { clientId, title, items: items.map(({ _drafting, ...r }) => r), notes, terms, dueDate, scopeBrief, vatOverride },
+    apply: (d) => {
+      setClientId(d.clientId); setTitle(d.title); setItems(d.items); setNotes(d.notes);
+      setTerms(d.terms); setDueDate(d.dueDate); setScopeBrief(d.scopeBrief); setVatOverride(d.vatOverride);
+    },
+  });
+
   const updateItem = (i: number, patch: Partial<Item>) =>
     setItems((arr) => arr.map((it, idx) => (idx === i ? { ...it, ...patch } : it)));
   const removeItem = (i: number) => setItems((arr) => arr.filter((_, idx) => idx !== i));
@@ -196,6 +209,7 @@ function NewInvoicePage() {
       return invoice;
     },
     onSuccess: (inv) => {
+      tray.clear();
       toast.success("Invoice saved");
       import("@/lib/analytics").then(({ track }) =>
         track("invoice_created", { invoice_id: inv.id, status: inv.status, total: inv.total }),
@@ -369,6 +383,7 @@ function NewInvoicePage() {
       </Card>
 
       <div className="flex justify-end gap-2">
+        <MinimizeButton onClick={tray.minimize} />
         <Button variant="outline" disabled={saveMut.isPending} onClick={() => saveMut.mutate("draft")}>
           Save as draft
         </Button>

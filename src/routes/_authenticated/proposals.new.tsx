@@ -14,6 +14,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Sparkles, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { AiDraftedBanner } from "@/components/AiDraftedBanner";
+import { useTaskbarDraft } from "@/lib/draft-tray";
+import { MinimizeButton } from "@/components/DraftTaskbar";
 
 export const Route = createFileRoute("/_authenticated/proposals/new")({
   component: NewProposal,
@@ -46,6 +48,14 @@ function NewProposal() {
         .maybeSingle();
       return data;
     },
+  });
+
+  const tray = useTaskbarDraft({
+    kind: "proposal",
+    route: "/proposals/new",
+    title: title || "Untitled proposal",
+    data: { title, clientId, brief, content },
+    apply: (d) => { setTitle(d.title); setClientId(d.clientId); setBrief(d.brief); setContent(d.content); },
   });
 
   const handleDraft = async () => {
@@ -98,6 +108,7 @@ function NewProposal() {
       .single();
     setBusy(null);
     if (error) return toast.error(error.message);
+    tray.clear();
     toast.success("Proposal saved");
     import("@/lib/analytics").then(({ track }) =>
       track("proposal_created", { proposal_id: data.id }),
@@ -170,6 +181,7 @@ function NewProposal() {
             placeholder="# Proposal title…"
           />
           <div className="flex gap-2 justify-end">
+            <MinimizeButton onClick={tray.minimize} />
             <Button variant="outline" onClick={() => navigate({ to: "/proposals" })}>Cancel</Button>
             <Button onClick={handleSave} disabled={busy === "save"}>
               {busy === "save" && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
