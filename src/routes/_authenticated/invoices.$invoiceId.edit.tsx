@@ -18,7 +18,7 @@ export const Route = createFileRoute("/_authenticated/invoices/$invoiceId/edit")
   component: EditInvoicePage,
 });
 
-type Item = { description: string; quantity: number; unit_price: number };
+type Item = { description: string; quantity: number; unit_price: number; unit?: string };
 
 function EditInvoicePage() {
   const { invoiceId } = Route.useParams();

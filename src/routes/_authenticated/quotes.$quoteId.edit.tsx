@@ -18,7 +18,7 @@ export const Route = createFileRoute("/_authenticated/quotes/$quoteId/edit")({
   component: EditQuotePage,
 });
 
-type Item = { description: string; quantity: number; unit_price: number };
+type Item = { description: string; quantity: number; unit_price: number; unit?: string };
 
 function EditQuotePage() {
   const { quoteId } = Route.useParams();
