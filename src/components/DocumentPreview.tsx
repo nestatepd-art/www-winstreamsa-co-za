@@ -1,4 +1,6 @@
 import { formatDate, formatZAR } from "@/lib/format";
+import { descriptionLines } from "@/lib/description-lines";
+import { unitLabel } from "@/components/UnitSelect";
 
 type LineItem = {
   id?: string;
@@ -6,6 +8,7 @@ type LineItem = {
   quantity?: number | string | null;
   unit_price?: number | string | null;
   line_total?: number | string | null;
+  unit?: string | null;
 };
 
 type Client = {
@@ -22,6 +25,12 @@ type Client = {
 type Profile = {
   business_name?: string | null;
   vat_number?: string | null;
+  registration_number?: string | null;
+  address_line1?: string | null;
+  address_line2?: string | null;
+  city?: string | null;
+  province?: string | null;
+  postal_code?: string | null;
   email?: string | null;
   phone?: string | null;
   bank_name?: string | null;
@@ -94,13 +103,13 @@ export function DocumentPreview({
   return (
     <div className="max-h-[760px] overflow-auto rounded-md border border-border bg-muted/30 p-3 sm:p-6">
       <article className="mx-auto min-h-[720px] w-full max-w-[794px] rounded-sm border border-document-border bg-document-page p-6 text-document-ink shadow-elevated sm:p-10">
-        <div className="flex items-start justify-between gap-8 border-b border-document-border pb-5">
-          <div className="min-w-0 flex items-start gap-4">
+        <div className="flex items-start justify-between gap-4 sm:gap-8 border-b border-document-border pb-5">
+          <div className="min-w-0 flex-1 flex items-start gap-4">
             {logoUrl ? (
               <img
                 src={logoUrl}
                 alt={`${profile?.business_name ?? "Business"} logo`}
-                className="h-14 w-14 shrink-0 rounded-sm object-contain bg-white border border-document-border"
+                className="h-14 w-auto max-w-[120px] shrink-0 rounded-sm object-contain"
               />
             ) : (
               <div
@@ -111,10 +120,16 @@ export function DocumentPreview({
               </div>
             )}
             <div className="min-w-0">
-              <div className="text-base font-semibold text-document-ink">
+              <div className="text-base font-semibold leading-snug break-words text-document-ink">
                 {profile?.business_name || "Your business"}
               </div>
               <div className="mt-2 space-y-1 text-xs text-document-muted">
+                {profile?.address_line1 && <div>{profile.address_line1}</div>}
+                {profile?.address_line2 && <div>{profile.address_line2}</div>}
+                {(profile?.city || profile?.province || profile?.postal_code) && (
+                  <div>{[profile?.city, profile?.province, profile?.postal_code].filter(Boolean).join(", ")}</div>
+                )}
+                {profile?.registration_number && <div>Reg: {profile.registration_number}</div>}
                 {profile?.vat_number && <div>VAT: {profile.vat_number}</div>}
                 {profile?.email && <div className="break-all">{profile.email}</div>}
                 {profile?.phone && <div>{profile.phone}</div>}
@@ -122,7 +137,7 @@ export function DocumentPreview({
             </div>
           </div>
 
-          <div className="shrink-0 text-right">
+          <div className="shrink-0 pl-2 text-right">
             <div className="text-2xl font-semibold text-document-ink">{kind}</div>
             <div className="mt-1 font-mono text-xs text-document-muted">{number}</div>
             {status && <div className="mt-2 text-xs font-medium uppercase text-document-muted">{status}</div>}
@@ -163,8 +178,8 @@ export function DocumentPreview({
 
         <div className="mt-8 overflow-hidden rounded-sm border border-document-border">
           <div className="grid grid-cols-12 gap-3 bg-document-muted px-3 py-2 text-xs font-medium uppercase text-document-muted">
-            <div className="col-span-6 sm:col-span-7">Description</div>
-            <div className="col-span-2 text-right sm:col-span-1">Qty</div>
+            <div className="col-span-5 sm:col-span-6">Description</div>
+            <div className="col-span-3 text-right sm:col-span-2">Qty</div>
             <div className="col-span-2 text-right">Unit</div>
             <div className="col-span-2 text-right">Total</div>
           </div>
@@ -174,10 +189,23 @@ export function DocumentPreview({
                 key={item.id ?? index}
                 className="grid grid-cols-12 gap-3 border-t border-document-border px-3 py-3 text-sm text-document-ink"
               >
-                <div className="col-span-6 whitespace-pre-wrap break-words sm:col-span-7">
-                  {item.description || "—"}
+                <div className="col-span-5 break-words sm:col-span-6">
+                  {descriptionLines(item.description).length === 0
+                    ? "—"
+                    : descriptionLines(item.description).map((l, li) =>
+                        l.marker ? (
+                          <div key={li} className="flex gap-1.5">
+                            <span className="shrink-0 tabular-nums">{l.marker}</span>
+                            <span className="min-w-0">{l.text}</span>
+                          </div>
+                        ) : (
+                          <div key={li}>{l.text}</div>
+                        ),
+                      )}
                 </div>
-                <div className="col-span-2 text-right tabular-nums sm:col-span-1">{safeQuantity(item.quantity)}</div>
+                <div className="col-span-3 text-right tabular-nums sm:col-span-2">
+                  {safeQuantity(item.quantity)} <span className="text-document-muted">{unitLabel(item.unit)}</span>
+                </div>
                 <div className="col-span-2 text-right tabular-nums">{formatZAR(item.unit_price ?? 0)}</div>
                 <div className="col-span-2 text-right tabular-nums">{formatZAR(item.line_total ?? 0)}</div>
               </div>
