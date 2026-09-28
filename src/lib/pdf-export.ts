@@ -1,16 +1,32 @@
 import { jsPDF } from "jspdf";
 import { formatZAR, formatDate } from "./format";
+import { descriptionLines } from "./description-lines";
+
+function unitText(u?: string | null) {
+  const v = (u || "EA").toUpperCase();
+  if (v === "M2") return "m\u00B2";
+  if (v === "M3") return "m\u00B3";
+  if (v === "M") return "m";
+  return v;
+}
 
 type LineItem = {
   description: string;
   quantity: number | string;
   unit_price: number | string;
   line_total: number | string;
+  unit?: string | null;
 };
 
 type Profile = {
   business_name?: string | null;
   vat_number?: string | null;
+  registration_number?: string | null;
+  address_line1?: string | null;
+  address_line2?: string | null;
+  city?: string | null;
+  province?: string | null;
+  postal_code?: string | null;
   email?: string | null;
   phone?: string | null;
   bank_name?: string | null;
@@ -82,21 +98,26 @@ export function generateDocumentPdf(data: DocumentData): Blob {
   let y = MARGIN;
   const contentW = PAGE_W - MARGIN * 2;
 
-  // Header — logo (or initials placeholder) + business
-  let headerX = MARGIN;
+  // Header — logo (aspect-preserved) or initials placeholder + business block
+  const TITLE_BLOCK_W = 170;
+  let headerX = MARGIN + 54;
   let logoDrawn = false;
   if (data.logoDataUrl) {
     try {
       const fmt = data.logoDataUrl.includes("image/jpeg") ? "JPEG" : "PNG";
-      doc.addImage(data.logoDataUrl, fmt, MARGIN, y - 4, 44, 44, undefined, "FAST");
-      headerX = MARGIN + 54;
+      const props = doc.getImageProperties(data.logoDataUrl);
+      const ratio = props.width && props.height ? props.width / props.height : 1;
+      const boxH = 44;
+      const lw = Math.min(110, boxH * ratio);
+      const lh = lw / ratio;
+      doc.addImage(data.logoDataUrl, fmt, MARGIN, y - 4 + (boxH - lh) / 2, lw, lh, undefined, "FAST");
+      headerX = MARGIN + lw + 10;
       logoDrawn = true;
     } catch {
       // ignore invalid image
     }
   }
   if (!logoDrawn) {
-    // Draw initials placeholder so pre-logo documents stay visually consistent.
     const boxX = MARGIN;
     const boxY = y - 4;
     const boxSize = 44;
@@ -111,19 +132,37 @@ export function generateDocumentPdf(data: DocumentData): Blob {
     headerX = MARGIN + 54;
   }
 
+  const headerMaxW = PAGE_W - MARGIN - TITLE_BLOCK_W - headerX;
   doc.setFont("helvetica", "bold");
   doc.setFontSize(16);
+  let nameLines = wrapText(doc, data.profile?.business_name || "Your business", headerMaxW);
+  let nameLead = 18;
+  if (nameLines.length > 2) {
+    doc.setFontSize(13);
+    nameLead = 15;
+    nameLines = wrapText(doc, data.profile?.business_name || "Your business", headerMaxW);
+  }
   doc.setTextColor(20);
-  doc.text(data.profile?.business_name || "Your business", headerX, y);
-  y += 18;
+  for (const ln of nameLines) { doc.text(ln, headerX, y); y += nameLead; }
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
   doc.setTextColor(110);
-  if (data.profile?.vat_number) { doc.text(`VAT: ${data.profile.vat_number}`, headerX, y); y += 12; }
-  if (data.profile?.email) { doc.text(data.profile.email, headerX, y); y += 12; }
-  if (data.profile?.phone) { doc.text(data.profile.phone, headerX, y); y += 12; }
+  const pr = data.profile;
+  const bizLines = [
+    pr?.address_line1,
+    pr?.address_line2,
+    [pr?.city, pr?.province, pr?.postal_code].filter(Boolean).join(", ") || null,
+    pr?.registration_number ? `Reg: ${pr.registration_number}` : null,
+    pr?.vat_number ? `VAT: ${pr.vat_number}` : null,
+    pr?.email,
+    pr?.phone,
+  ].filter((l): l is string => Boolean(l));
+  for (const bl of bizLines) {
+    for (const ln of wrapText(doc, bl, headerMaxW)) { doc.text(ln, headerX, y); y += 12; }
+  }
   y = Math.max(y, MARGIN + 48);
+  const headerBottom = y;
 
   // Title block — top right
   doc.setFont("helvetica", "bold");
@@ -140,7 +179,7 @@ export function generateDocumentPdf(data: DocumentData): Blob {
     doc.text(data.status.toUpperCase(), PAGE_W - MARGIN, MARGIN + 38, { align: "right" });
   }
 
-  y = Math.max(y, MARGIN + 60) + 10;
+  y = Math.max(headerBottom, MARGIN + 60) + 10;
 
   // Divider
   doc.setDrawColor(220);
@@ -152,6 +191,7 @@ export function generateDocumentPdf(data: DocumentData): Blob {
   const billedToMaxW = colW - 24;
   doc.setFontSize(8);
   doc.setTextColor(130);
+  const billedToTop = y;
   doc.text("BILLED TO", MARGIN, y);
   doc.text(data.kind === "Invoice" ? "ISSUE DATE" : "ISSUE DATE", MARGIN + colW, y);
   y += 12;
@@ -165,7 +205,7 @@ export function generateDocumentPdf(data: DocumentData): Blob {
   }
   doc.setFont("helvetica", "normal");
   // Keep issue date aligned with the first line of the client name block.
-  const issueDateY = MARGIN + 12 + 12;
+  const issueDateY = billedToTop + 12;
   doc.text(data.issue_date ? formatDate(data.issue_date) : "—", MARGIN + colW, issueDateY);
   y = Math.max(y, issueDateY + 14);
   doc.setFontSize(9);
@@ -213,11 +253,34 @@ export function generateDocumentPdf(data: DocumentData): Blob {
   doc.setTextColor(30);
   doc.setFontSize(10);
   for (const it of data.items) {
-    const descLines = wrapText(doc, it.description, contentW - 240);
-    const rowH = Math.max(18, descLines.length * 12 + 6);
+    const descW = contentW - 240;
+    const rendered: { x: number; text: string }[] = [];
+    const parsed = descriptionLines(it.description);
+    if (parsed.length === 0) rendered.push({ x: col.desc, text: "—" });
+    for (const pl of parsed) {
+      if (pl.marker) {
+        const wrapped = wrapText(doc, pl.text, descW - 16);
+        wrapped.forEach((w, wi) => {
+          if (wi === 0) rendered.push({ x: col.desc, text: pl.marker! });
+          rendered.push({ x: col.desc + 16, text: w });
+          if (wi === 0) (rendered[rendered.length - 1] as any).sameLine = true;
+        });
+      } else {
+        for (const w of wrapText(doc, pl.text, descW)) rendered.push({ x: col.desc, text: w });
+      }
+    }
+    const lineCount = rendered.filter((r: any) => !(r.x === col.desc && parsed.some((p) => p.marker === r.text) && false)).length - rendered.filter((r: any) => r.sameLine).length;
+    const rowH = Math.max(18, lineCount * 12 + 6);
     y = ensureSpace(doc, y, rowH + 4);
-    doc.text(descLines, col.desc, y + 10);
-    doc.text(String(Number(it.quantity)), col.qty, y + 10, { align: "right" });
+    let ly = y + 10;
+    for (let ri = 0; ri < rendered.length; ri++) {
+      const r: any = rendered[ri];
+      const next: any = rendered[ri + 1];
+      doc.text(r.text, r.x, ly);
+      if (next && next.sameLine) continue; // marker + first text share a line
+      ly += 12;
+    }
+    doc.text(`${Number(it.quantity)} ${unitText(it.unit)}`, col.qty, y + 10, { align: "right" });
     doc.text(formatZAR(it.unit_price), col.unit, y + 10, { align: "right" });
     doc.text(formatZAR(it.line_total), col.total, y + 10, { align: "right" });
     y += rowH;
