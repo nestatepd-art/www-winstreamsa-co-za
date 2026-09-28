@@ -18,6 +18,8 @@ import { toast } from "sonner";
 import { formatZAR, computeQuoteTotals, generateQuoteNumber } from "@/lib/format";
 import { Link } from "@tanstack/react-router";
 import { AiDraftedBanner } from "@/components/AiDraftedBanner";
+import { useTaskbarDraft } from "@/lib/draft-tray";
+import { MinimizeButton } from "@/components/DraftTaskbar";
 
 export const Route = createFileRoute("/_authenticated/quotes/new")({
   component: NewQuotePage,
@@ -59,6 +61,17 @@ function NewQuotePage() {
   const vatEnabled = vatOverride ?? ((profile as any)?.vat_registered ?? true);
   const vatRate = vatEnabled ? 15 : 0;
   const totals = useMemo(() => computeQuoteTotals(items, vatRate), [items, vatRate]);
+
+  const tray = useTaskbarDraft({
+    kind: "quote",
+    route: "/quotes/new",
+    title: `${title}${clients.find((c) => c.id === clientId)?.name ? " · " + clients.find((c) => c.id === clientId)!.name : ""}`,
+    data: { clientId, title, items: items.map(({ _drafting, ...r }) => r), notes, terms, scopeBrief, vatOverride },
+    apply: (d) => {
+      setClientId(d.clientId); setTitle(d.title); setItems(d.items); setNotes(d.notes);
+      setTerms(d.terms); setScopeBrief(d.scopeBrief); setVatOverride(d.vatOverride);
+    },
+  });
 
   const updateItem = (i: number, patch: Partial<Item>) =>
     setItems((arr) => arr.map((it, idx) => (idx === i ? { ...it, ...patch } : it)));
@@ -153,6 +166,7 @@ function NewQuotePage() {
       return quote;
     },
     onSuccess: (q: any) => {
+      tray.clear();
       toast.success("Quote saved");
       import("@/lib/analytics").then(({ track }) =>
         track("quote_created", { quote_id: q.id, total: q.total, status: q.status }),
@@ -321,6 +335,7 @@ function NewQuotePage() {
       </Card>
 
       <div className="flex justify-end gap-2 sticky bottom-0 bg-background/80 backdrop-blur py-4 -mx-6 px-6 border-t border-border">
+        <MinimizeButton onClick={tray.minimize} />
         <Button variant="outline" onClick={() => saveMut.mutate("draft")} disabled={saveMut.isPending}>
           Save as draft
         </Button>

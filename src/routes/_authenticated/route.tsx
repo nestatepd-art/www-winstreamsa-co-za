@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
+import { DraftTaskbar } from "@/components/DraftTaskbar";
 import { isOnboardingAllowedPath, useOnboardingStatus } from "@/hooks/use-onboarding";
 
 export const Route = createFileRoute("/_authenticated")({
@@ -66,6 +67,7 @@ function AuthedLayout() {
             <OnboardingGate />
             <Outlet />
           </main>
+          <DraftTaskbar />
         </div>
       </div>
     </SidebarProvider>
