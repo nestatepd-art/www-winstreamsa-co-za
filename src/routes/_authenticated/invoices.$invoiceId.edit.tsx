@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { UnitSelect } from "@/components/UnitSelect";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -98,6 +99,7 @@ function EditInvoicePage() {
             description: it.description,
             quantity: Number(it.quantity),
             unit_price: Number(it.unit_price),
+            unit: it.unit || "EA",
           })),
         );
       }
@@ -178,6 +180,7 @@ function EditInvoicePage() {
           description: it.description,
           quantity: it.quantity,
           unit_price: it.unit_price,
+          unit: it.unit || "EA",
           line_total: +(it.quantity * it.unit_price).toFixed(2),
         }));
         const { error: e2 } = await supabase.from("invoice_items").insert(rows);
@@ -286,7 +289,7 @@ function EditInvoicePage() {
         <CardContent className="space-y-3">
           {items.map((it, i) => (
             <div key={i} className="grid grid-cols-12 gap-3 items-start">
-              <div className="col-span-12 sm:col-span-6">
+              <div className="col-span-12 sm:col-span-5">
                 <Textarea
                   placeholder="Description"
                   value={it.description}
@@ -294,6 +297,9 @@ function EditInvoicePage() {
                   rows={2}
                   className="resize-none"
                 />
+              </div>
+              <div className="col-span-3 sm:col-span-1">
+                <UnitSelect value={it.unit} onChange={(v) => updateItem(i, { unit: v })} />
               </div>
               <div className="col-span-3 sm:col-span-2">
                 <Input type="number" min={0} step="0.01" value={it.quantity}

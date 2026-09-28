@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { UnitSelect } from "@/components/UnitSelect";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -22,7 +23,7 @@ export const Route = createFileRoute("/_authenticated/quotes/new")({
   component: NewQuotePage,
 });
 
-type Item = { description: string; quantity: number; unit_price: number; _drafting?: boolean };
+type Item = { description: string; quantity: number; unit_price: number; unit?: string; _drafting?: boolean };
 
 function NewQuotePage() {
   const navigate = useNavigate();
@@ -143,6 +144,7 @@ function NewQuotePage() {
           description: it.description,
           quantity: it.quantity,
           unit_price: it.unit_price,
+          unit: it.unit || "EA",
           line_total: +(it.quantity * it.unit_price).toFixed(2),
         }));
         const { error: e2 } = await supabase.from("quote_items").insert(rows);
@@ -208,7 +210,7 @@ function NewQuotePage() {
         <CardContent className="space-y-3">
           {items.map((it, i) => (
             <div key={i} className="grid grid-cols-12 gap-3 items-start rounded-lg border border-border/50 p-3 sm:border-0 sm:p-0">
-              <div className="col-span-12 sm:col-span-6 space-y-1">
+              <div className="col-span-12 sm:col-span-5 space-y-1">
                 <Label className="text-xs uppercase tracking-wider text-muted-foreground">Description</Label>
                 <div className="flex gap-2">
                   <Textarea
@@ -230,7 +232,11 @@ function NewQuotePage() {
                   </Button>
                 </div>
               </div>
-              <div className="col-span-6 sm:col-span-2 space-y-1">
+              <div className="col-span-4 sm:col-span-1 space-y-1">
+                <Label className="text-xs uppercase tracking-wider text-muted-foreground">Unit</Label>
+                <UnitSelect value={it.unit} onChange={(v) => updateItem(i, { unit: v })} />
+              </div>
+              <div className="col-span-4 sm:col-span-2 space-y-1">
                 <Label className="text-xs uppercase tracking-wider text-muted-foreground">Qty</Label>
                 <Input
                   type="number"
