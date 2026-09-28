@@ -220,11 +220,12 @@ export function generateDocumentPdf(data: DocumentData): Blob {
   const dueLabel = data.kind === "Invoice" ? "DUE DATE" : "VALID UNTIL";
   const dueVal = data.kind === "Invoice" ? data.due_date : data.expiry_date;
   if (dueVal) {
+    const dueY = issueDateY + 30;
     doc.setFontSize(8); doc.setTextColor(130);
-    doc.text(dueLabel, MARGIN + colW, y - 12);
+    doc.text(dueLabel, MARGIN + colW, dueY - 12);
     doc.setFontSize(10); doc.setTextColor(30);
-    doc.text(formatDate(dueVal), MARGIN + colW, y);
-    y += 4;
+    doc.text(formatDate(dueVal), MARGIN + colW, dueY);
+    y = Math.max(y, dueY + 4);
   }
 
   y += 14;
