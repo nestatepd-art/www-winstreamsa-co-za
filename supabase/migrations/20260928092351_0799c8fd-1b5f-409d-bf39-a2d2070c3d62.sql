@@ -1,0 +1,2 @@
+ALTER TABLE public.quote_items ADD COLUMN IF NOT EXISTS unit text NOT NULL DEFAULT 'EA';
+ALTER TABLE public.invoice_items ADD COLUMN IF NOT EXISTS unit text NOT NULL DEFAULT 'EA';

@@ -552,6 +552,7 @@ export type Database = {
           line_total: number
           position: number
           quantity: number
+          unit: string
           unit_price: number
           user_id: string
         }
@@ -563,6 +564,7 @@ export type Database = {
           line_total?: number
           position?: number
           quantity?: number
+          unit?: string
           unit_price?: number
           user_id: string
         }
@@ -574,6 +576,7 @@ export type Database = {
           line_total?: number
           position?: number
           quantity?: number
+          unit?: string
           unit_price?: number
           user_id?: string
         }
@@ -882,6 +885,7 @@ export type Database = {
           position: number
           quantity: number
           quote_id: string
+          unit: string
           unit_price: number
           user_id: string
         }
@@ -893,6 +897,7 @@ export type Database = {
           position?: number
           quantity?: number
           quote_id: string
+          unit?: string
           unit_price?: number
           user_id: string
         }
@@ -904,6 +909,7 @@ export type Database = {
           position?: number
           quantity?: number
           quote_id?: string
+          unit?: string
           unit_price?: number
           user_id?: string
         }
