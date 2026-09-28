@@ -269,7 +269,7 @@ export function generateDocumentPdf(data: DocumentData): Blob {
         for (const w of wrapText(doc, pl.text, descW)) rendered.push({ x: col.desc, text: w });
       }
     }
-    const lineCount = rendered.filter((r: any) => !(r.x === col.desc && parsed.some((p) => p.marker === r.text) && false)).length - rendered.filter((r: any) => r.sameLine).length;
+    const lineCount = rendered.length - rendered.filter((r: any) => r.sameLine).length;
     const rowH = Math.max(18, lineCount * 12 + 6);
     y = ensureSpace(doc, y, rowH + 4);
     let ly = y + 10;
