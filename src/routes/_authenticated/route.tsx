@@ -57,17 +57,18 @@ function AuthedLayout() {
         <div className="flex-1 flex flex-col min-w-0">
           <header className="h-14 flex items-center gap-3 border-b border-border bg-card/60 backdrop-blur px-4 sticky top-0 z-10">
             <SidebarTrigger />
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="flex min-w-0 items-center gap-2 text-sm text-muted-foreground">
               <span className="font-semibold text-foreground tracking-tight">WinStream</span>
-              <span>·</span>
-              <span>Work that runs itself</span>
+              <span className="hidden sm:inline">·</span>
+              <span className="hidden sm:inline truncate">Work that runs itself</span>
             </div>
+            <DraftTaskbar />
           </header>
           <main className="flex-1 min-w-0">
             <OnboardingGate />
             <Outlet />
           </main>
-          <DraftTaskbar />
+
         </div>
       </div>
     </SidebarProvider>
