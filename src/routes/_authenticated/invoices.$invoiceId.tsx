@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, Printer, Trash2, Pencil, Send, Download, Loader2 } from "lucide-react";
 import { formatZAR, formatDate } from "@/lib/format";
+import { descriptionLines } from "@/lib/description-lines";
 import { extractEmailAddress, openEmailDraft } from "@/lib/email-compose";
 import { InvoiceStatusBadge } from "./invoices.index";
 import { toast } from "sonner";
@@ -253,7 +254,15 @@ function InvoiceViewPage({ invoiceId, invoice, items, profile }: { invoiceId: st
             </div>
             {items.map((it) => (
               <div key={it.id} className="grid grid-cols-12 gap-3 py-3 border-t border-border text-sm">
-                <div className="col-span-7 whitespace-pre-wrap">{it.description}</div>
+                <div className="col-span-7 break-words">
+                  {descriptionLines(it.description).map((l, li) =>
+                    l.marker ? (
+                      <div key={li} className="flex gap-1.5"><span className="shrink-0 tabular-nums">{l.marker}</span><span className="min-w-0">{l.text}</span></div>
+                    ) : (
+                      <div key={li}>{l.text}</div>
+                    ),
+                  )}
+                </div>
                 <div className="col-span-1 text-right tabular-nums">{Number(it.quantity)}</div>
                 <div className="col-span-2 text-right tabular-nums">{formatZAR(it.unit_price)}</div>
                 <div className="col-span-2 text-right tabular-nums">{formatZAR(it.line_total)}</div>
