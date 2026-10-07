@@ -168,7 +168,8 @@ export function useTaskbarDraft<T>(opts: {
   }, [draftId, opts.kind, opts.route, opts.title, serialized, router]);
 
   const clear = useCallback(() => {
-    if (draftId) removeTrayDraft(draftId);
+    const cur = latest.current.draftId ?? draftId;
+    if (cur) removeTrayDraft(cur);
     initialRef.current = latest.current.serialized;
     latest.current.draftId = null;
     setDraftId(null);
