@@ -136,7 +136,7 @@ function ChatErrorBoundary({ error }: { error: unknown }) {
       <AlertTriangle className="h-5 w-5 text-destructive shrink-0" />
       <div>
         <div className="font-medium">Couldn't load chat</div>
-        <div className="text-muted-foreground">{error.message}</div>
+        <div className="text-muted-foreground">{(error instanceof Error ? error.message : String(error))}</div>
       </div>
     </div>
   );
