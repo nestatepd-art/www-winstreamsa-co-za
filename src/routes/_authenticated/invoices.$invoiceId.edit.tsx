@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { UnitSelect } from "@/components/UnitSelect";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
+import { useEditAutosave } from "@/lib/edit-autosave";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -111,6 +112,17 @@ function EditInvoicePage() {
     }
   }, [data, loaded]);
 
+  const autosave = useEditAutosave({
+    key: `invoice:${invoiceId}`,
+    ready: loaded,
+    data: { clientId, title, invoiceNumber, status, issueDate, vatRate, items, notes, terms, dueDate, company },
+    apply: (d) => {
+      setClientId(d.clientId); setTitle(d.title); setInvoiceNumber(d.invoiceNumber); setStatus(d.status);
+      setIssueDate(d.issueDate); setVatRate(d.vatRate); setItems(d.items); setNotes(d.notes);
+      setTerms(d.terms); setDueDate(d.dueDate); setCompany(d.company);
+    },
+  });
+
   const totals = useMemo(() => computeQuoteTotals(items, vatRate), [items, vatRate]);
 
   const updateItem = (i: number, patch: Partial<Item>) =>
@@ -188,6 +200,7 @@ function EditInvoicePage() {
       }
     },
     onSuccess: () => {
+      autosave.clear();
       toast.success("Invoice updated");
       qc.removeQueries({ queryKey: ["invoice", invoiceId] });
       qc.invalidateQueries({ queryKey: ["invoice-edit", invoiceId] });

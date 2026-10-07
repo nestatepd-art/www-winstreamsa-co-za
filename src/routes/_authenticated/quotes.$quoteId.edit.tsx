@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { UnitSelect } from "@/components/UnitSelect";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
+import { useEditAutosave } from "@/lib/edit-autosave";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -81,6 +82,17 @@ function EditQuotePage() {
     }
   }, [data, loaded]);
 
+  const autosave = useEditAutosave({
+    key: `quote:${quoteId}`,
+    ready: loaded,
+    data: { clientId, title, quoteNumber, status, issueDate, expiryDate, vatRate, items, notes, terms },
+    apply: (d) => {
+      setClientId(d.clientId); setTitle(d.title); setQuoteNumber(d.quoteNumber); setStatus(d.status);
+      setIssueDate(d.issueDate); setExpiryDate(d.expiryDate); setVatRate(d.vatRate); setItems(d.items);
+      setNotes(d.notes); setTerms(d.terms);
+    },
+  });
+
   const totals = useMemo(() => computeQuoteTotals(items, vatRate), [items, vatRate]);
 
   const updateItem = (i: number, patch: Partial<Item>) =>
@@ -134,6 +146,7 @@ function EditQuotePage() {
       }
     },
     onSuccess: () => {
+      autosave.clear();
       toast.success("Quote updated");
       qc.removeQueries({ queryKey: ["quote", quoteId] });
       qc.invalidateQueries({ queryKey: ["quote-edit", quoteId] });
