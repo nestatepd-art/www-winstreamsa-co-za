@@ -13,6 +13,8 @@ export type TrayDraft = {
   title: string;
   updatedAt: number;
   data: unknown;
+  /** Created by autosave (not explicitly parked). */
+  auto?: boolean;
 };
 
 const KEY = "ws-draft-tray";
@@ -90,38 +92,63 @@ export function useTaskbarDraft<T>(opts: {
   const applyRef = useRef(opts.apply);
   applyRef.current = opts.apply;
 
-  // Restore a parked draft (on mount and when resuming from the taskbar).
+  const serialized = JSON.stringify(opts.data);
+  const initialRef = useRef(serialized);
+  const latest = useRef({ ...opts, serialized, draftId });
+  latest.current = { ...opts, serialized, draftId };
+
+  // Restore a parked draft (on resume), or the last autosaved one after an exit.
   useEffect(() => {
-    const check = () => {
-      const id = sessionStorage.getItem(RESUME_KEY);
+    const check = (fromMount: boolean) => {
+      let id = sessionStorage.getItem(RESUME_KEY);
+      if (!id && fromMount) {
+        id = read().find((x) => x.kind === opts.kind && x.auto)?.id ?? null;
+      }
       if (!id) return;
       const d = getTrayDraft(id);
       if (!d || d.kind !== opts.kind) return;
       sessionStorage.removeItem(RESUME_KEY);
       applyRef.current(d.data as T);
+      initialRef.current = JSON.stringify(d.data);
       setDraftId(d.id);
     };
-    check();
-    window.addEventListener(RESUME_EVT, check);
-    return () => window.removeEventListener(RESUME_EVT, check);
+    check(true);
+    const onResume = () => check(false);
+    window.addEventListener(RESUME_EVT, onResume);
+    return () => window.removeEventListener(RESUME_EVT, onResume);
   }, [opts.kind]);
 
-  // Keep the parked copy up to date while editing it.
-  const serialized = JSON.stringify(opts.data);
+  // Autosave every 2 seconds while editing, and immediately on tab hide / exit.
   useEffect(() => {
-    if (!draftId || !getTrayDraft(draftId)) return;
-    const t = setTimeout(() => {
+    const flush = () => {
+      const c = latest.current;
+      if (!c.draftId && c.serialized === initialRef.current) return; // nothing typed yet
+      const existing = c.draftId ? getTrayDraft(c.draftId) : undefined;
+      if (c.draftId && !existing) return; // discarded or saved
+      const id = c.draftId ?? crypto.randomUUID();
+      if (existing && existing.data && JSON.stringify(existing.data) === c.serialized && existing.title === (c.title || "Untitled")) return;
       saveTrayDraft({
-        id: draftId,
-        kind: opts.kind,
-        route: opts.route,
-        title: opts.title || "Untitled",
+        id,
+        kind: c.kind,
+        route: c.route,
+        title: c.title || "Untitled",
         updatedAt: Date.now(),
-        data: JSON.parse(serialized),
+        data: JSON.parse(c.serialized),
+        auto: existing ? existing.auto : true,
       });
-    }, 500);
-    return () => clearTimeout(t);
-  }, [serialized, draftId, opts.kind, opts.route, opts.title]);
+      if (!c.draftId) { latest.current.draftId = id; setDraftId(id); }
+    };
+    const iv = setInterval(flush, 2000);
+    const onHide = () => { if (document.visibilityState === "hidden") flush(); };
+    document.addEventListener("visibilitychange", onHide);
+    window.addEventListener("pagehide", flush);
+    return () => {
+      clearInterval(iv);
+      document.removeEventListener("visibilitychange", onHide);
+      window.removeEventListener("pagehide", flush);
+      flush(); // navigating away inside the app
+    };
+  }, []);
 
   const minimize = useCallback(() => {
     const id = draftId ?? crypto.randomUUID();
@@ -132,13 +159,19 @@ export function useTaskbarDraft<T>(opts: {
       title: opts.title || "Untitled",
       updatedAt: Date.now(),
       data: JSON.parse(serialized),
+      auto: false,
     });
+    latest.current.draftId = null;
+    initialRef.current = serialized;
     setDraftId(null);
     router.navigate({ to: "/dashboard" });
   }, [draftId, opts.kind, opts.route, opts.title, serialized, router]);
 
   const clear = useCallback(() => {
-    if (draftId) removeTrayDraft(draftId);
+    const cur = latest.current.draftId ?? draftId;
+    if (cur) removeTrayDraft(cur);
+    initialRef.current = latest.current.serialized;
+    latest.current.draftId = null;
     setDraftId(null);
   }, [draftId]);
 
