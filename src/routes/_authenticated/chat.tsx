@@ -130,7 +130,7 @@ function ChatLayout() {
   );
 }
 
-function ChatErrorBoundary({ error }: { error: Error }) {
+function ChatErrorBoundary({ error }: { error: unknown }) {
   return (
     <div className="p-8 flex items-start gap-3 text-sm">
       <AlertTriangle className="h-5 w-5 text-destructive shrink-0" />

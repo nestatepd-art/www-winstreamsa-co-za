@@ -27,7 +27,7 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/_authenticated/chat/$threadId")({
   component: ChatThread,
   errorComponent: ({ error }) => (
-    <div className="p-8 text-sm text-destructive">{error.message}</div>
+    <div className="p-8 text-sm text-destructive">{error instanceof Error ? error.message : String(error)}</div>
   ),
   notFoundComponent: () => <div className="p-8 text-sm">Chat not found.</div>,
 });
