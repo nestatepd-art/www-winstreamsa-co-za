@@ -8,6 +8,13 @@
       "when": 1792309863231,
       "tag": "0000_nudge_confirmations",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1792309911673,
+      "tag": "0001_nudge_confirm_sweep_function",
+      "breakpoints": true
     }
   ]
 }

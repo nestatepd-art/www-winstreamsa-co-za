@@ -1368,6 +1368,7 @@ export type Database = {
         }
         Returns: number
       }
+      nudge_confirm_sweep: { Args: never; Returns: undefined }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
         Returns: {
