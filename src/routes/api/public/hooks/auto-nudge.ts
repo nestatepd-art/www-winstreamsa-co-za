@@ -81,6 +81,7 @@ async function processDue(
     results.errors.push(`${table}: ${error.message}`);
     return 0;
   }
+  console.log(`[auto-nudge debug] ${table} rows=${(rows ?? []).length} hasServiceKey=${Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY)}`);
 
   let used = 0;
   for (const row of (rows ?? []) as any[]) {
