@@ -63,6 +63,7 @@ import { Route as ApiPublicHealthRouteImport } from './routes/api/public/health'
 import { Route as AuthenticatedInvoicesInvoiceIdEditRouteImport } from './routes/_authenticated/invoices.$invoiceId.edit'
 import { Route as AuthenticatedQuotesQuoteIdEditRouteImport } from './routes/_authenticated/quotes.$quoteId.edit'
 import { Route as ApiPublicHooksAutoNudgeRouteImport } from './routes/api/public/hooks/auto-nudge'
+import { Route as ApiPublicHooksNudgeConfirmRouteImport } from './routes/api/public/hooks/nudge-confirm'
 import { Route as ApiPublicHooksRecurringInvoicesRouteImport } from './routes/api/public/hooks/recurring-invoices'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
@@ -351,6 +352,12 @@ const ApiPublicHooksAutoNudgeRoute = ApiPublicHooksAutoNudgeRouteImport.update({
   path: '/api/public/hooks/auto-nudge',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicHooksNudgeConfirmRoute =
+  ApiPublicHooksNudgeConfirmRouteImport.update({
+    id: '/api/public/hooks/nudge-confirm',
+    path: '/api/public/hooks/nudge-confirm',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksRecurringInvoicesRoute =
   ApiPublicHooksRecurringInvoicesRouteImport.update({
     id: '/api/public/hooks/recurring-invoices',
@@ -434,6 +441,7 @@ export interface FileRoutesByFullPath {
   '/invoices/$invoiceId/edit': typeof AuthenticatedInvoicesInvoiceIdEditRoute
   '/quotes/$quoteId/edit': typeof AuthenticatedQuotesQuoteIdEditRoute
   '/api/public/hooks/auto-nudge': typeof ApiPublicHooksAutoNudgeRoute
+  '/api/public/hooks/nudge-confirm': typeof ApiPublicHooksNudgeConfirmRoute
   '/api/public/hooks/recurring-invoices': typeof ApiPublicHooksRecurringInvoicesRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -492,6 +500,7 @@ export interface FileRoutesByTo {
   '/invoices/$invoiceId/edit': typeof AuthenticatedInvoicesInvoiceIdEditRoute
   '/quotes/$quoteId/edit': typeof AuthenticatedQuotesQuoteIdEditRoute
   '/api/public/hooks/auto-nudge': typeof ApiPublicHooksAutoNudgeRoute
+  '/api/public/hooks/nudge-confirm': typeof ApiPublicHooksNudgeConfirmRoute
   '/api/public/hooks/recurring-invoices': typeof ApiPublicHooksRecurringInvoicesRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -554,6 +563,7 @@ export interface FileRoutesById {
   '/_authenticated/invoices/$invoiceId/edit': typeof AuthenticatedInvoicesInvoiceIdEditRoute
   '/_authenticated/quotes/$quoteId/edit': typeof AuthenticatedQuotesQuoteIdEditRoute
   '/api/public/hooks/auto-nudge': typeof ApiPublicHooksAutoNudgeRoute
+  '/api/public/hooks/nudge-confirm': typeof ApiPublicHooksNudgeConfirmRoute
   '/api/public/hooks/recurring-invoices': typeof ApiPublicHooksRecurringInvoicesRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -616,6 +626,7 @@ export interface FileRouteTypes {
     | '/invoices/$invoiceId/edit'
     | '/quotes/$quoteId/edit'
     | '/api/public/hooks/auto-nudge'
+    | '/api/public/hooks/nudge-confirm'
     | '/api/public/hooks/recurring-invoices'
     | '/api/public/payments/webhook'
     | '/lovable/email/auth/preview'
@@ -674,6 +685,7 @@ export interface FileRouteTypes {
     | '/invoices/$invoiceId/edit'
     | '/quotes/$quoteId/edit'
     | '/api/public/hooks/auto-nudge'
+    | '/api/public/hooks/nudge-confirm'
     | '/api/public/hooks/recurring-invoices'
     | '/api/public/payments/webhook'
     | '/lovable/email/auth/preview'
@@ -735,6 +747,7 @@ export interface FileRouteTypes {
     | '/_authenticated/invoices/$invoiceId/edit'
     | '/_authenticated/quotes/$quoteId/edit'
     | '/api/public/hooks/auto-nudge'
+    | '/api/public/hooks/nudge-confirm'
     | '/api/public/hooks/recurring-invoices'
     | '/api/public/payments/webhook'
     | '/lovable/email/auth/preview'
@@ -766,6 +779,7 @@ export interface RootRouteChildren {
   BlogIndexRoute: typeof BlogIndexRoute
   ApiPublicHealthRoute: typeof ApiPublicHealthRoute
   ApiPublicHooksAutoNudgeRoute: typeof ApiPublicHooksAutoNudgeRoute
+  ApiPublicHooksNudgeConfirmRoute: typeof ApiPublicHooksNudgeConfirmRoute
   ApiPublicHooksRecurringInvoicesRoute: typeof ApiPublicHooksRecurringInvoicesRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
@@ -1153,6 +1167,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksAutoNudgeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/nudge-confirm': {
+      id: '/api/public/hooks/nudge-confirm'
+      path: '/api/public/hooks/nudge-confirm'
+      fullPath: '/api/public/hooks/nudge-confirm'
+      preLoaderRoute: typeof ApiPublicHooksNudgeConfirmRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/recurring-invoices': {
       id: '/api/public/hooks/recurring-invoices'
       path: '/api/public/hooks/recurring-invoices'
@@ -1348,6 +1369,7 @@ const rootRouteChildren: RootRouteChildren = {
   BlogIndexRoute: BlogIndexRoute,
   ApiPublicHealthRoute: ApiPublicHealthRoute,
   ApiPublicHooksAutoNudgeRoute: ApiPublicHooksAutoNudgeRoute,
+  ApiPublicHooksNudgeConfirmRoute: ApiPublicHooksNudgeConfirmRoute,
   ApiPublicHooksRecurringInvoicesRoute: ApiPublicHooksRecurringInvoicesRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,

@@ -121,6 +121,7 @@ export type Database = {
           email: string | null
           id: string
           logo_url: string | null
+          nudge_unanswered_count: number
           phone: string | null
           postal_code: string | null
           province: string | null
@@ -151,6 +152,7 @@ export type Database = {
           email?: string | null
           id?: string
           logo_url?: string | null
+          nudge_unanswered_count?: number
           phone?: string | null
           postal_code?: string | null
           province?: string | null
@@ -181,6 +183,7 @@ export type Database = {
           email?: string | null
           id?: string
           logo_url?: string | null
+          nudge_unanswered_count?: number
           phone?: string | null
           postal_code?: string | null
           province?: string | null
@@ -682,6 +685,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      nudge_confirmations: {
+        Row: {
+          created_at: string
+          expires_at: string
+          followup_id: string
+          id: string
+          record_id: string
+          record_type: string
+          resolved_at: string | null
+          status: string
+          token: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          followup_id: string
+          id?: string
+          record_id: string
+          record_type: string
+          resolved_at?: string | null
+          status?: string
+          token?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          followup_id?: string
+          id?: string
+          record_id?: string
+          record_type?: string
+          resolved_at?: string | null
+          status?: string
+          token?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       nudge_log: {
         Row: {
@@ -1326,6 +1368,7 @@ export type Database = {
         }
         Returns: number
       }
+      nudge_confirm_sweep: { Args: never; Returns: undefined }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
         Returns: {
