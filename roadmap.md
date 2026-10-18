@@ -1,4 +1,4 @@
 # Reminder approval repair
-- [ ] Distinguish invalid links from lookup failures and require intentional confirmation.
-- [ ] Test approval, skip, expiry and repeat-click handling.
-- [ ] Email a fresh safe test link to sales@nativedigital.co.za.
+- [x] Distinguish invalid links from lookup failures and require intentional confirmation.
+- [x] Test approval, skip, expiry and repeat-click handling.
+- [x] Email a fresh safe test link to sales@nativedigital.co.za.
