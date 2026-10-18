@@ -62,7 +62,8 @@ export const Route = createFileRoute("/api/public/hooks/nudge-confirm")({
       POST: async ({ request }) => {
         const url = new URL(request.url);
         const origin = request.headers.get("origin");
-        if (origin && origin !== url.origin) return page("Invalid request", "Please confirm using the approval page.", "", 403);
+        const requestHost = request.headers.get("host");
+        if (origin && origin !== url.origin && new URL(origin).host !== requestHost) return page("Invalid request", "Please confirm using the approval page.", "", 403);
         const form = await request.formData();
         const token = String(form.get("token") || "");
         const action = String(form.get("action") || "");
