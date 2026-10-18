@@ -90,7 +90,6 @@ async function processDue(
     results.errors.push(`${table}: ${error.message}`);
     return 0;
   }
-  void rows;
 
   let used = 0;
   for (const row of (rows ?? []) as any[]) {
