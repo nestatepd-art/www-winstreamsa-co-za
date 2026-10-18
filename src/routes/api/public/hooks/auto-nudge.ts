@@ -90,8 +90,7 @@ async function processDue(
     results.errors.push(`${table}: ${error.message}`);
     return 0;
   }
-  const { count: plainCount } = await (supabase as any).from(table).select("id", { count: "exact", head: true }).eq("status", "scheduled").lte("scheduled_for", new Date().toISOString());
-  console.log(`[auto-nudge debug] ${table} rows=${(rows ?? []).length} plainDue=${plainCount}`);
+  void rows;
 
   let used = 0;
   for (const row of (rows ?? []) as any[]) {
