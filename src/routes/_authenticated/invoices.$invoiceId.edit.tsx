@@ -11,7 +11,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
-import { Trash2, Plus, ArrowLeft } from "lucide-react";
+import { Trash2, Plus, ArrowLeft, Sparkles, Loader2 } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { draftQuoteItem, draftQuoteNotes } from "@/lib/ai.functions";
+import { useConsumeQuota } from "@/hooks/use-credits";
+import { AiDraftedBanner } from "@/components/AiDraftedBanner";
 import { toast } from "sonner";
 import { formatZAR, computeQuoteTotals } from "@/lib/format";
 
@@ -19,12 +23,25 @@ export const Route = createFileRoute("/_authenticated/invoices/$invoiceId/edit")
   component: EditInvoicePage,
 });
 
-type Item = { description: string; quantity: number; unit_price: number; unit?: string };
+type Item = { description: string; quantity: number; unit_price: number; unit?: string; _drafting?: boolean };
 
 function EditInvoicePage() {
   const { invoiceId } = Route.useParams();
   const navigate = useNavigate();
   const qc = useQueryClient();
+  const draftItem = useServerFn(draftQuoteItem);
+  const draftNotes = useServerFn(draftQuoteNotes);
+  const consume = useConsumeQuota();
+  const [scopeBrief, setScopeBrief] = useState("");
+  const [draftingNotes, setDraftingNotes] = useState(false);
+  const [aiUsed, setAiUsed] = useState(false);
+  const { data: aiProfile } = useQuery({
+    queryKey: ["business-min"],
+    queryFn: async () => {
+      const { data } = await supabase.from("business_profiles").select("business_name, brand_tone, default_quote_terms, vat_registered").maybeSingle();
+      return data;
+    },
+  });
 
   const { data: clients = [] } = useQuery({
     queryKey: ["clients-min"],
@@ -115,7 +132,7 @@ function EditInvoicePage() {
   const autosave = useEditAutosave({
     key: `invoice:${invoiceId}`,
     ready: loaded,
-    data: { clientId, title, invoiceNumber, status, issueDate, vatRate, items, notes, terms, dueDate, company },
+    data: { clientId, title, invoiceNumber, status, issueDate, vatRate, items: items.map(({ _drafting, ...r }) => r), notes, terms, dueDate, company },
     apply: (d) => {
       setClientId(d.clientId); setTitle(d.title); setInvoiceNumber(d.invoiceNumber); setStatus(d.status);
       setIssueDate(d.issueDate); setVatRate(d.vatRate); setItems(d.items); setNotes(d.notes);
@@ -128,6 +145,44 @@ function EditInvoicePage() {
   const updateItem = (i: number, patch: Partial<Item>) =>
     setItems((arr) => arr.map((it, idx) => (idx === i ? { ...it, ...patch } : it)));
   const removeItem = (i: number) => setItems((arr) => arr.filter((_, idx) => idx !== i));
+  const draftLine = async (i: number, brief: string) => {
+    if (!brief.trim()) return toast.error("Type a short brief first (e.g. 'install 3 plug points')");
+    if (!(await consume("ai_draft"))) return;
+    updateItem(i, { _drafting: true });
+    try {
+      const res = await draftItem({ data: { brief, tone: (aiProfile as any)?.brand_tone ?? undefined } });
+      updateItem(i, { description: res.description, _drafting: false });
+      setAiUsed(true);
+    } catch (e: any) {
+      updateItem(i, { _drafting: false });
+      toast.error(e.message ?? "AI draft failed");
+    }
+  };
+
+  const draftAllNotes = async () => {
+    if (!scopeBrief.trim()) return toast.error("Describe the work in 1-2 sentences first");
+    if (!(await consume("ai_draft"))) return;
+    setDraftingNotes(true);
+    try {
+      const res = await draftNotes({
+        data: {
+          businessName: (aiProfile as any)?.business_name ?? undefined,
+          clientName: clients.find((c) => c.id === clientId)?.name,
+          scope: scopeBrief,
+          tone: (aiProfile as any)?.brand_tone ?? undefined,
+        },
+      });
+      setNotes(res.intro);
+      setTerms(res.terms);
+      setAiUsed(true);
+      toast.success("Notes drafted — please review before saving");
+    } catch (e: any) {
+      toast.error(e.message ?? "AI draft failed");
+    } finally {
+      setDraftingNotes(false);
+    }
+  };
+
   const addItem = () => setItems((arr) => [...arr, { description: "", quantity: 1, unit_price: 0 }]);
 
   const saveMut = useMutation({
@@ -237,6 +292,8 @@ function EditInvoicePage() {
         </div>
       </div>
 
+      {aiUsed && <AiDraftedBanner />}
+
       <Card>
         <CardHeader><CardTitle className="text-base">Header</CardTitle></CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-3">
@@ -303,13 +360,19 @@ function EditInvoicePage() {
           {items.map((it, i) => (
             <div key={i} className="grid grid-cols-12 gap-3 items-start">
               <div className="col-span-12 sm:col-span-5">
-                <Textarea
+                <div className="flex gap-2">
+<Textarea
                   placeholder="Description"
                   value={it.description}
                   onChange={(e) => updateItem(i, { description: e.target.value })}
                   rows={2}
                   className="resize-none"
                 />
+                <Button type="button" variant="outline" size="icon" title="Draft with AI"
+                  onClick={() => draftLine(i, it.description)} disabled={it._drafting}>
+                  {it._drafting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                </Button>
+                </div>
               </div>
               <div className="col-span-3 sm:col-span-1">
                 <UnitSelect value={it.unit} onChange={(v) => updateItem(i, { unit: v })} />
@@ -362,8 +425,19 @@ function EditInvoicePage() {
       </Card>
 
       <Card>
-        <CardHeader><CardTitle className="text-base">Notes & terms</CardTitle></CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="text-base">Notes & terms</CardTitle>
+          <Button variant="outline" size="sm" onClick={draftAllNotes} disabled={draftingNotes}>
+            {draftingNotes ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <Sparkles className="h-3 w-3 mr-1" />}
+            Draft with AI
+          </Button>
+        </CardHeader>
         <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label className="text-xs uppercase tracking-wider text-muted-foreground">Job brief (for AI)</Label>
+            <Input placeholder="e.g. supplied and fitted a new geyser and 2 isolation valves"
+              value={scopeBrief} onChange={(e) => setScopeBrief(e.target.value)} />
+          </div>
           <div className="space-y-2">
             <Label htmlFor="invoice-notes">Notes (shown on the invoice)</Label>
             <Textarea id="invoice-notes" rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} />
