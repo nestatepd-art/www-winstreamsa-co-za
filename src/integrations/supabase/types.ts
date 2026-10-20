@@ -406,6 +406,33 @@ export type Database = {
         }
         Relationships: []
       }
+      deleted_records: {
+        Row: {
+          data: Json
+          deleted_at: string
+          id: string
+          record_id: string
+          table_name: string
+          user_id: string | null
+        }
+        Insert: {
+          data: Json
+          deleted_at?: string
+          id?: string
+          record_id: string
+          table_name: string
+          user_id?: string | null
+        }
+        Update: {
+          data?: Json
+          deleted_at?: string
+          id?: string
+          record_id?: string
+          table_name?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       email_send_log: {
         Row: {
           created_at: string

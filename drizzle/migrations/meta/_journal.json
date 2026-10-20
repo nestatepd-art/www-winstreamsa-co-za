@@ -15,6 +15,13 @@
       "when": 1792309911673,
       "tag": "0001_nudge_confirm_sweep_function",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792501237124,
+      "tag": "0002_deleted_records_archive",
+      "breakpoints": true
     }
   ]
 }
