@@ -18,6 +18,13 @@ import { useTaskbarDraft } from "@/lib/draft-tray";
 import { MinimizeButton } from "@/components/DraftTaskbar";
 
 export const Route = createFileRoute("/_authenticated/proposals/new")({
+  head: () => ({ meta: [
+    { title: "New proposal | WinStream SA" },
+    { name: "description", content: "Draft and save a professional business proposal with WinStream SA." },
+    { property: "og:title", content: "New proposal | WinStream SA" },
+    { property: "og:description", content: "Prepare a professional business proposal." },
+    { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" },
+  ] }),
   component: NewProposal,
 });
 
