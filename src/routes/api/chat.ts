@@ -6,7 +6,9 @@ import {
 } from "ai";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
-import { createLovableAiGatewayProvider } from "@/lib/ai-gateway.server";
+import { createResponsesCall } from "@/lib/ai/responses.server";
+import { DRAFTING_MODEL } from "@/lib/ai/drafting";
+import { withLovableAiGatewayRunIdHeader, createLovableAiGatewayRunIdFetch } from "@/lib/ai/run-id.ts";
 
 const SYSTEM_PROMPT = `You are WinStream Assist — the friendly in-app helper for WinStream SA, a South African business operations app for SMEs.
 
@@ -97,14 +99,10 @@ export const Route = createFileRoute("/api/chat")({
         const key = process.env.LOVABLE_API_KEY;
         if (!key) return new Response("AI is not configured", { status: 500 });
 
-        const gateway = createLovableAiGatewayProvider(key);
-        const result = streamText({
-          model: gateway("google/gemini-3-flash-preview"),
-          system: SYSTEM_PROMPT,
-          messages: await convertToModelMessages(messages),
-        });
+        const { result } = createResponsesCall(request, { baseURL: "https://ai.gateway.lovable.dev/v1", apiKey: key, model: DRAFTING_MODEL }, await convertToModelMessages(messages), SYSTEM_PROMPT);
 
         return result.toUIMessageStreamResponse({
+          sendReasoning: true,
           originalMessages: messages,
           onFinish: async ({ responseMessage }) => {
             try {
@@ -124,7 +122,7 @@ export const Route = createFileRoute("/api/chat")({
             if (msg.includes("429")) return "Too many requests. Please wait a moment and try again.";
             if (msg.includes("402"))
               return "AI credits exhausted. Add credits in workspace billing.";
-            return "Sorry, something went wrong generating that reply.";
+            return msg;
           },
         });
       },

@@ -9,14 +9,10 @@
  */
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
+import { modernDraft } from "./ai/draft.server";
+import { DRAFTING_MODEL } from "./ai/drafting";
 
-const GATEWAY_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
-
-export const DEFAULT_MODEL_CHAIN = [
-  "google/gemini-3-flash-preview",
-  "openai/gpt-5-mini",
-  "google/gemini-2.5-flash",
-] as const;
+export const DEFAULT_MODEL_CHAIN = [DRAFTING_MODEL] as const;
 
 export type CallOpts = {
   systemPrompt: string;
@@ -39,43 +35,23 @@ export type CallResult = {
   finishReason: string | null;
 };
 
-const RETRYABLE_STATUS = new Set([408, 425, 429, 500, 502, 503, 504]);
+const RETRYABLE_STATUS = new Set([429, 500, 502, 503, 504]);
 
 async function attempt(
   model: string,
   system: string,
   user: string,
   key: string,
+  kind: string,
 ): Promise<{ content: string; finishReason: string | null; status: number; error?: string }> {
   try {
-    const res = await fetch(GATEWAY_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Lovable-API-Key": key,
-      },
-      body: JSON.stringify({
-        model,
-        messages: [
-          { role: "system", content: system },
-          { role: "user", content: user },
-        ],
-      }),
-    });
-    if (!res.ok) {
-      const txt = await res.text().catch(() => "");
-      return { content: "", finishReason: null, status: res.status, error: txt.slice(0, 300) };
-    }
-    const data = await res.json();
-    const choice = data?.choices?.[0];
-    const content = choice?.message?.content?.toString().trim() ?? "";
-    const finishReason = choice?.finish_reason ?? null;
-    return { content, finishReason, status: 200 };
+    const content = await modernDraft(system, user, kind, key, model);
+    return { content, finishReason: "stop", status: 200 };
   } catch (e) {
     return {
       content: "",
       finishReason: null,
-      status: 0,
+      status: typeof e === "object" && e && "status" in e ? Number(e.status) : 0,
       error: e instanceof Error ? e.message : "network error",
     };
   }
@@ -95,13 +71,13 @@ export async function callAIWithFallback(opts: CallOpts): Promise<CallResult> {
   for (const model of models) {
     for (let a = 0; a < (opts.retryOnce ? 2 : 1); a++) {
       tried.push(model);
-      const r = await attempt(model, opts.systemPrompt, opts.userPrompt, key);
+      const r = await attempt(model, opts.systemPrompt, opts.userPrompt, key, opts.kind);
       lastFinish = r.finishReason;
 
       // Terminal payment/billing errors — don't waste further attempts.
-      if (r.status === 402) {
-        await log(opts, tried, null, "error", null, started, 0, "AI credits exhausted");
-        throw new Error("AI credits exhausted. Add credits in workspace billing.");
+      if (r.status !== 200 && !RETRYABLE_STATUS.has(r.status)) {
+        await log(opts, tried, null, "error", null, started, 0, r.error ?? "AI request failed");
+        throw new Error(r.error ?? `AI request failed (${r.status})`);
       }
 
       const good =
@@ -133,8 +109,9 @@ export async function callAIWithFallback(opts: CallOpts): Promise<CallResult> {
             ? `output too short (${r.content.length} chars)`
             : `bad finish_reason=${r.finishReason}`);
 
-      // Non-retryable HTTP status → break inner retry, move to next model.
-      if (r.status !== 0 && !RETRYABLE_STATUS.has(r.status) && r.status !== 200) break;
+      // Empty/refused output must never be replayed or switched to another model.
+      if (r.status === 200) throw new Error(lastErr);
+      if (a + 1 < (opts.retryOnce ? 2 : 1)) await new Promise((resolve) => setTimeout(resolve, 1500 + Math.random() * 500));
     }
   }
 
