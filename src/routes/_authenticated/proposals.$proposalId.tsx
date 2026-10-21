@@ -1,9 +1,9 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { draftClientMessage, sendCommunication } from "@/lib/proposals.functions";
+import { draftClientMessage, draftProposal } from "@/lib/proposals.functions";
 import { sendProposalNow } from "@/lib/proposal-send.functions";
 
 import { Button } from "@/components/ui/button";
@@ -16,12 +16,27 @@ import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Mail, MessageCircle, Sparkles, Loader2, Send, ArrowLeft, Check, Trash2 } from "lucide-react";
+import { Mail, MessageCircle, Sparkles, Loader2, Send, ArrowLeft, Check, Trash2, Pencil, Download, Save } from "lucide-react";
 import { formatDate } from "@/lib/format";
-import { extractEmailAddress, openEmailDraft } from "@/lib/email-compose";
+import { extractEmailAddress } from "@/lib/email-compose";
 import { toast } from "sonner";
+import { useConsumeQuota } from "@/hooks/use-credits";
+import { useLogoAsset } from "@/hooks/use-logo-asset";
+import { useEditAutosave } from "@/lib/edit-autosave";
+import { generateProposalPdf, proposalFilename } from "@/lib/proposal-pdf";
+import { downloadBlob } from "@/lib/pdf-export";
+import { ProposalPdfPreview } from "@/components/ProposalPdfPreview";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 export const Route = createFileRoute("/_authenticated/proposals/$proposalId")({
+  head: () => ({ meta: [
+    { title: "Proposal workspace | WinStream SA" },
+    { name: "description", content: "Edit, review, download and email your WinStream SA business proposal." },
+    { property: "og:title", content: "Proposal workspace | WinStream SA" },
+    { property: "og:description", content: "Review and send your professional business proposal." },
+    { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" },
+  ] }),
   component: ProposalDetail,
 });
 
@@ -32,7 +47,8 @@ function ProposalDetail() {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const draftMsg = useServerFn(draftClientMessage);
-  const sendMsg = useServerFn(sendCommunication);
+  const generate = useServerFn(draftProposal);
+  const consume = useConsumeQuota();
   const sendProposal = useServerFn(sendProposalNow);
 
 
@@ -61,6 +77,51 @@ function ProposalDetail() {
     },
   });
 
+  const { data: profile } = useQuery({ queryKey: ["proposal-profile"], queryFn: async () => {
+    const { data, error } = await supabase.from("business_profiles").select("*").maybeSingle();
+    if (error) throw error; return data;
+  } });
+  const { data: logo } = useLogoAsset(profile?.logo_url);
+  const { data: credits } = useQuery({ queryKey: ["proposal-plan"], queryFn: async () => {
+    const { data } = await supabase.from("user_credits").select("plan").maybeSingle(); return data;
+  } });
+  const [editing, setEditing] = useState(false);
+  const [editTitle, setEditTitle] = useState("");
+  const [editContent, setEditContent] = useState("");
+  const [brief, setBrief] = useState("");
+  const [editBusy, setEditBusy] = useState(false);
+  const [editReady, setEditReady] = useState(false);
+  useEffect(() => { if (proposal && !editing) { setEditTitle(proposal.title); setEditContent(proposal.content ?? ""); setBrief(proposal.brief ?? ""); } }, [proposal, editing]);
+  useEffect(() => { if (proposal) setEditReady(true); }, [proposal]);
+  const autosave = useEditAutosave({ key: `proposal:${proposalId}`, ready: editReady,
+    data: { title: editTitle, content: editContent, brief },
+    apply: (d) => { setEditTitle(d.title); setEditContent(d.content); setBrief(d.brief); setEditing(true); },
+  });
+  const pdfBlob = useMemo(() => proposal && profile !== undefined ? generateProposalPdf({
+    title: proposal.title, content: proposal.content ?? "", createdAt: proposal.created_at,
+    clientName: proposal.clients?.name, businessName: profile?.business_name ?? undefined,
+    businessAddress: [profile?.address_line1, profile?.address_line2, profile?.city, profile?.province, profile?.postal_code].filter(Boolean).join(", "),
+    registrationNumber: profile?.registration_number, logoDataUrl: logo?.dataUrl,
+    showBranding: !credits || credits.plan === "free",
+  }) : null, [proposal, profile, logo, credits]);
+  const filename = proposalFilename(proposal?.title ?? "document");
+  const saveEdits = async () => {
+    if (!editTitle.trim() || !editContent.trim()) return toast.error("Title and proposal content are required");
+    setEditBusy(true);
+    try { const { error } = await supabase.from("proposals").update({ title: editTitle.trim(), content: editContent, brief }).eq("id", proposalId);
+      if (error) throw error; autosave.clear(); await qc.invalidateQueries({ queryKey: ["proposal", proposalId] }); setEditing(false); toast.success("Proposal saved");
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Save failed"); } finally { setEditBusy(false); }
+  };
+  const revise = async () => {
+    if (brief.trim().length < 5) return toast.error("Add a project brief or revision instructions");
+    if (!(await consume("ai_draft"))) return;
+    setEditBusy(true);
+    try { const out = await generate({ data: { brief, existingContent: editContent,
+      businessName: profile?.business_name ?? undefined, clientName: proposal?.clients?.name,
+      tone: profile?.brand_tone ?? undefined } }); setEditContent(out.content); toast.success("Draft ready for review");
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Draft failed"); } finally { setEditBusy(false); }
+  };
+
   const [open, setOpen] = useState(false);
   const [channel, setChannel] = useState<Channel>("email");
   const [to, setTo] = useState("");
@@ -74,12 +135,13 @@ function ProposalDetail() {
     setChannel(ch);
     setTo(ch === "email" ? client?.email ?? "" : client?.phone ?? "");
     setSubject(`Proposal: ${proposal?.title ?? ""}`);
-    setBody("");
+    setBody(`Please find attached our proposal, ${proposal?.title ?? ""}, for your review. Please let us know if you have any questions. We look forward to hearing from you.`);
     setOpen(true);
   };
 
   const aiCompose = async () => {
     if (!proposal) return;
+    if (!(await consume("ai_draft"))) return;
     setBusy("ai");
     try {
       const { data: profile } = await supabase
@@ -115,64 +177,21 @@ function ProposalDetail() {
           toast.error("Enter a valid recipient email address");
           return;
         }
-        // Generate a simple text-based PDF of the proposal content
-        const { jsPDF } = await import("jspdf");
-        const pdf = new jsPDF({ unit: "pt", format: "a4" });
-        pdf.setFont("helvetica", "bold");
-        pdf.setFontSize(18);
-        pdf.text(proposal?.title ?? "Proposal", 40, 60);
-        pdf.setFont("helvetica", "normal");
-        pdf.setFontSize(10);
-        pdf.setTextColor(90);
-        pdf.text(`Prepared for ${client?.name ?? ""}`, 40, 80);
-        pdf.setTextColor(30);
-        pdf.setFontSize(11);
-        const lines = pdf.splitTextToSize(proposal?.content ?? "", 515);
-        let y = 110;
-        for (const ln of lines) {
-          if (y > 800) { pdf.addPage(); y = 60; }
-          pdf.text(ln, 40, y);
-          y += 15;
-        }
-        const blob = pdf.output("blob");
-        const filename = `Proposal-${(proposal?.title ?? "proposal").replace(/[^a-z0-9]+/gi, "-")}.pdf`;
-        try {
-          const base64 = pdf.output("datauristring").split(",")[1];
-          const res = await sendProposal({
-            data: {
-              proposalId,
-              to: email,
-              subject,
-              bodyText: body,
-              clientName: client?.name ?? null,
-              pdfBase64: base64,
-              pdfFilename: filename,
-            },
-          });
-          if (!res.ok) throw new Error("EMAIL_NOT_VERIFIED");
-          toast.success(`Sent to ${res.to}`);
-        } catch {
-          const result = await openEmailDraft({ to: email, subject, body, attachment: { blob, filename } });
-          if (!result) throw new Error("Email draft could not be opened. Please check your default mail app.");
-          toast.success("Your email app opened with the message ready and the PDF saved to Downloads — attach it and hit send.");
-        }
+        if (!pdfBlob) throw new Error("Please wait for the PDF preview to finish loading");
+        const bytes = new Uint8Array(await pdfBlob.arrayBuffer());
+        let binary = "";
+        for (let i = 0; i < bytes.length; i += 0x8000) binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+        const res = await sendProposal({ data: { proposalId, to: email, subject, bodyText: body,
+          clientName: client?.name ?? null, pdfBase64: btoa(binary), pdfFilename: filename } });
+        if (!res.ok) throw new Error("Email sending is unavailable until the sending address is verified. Your proposal has been kept.");
+        toast.success(`Sent to ${res.to} with PDF attached`);
 
       } else {
         const phone = to.trim().replace(/[^\d+]/g, "").replace(/^\+/, "");
         const url = `https://wa.me/${phone}?text=${encodeURIComponent(body)}`;
         window.open(url, "_blank", "noopener,noreferrer");
       }
-      await sendMsg({
-        data: {
-          channel,
-          toAddress: to.trim(),
-          subject: channel === "email" ? subject : null,
-          body,
-          proposalId,
-          clientId: client?.id ?? null,
-        },
-      });
-      toast.success(`${channel === "email" ? "Email" : "WhatsApp"} opened — review and hit send in your ${channel === "email" ? "mail client" : "WhatsApp"}.`);
+      if (channel === "whatsapp") toast.success("WhatsApp opened — review and send your message there");
       import("@/lib/analytics").then(({ track }) =>
         track("proposal_sent", { proposal_id: proposalId, channel }),
       );
@@ -215,9 +234,11 @@ function ProposalDetail() {
           </p>
         </div>
         <div className="flex gap-2 flex-wrap">
+          <Button variant="outline" onClick={() => setEditing(true)} disabled={editing}><Pencil className="size-4 mr-2" /> Edit</Button>
+          <Button variant="outline" disabled={!pdfBlob || editing} onClick={() => { if (pdfBlob) downloadBlob(pdfBlob, filename); }}><Download className="size-4 mr-2" /> Download PDF</Button>
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button variant="outline" onClick={() => openComposer("email")}>
+              <Button variant="outline" disabled={editing || !pdfBlob} onClick={() => openComposer("email")}>
                 <Mail className="h-4 w-4 mr-2" /> Send email
               </Button>
             </DialogTrigger>
@@ -233,7 +254,7 @@ function ProposalDetail() {
                   Send via {channel === "email" ? "Email" : "WhatsApp"}
                 </DialogTitle>
                 <DialogDescription>
-                  Opens your {channel === "email" ? "mail client" : "WhatsApp"} with the message prefilled. The send is also logged to this proposal's timeline.
+                  {channel === "email" ? `Proposal: ${proposal.title} · PDF attached` : `Proposal: ${proposal.title}`}
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-3">
@@ -293,17 +314,21 @@ function ProposalDetail() {
       <Tabs defaultValue="content">
         <TabsList>
           <TabsTrigger value="content">Proposal</TabsTrigger>
+          <TabsTrigger value="pdf">PDF preview</TabsTrigger>
           <TabsTrigger value="timeline">Timeline ({comms?.length ?? 0})</TabsTrigger>
         </TabsList>
         <TabsContent value="content">
-          <Card>
-            <CardContent className="p-6">
-              <pre className="whitespace-pre-wrap text-sm font-sans leading-relaxed">
-                {proposal.content || "(empty)"}
-              </pre>
-            </CardContent>
-          </Card>
+          {editing ? <section className="space-y-4 py-4">
+            <div className="space-y-2"><Label htmlFor="proposal-title">Title</Label><Input id="proposal-title" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} /></div>
+            <div className="space-y-2"><Label htmlFor="proposal-brief">Project brief / revision instructions</Label><Textarea id="proposal-brief" value={brief} onChange={(e) => setBrief(e.target.value)} /></div>
+            <Button variant="outline" onClick={revise} disabled={editBusy}>{editBusy ? <Loader2 className="size-4 animate-spin mr-2" /> : <Sparkles className="size-4 mr-2" />}Draft with AI</Button>
+            <div className="space-y-2"><Label htmlFor="proposal-content">Proposal content</Label><Textarea id="proposal-content" rows={24} value={editContent} onChange={(e) => setEditContent(e.target.value)} /></div>
+            <div className="flex gap-2"><Button onClick={saveEdits} disabled={editBusy}><Save className="size-4 mr-2" />Save changes</Button><Button variant="outline" disabled={editBusy} onClick={() => { autosave.clear(); setEditing(false); }}>Cancel</Button></div>
+          </section> : <article className="bg-document-page text-document-ink p-6 sm:p-10 break-words [&_h1]:text-2xl [&_h1]:font-semibold [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:mt-8 [&_h3]:font-semibold [&_p]:my-4 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6 [&_li]:my-2 [&_table]:w-full [&_td]:border [&_td]:border-document-border [&_td]:p-2 [&_th]:p-2 [&_a]:underline">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{proposal.content || ""}</ReactMarkdown>
+          </article>}
         </TabsContent>
+        <TabsContent value="pdf"><ProposalPdfPreview blob={pdfBlob} /></TabsContent>
         <TabsContent value="timeline">
           <Card>
             <CardHeader>
