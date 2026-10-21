@@ -13,6 +13,7 @@ export const draftProposal = createServerFn({ method: "POST" })
         clientName: z.string().optional(),
         brief: z.string().min(5).max(2000),
         tone: z.string().optional(),
+        existingContent: z.string().max(40000).optional(),
       })
       .parse(input),
   )
@@ -48,7 +49,7 @@ Keep it tight, no fluff, no emoji.`;
 Client: ${data.clientName ?? "(unspecified)"}
 Tone: ${data.tone ?? "professional, warm"}
 Brief:
-${data.brief}`;
+${data.brief}${data.existingContent ? `\nRevise the following saved proposal according to the brief. Preserve its factual details, agreed prices, names and dates unless the brief explicitly changes them.\n${data.existingContent}` : ""}`;
 
     const res = await callAIWithFallback({
       kind: "proposal",

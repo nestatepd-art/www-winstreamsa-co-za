@@ -3,8 +3,7 @@
  * No auth, no credit ledger — instead a small per-IP budget so the
  * sandbox cannot be abused as a free AI endpoint.
  */
-const GATEWAY_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
-const MODEL = "google/gemini-3-flash-preview";
+import { modernDraft } from "./ai/draft.server";
 
 const WINDOW_MS = 60 * 60 * 1000;
 const MAX_PER_WINDOW = 6;
@@ -40,22 +39,7 @@ export async function demoDraftDocument(brief: string, clientName: string): Prom
   const key = process.env['LOVABLE_API_KEY'];
   if (!key) throw new Error("AI is not configured right now.");
 
-  const res = await fetch(GATEWAY_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "Lovable-API-Key": key },
-    body: JSON.stringify({
-      model: MODEL,
-      messages: [
-        { role: "system", content: SYSTEM },
-        { role: "user", content: `Client: ${clientName || "(not specified)"}\nJob brief: ${brief}` },
-      ],
-    }),
-  });
-
-  if (!res.ok) throw new Error("The AI assistant is busy — please try again in a moment.");
-
-  const json = (await res.json()) as { choices?: { message?: { content?: string } }[] };
-  const raw = (json.choices?.[0]?.message?.content ?? "").replace(/^```json|```$/gi, "").trim();
+  const raw = await modernDraft(SYSTEM, `Client: ${clientName || "(not specified)"}\nJob brief: ${brief}`, "public_document", key);
 
   let parsed: DemoDraft;
   try {

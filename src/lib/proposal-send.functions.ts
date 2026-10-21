@@ -16,6 +16,11 @@ export const sendProposalNow = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { sendViaResend, brandedEmailHtml } = await import("./resend-send.server");
 
+    const { data: proposal, error: proposalError } = await context.supabase
+      .from("proposals").select("id, client_id, status").eq("id", data.proposalId).single();
+    if (proposalError || !proposal) throw new Error("Proposal not found");
+    if (!data.pdfBase64 || !data.pdfFilename) throw new Error("A proposal PDF attachment is required");
+
     const { data: profile } = await (context.supabase as any)
       .from("business_profiles")
       .select("business_name, email")
