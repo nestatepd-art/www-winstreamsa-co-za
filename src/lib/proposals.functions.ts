@@ -2,59 +2,17 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 import { callAIWithFallback } from "./ai-call.server";
+import { PROPOSAL_SYSTEM_PROMPT, proposalDraftInput, proposalUserPrompt } from "./ai/proposal-drafting";
 
 /** Generate a full proposal (markdown) from a short brief. */
 export const draftProposal = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input) =>
-    z
-      .object({
-        businessName: z.string().optional(),
-        clientName: z.string().optional(),
-        brief: z.string().min(5).max(2000),
-        tone: z.string().optional(),
-        existingContent: z.string().max(40000).optional(),
-      })
-      .parse(input),
-  )
+  .inputValidator((input) => proposalDraftInput.parse(input))
   .handler(async ({ data, context }) => {
-    const system = `You write polished business proposals for South African SMEs.
-Output GitHub-flavoured markdown, no preamble. Structure:
-
-# {Clear, specific title}
-
-**Prepared for:** {client}
-**Prepared by:** {business}
-
-## Overview
-2-3 sentence summary of the client's need and how it will be solved.
-
-## Scope of work
-Bulleted list of concrete deliverables.
-
-## Approach & timeline
-Short paragraph + a small phased plan (Phase 1, 2, 3 if useful).
-
-## Investment
-A short paragraph noting that pricing is in ZAR, VAT-inclusive at 15%, with 50% deposit standard. Do NOT invent line-item prices — say "See attached quotation".
-
-## Why us
-3-4 short bullets specific to the brief.
-
-## Terms
-Validity 30 days. Payment terms. POPIA-compliant handling of client data.
-
-Keep it tight, no fluff, no emoji.`;
-    const body = `Business: ${data.businessName ?? "(unspecified)"}
-Client: ${data.clientName ?? "(unspecified)"}
-Tone: ${data.tone ?? "professional, warm"}
-Brief:
-${data.brief}${data.existingContent ? `\nRevise the following saved proposal according to the brief. Preserve its factual details, agreed prices, names and dates unless the brief explicitly changes them.\n${data.existingContent}` : ""}`;
-
     const res = await callAIWithFallback({
       kind: "proposal",
-      systemPrompt: system,
-      userPrompt: body,
+      systemPrompt: PROPOSAL_SYSTEM_PROMPT,
+      userPrompt: proposalUserPrompt(data),
       minLength: 400,
       retryOnce: true,
       supabase: context.supabase,
