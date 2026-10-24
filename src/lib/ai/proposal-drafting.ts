@@ -9,7 +9,7 @@ export const proposalDraftInput = z.object({
 });
 
 export function proposalOutputRequirements(brief: string) {
-  const communication = /\b(?:whats\s*app|email|e-mail|sms|notice|announcement|letter|(?:member|client|customer)[ -]?(?:message|msg))\b/i.test(brief);
+  const communication = /\b(?:draft|write|create|compose|rewrite|revise|prepare)\b[^\n:.]{0,100}\b(?:whats\s*app\s*(?:message|msg)|email|e-mail|sms|notice|announcement|letter|(?:member|client|customer)[ -]?(?:message|msg))\b/i.test(brief);
   const paragraphMatch = brief.match(/\b(\d+|one|two|three|four|five|six)\s*[- ]?paragraphs?\b/i);
   const numberWords: Record<string, number> = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6 };
   const paragraphCount = paragraphMatch ? numberWords[paragraphMatch[1].toLowerCase()] ?? Number(paragraphMatch[1]) : undefined;

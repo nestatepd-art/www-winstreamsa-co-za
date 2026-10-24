@@ -7,7 +7,7 @@ describe("proposal source preservation", () => {
     expect(proposalOutputRequirements(brief)).toEqual({ communication: true, paragraphCount: 4, requiredHeadings: [] });
   });
   it("keeps proposal section requirements for an actual investment proposal", () => {
-    expect(proposalOutputRequirements("Draft an investment proposal for an automated touchless carwash").requiredHeadings).toEqual(["## Overview", "## Scope of work"]);
+    expect(proposalOutputRequirements("Draft an investment proposal for an automated touchless carwash. Briefing via WhatsApp call.").requiredHeadings).toEqual(["## Overview", "## Scope of work"]);
   });
   it("recognises a written-out paragraph count on a saved-document revision", () => {
     expect(proposalOutputRequirements("Rewrite as a four paragraph WhatsApp message").paragraphCount).toBe(4);
