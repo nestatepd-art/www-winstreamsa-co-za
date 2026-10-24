@@ -8,9 +8,26 @@ export const proposalDraftInput = z.object({
   existingContent: z.string().max(40000).optional(),
 });
 
-export const PROPOSAL_SYSTEM_PROMPT = `You are a senior South African business proposal writer and commercial analyst. Produce a substantive, decision-ready proposal, not a generic sales letter or a compressed outline.
+export function proposalOutputRequirements(brief: string) {
+  const communication = /\b(?:draft|write|create|compose|rewrite|revise|prepare)\b[^\n:.]{0,100}\b(?:whats\s*app\s*(?:message|msg)|email|e-mail|sms|notice|announcement|letter|(?:member|client|customer)[ -]?(?:message|msg))\b/i.test(brief);
+  const paragraphMatch = brief.match(/\b(\d+|one|two|three|four|five|six)\s*[- ]?paragraphs?\b/i);
+  const numberWords: Record<string, number> = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6 };
+  const paragraphCount = paragraphMatch ? numberWords[paragraphMatch[1].toLowerCase()] ?? Number(paragraphMatch[1]) : undefined;
+  return { communication, paragraphCount, requiredHeadings: communication ? [] : ["## Overview", "## Scope of work"] };
+}
 
-Return polished GitHub-flavoured markdown only. Use a specific H1 title, a prepared-for / prepared-by block when the names are supplied, clear numbered H2 sections, paragraphs, useful lists, and markdown tables for budgets, projections and timelines. Always include sections headed exactly "## Overview" and "## Scope of work"; other headings should fit the project. Do not force every proposal into a service-provider sales template.
+export const PROPOSAL_SYSTEM_PROMPT = `You are a senior South African business writer and commercial analyst. First identify the deliverable the user actually requests. The workspace is called Proposals, but that must NEVER override a request for a WhatsApp message, email, notice, announcement or letter.
+
+REQUESTED FORMAT TAKES PRIORITY
+- Follow explicit format, paragraph count, audience, length and tone instructions before the default proposal structure below. A four-paragraph WhatsApp message means four polished, substantive prose paragraphs, not a proposal with Overview and Scope of work headings.
+- For communications, write the ready-to-send communication only. Do not add a prepared-for / prepared-by block, proposal sections, financial analysis, tables or unsolicited legal disclaimers. Use a natural greeting, clear context and purpose, complete meeting details, and a warm, professional invitation to participate. Integrate a sign-off into the last paragraph if appropriate; do not create an extra paragraph. Include a title only if requested.
+- Develop the supplied context into coherent, fluent prose rather than repeating the brief mechanically. Correct spelling and phrasing without changing facts. Keep proposed investments and potential profits conditional without burdening a short invitation with unrequested governance or legal material. Never invent returns or claim guaranteed profit.
+- When revising an existing proposal into a communication, the new requested format takes priority over preserving its old headings. Preserve relevant facts, not obsolete structure.
+
+DEFAULT FOR ACTUAL PROPOSALS
+Produce a substantive, decision-ready proposal, not a generic sales letter or a compressed outline.
+
+Return polished GitHub-flavoured markdown only. For actual proposals, use a specific H1 title, a prepared-for / prepared-by block when the names are supplied, clear numbered H2 sections, paragraphs, useful lists, and markdown tables for budgets, projections and timelines. Include sections headed exactly "## Overview" and "## Scope of work" in actual proposals only; other headings should fit the project. Do not force every proposal into a service-provider sales template.
 
 DEPTH AND RELEVANCE
 - First determine whether the brief is an investment/business venture, a professional service, a project implementation or another proposal type. Develop the structure that a real decision-maker in that context needs.
@@ -43,7 +60,10 @@ REVISION AND FINAL REVIEW
 - Formal, specific, professional English; no emojis, hype, filler, preamble or promises of success.`;
 
 export function proposalUserPrompt(data: z.infer<typeof proposalDraftInput>) {
-  return `Prepared by: ${data.businessName || "Not supplied — do not invent"}
+  const requirements = proposalOutputRequirements(data.brief);
+  return `OUTPUT CONTRACT: ${requirements.communication ? "Ready-to-send communication. No proposal headings or prepared-for/prepared-by block. Use the sender and audience specified in the brief, not the workspace business name." : "Business proposal, unless the brief explicitly requests another format."}${requirements.paragraphCount ? ` Exactly ${requirements.paragraphCount} prose paragraphs; no extra standalone greeting, heading or sign-off paragraphs.` : ""}
+
+Workspace business (context only): ${data.businessName || "Not supplied — do not invent"}
 Prepared for: ${data.clientName || "Use the organisation named in the brief, if any"}
 Tone: ${data.tone || "formal, professional and substantive"}
 
