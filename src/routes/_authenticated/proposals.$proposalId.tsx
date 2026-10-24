@@ -324,9 +324,27 @@ function ProposalDetail() {
             <Button variant="outline" onClick={revise} disabled={editBusy}>{editBusy ? <Loader2 className="size-4 animate-spin mr-2" /> : <Sparkles className="size-4 mr-2" />}Draft with AI</Button>
             <div className="space-y-2"><Label htmlFor="proposal-content">Proposal content</Label><Textarea id="proposal-content" rows={24} value={editContent} onChange={(e) => setEditContent(e.target.value)} /></div>
             <div className="flex gap-2"><Button onClick={saveEdits} disabled={editBusy}><Save className="size-4 mr-2" />Save changes</Button><Button variant="outline" disabled={editBusy} onClick={() => { autosave.clear(); setEditing(false); }}>Cancel</Button></div>
-          </section> : <article className="bg-document-page text-document-ink p-6 sm:p-10 break-words [&_h1]:text-2xl [&_h1]:font-semibold [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:mt-8 [&_h3]:font-semibold [&_p]:my-4 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6 [&_li]:my-2 [&_table]:w-full [&_td]:border [&_td]:border-document-border [&_td]:p-2 [&_th]:p-2 [&_a]:underline">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>{proposal.content || ""}</ReactMarkdown>
-          </article>}
+          </section> : <>
+            {proposal.brief && (
+              <Card className="mb-4">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base">Your brief</CardTitle>
+                  <CardDescription>
+                    The instructions used to draft this proposal. Not happy with the output? Edit the brief and regenerate.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <p className="text-sm whitespace-pre-wrap text-muted-foreground">{proposal.brief}</p>
+                  <Button variant="outline" size="sm" onClick={() => setEditing(true)}>
+                    <Sparkles className="size-4 mr-2" /> Edit brief &amp; regenerate
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+            <article className="bg-document-page text-document-ink p-6 sm:p-10 break-words [&_h1]:text-2xl [&_h1]:font-semibold [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:mt-8 [&_h3]:font-semibold [&_p]:my-4 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6 [&_li]:my-2 [&_table]:w-full [&_td]:border [&_td]:border-document-border [&_td]:p-2 [&_th]:p-2 [&_a]:underline">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>{proposal.content || ""}</ReactMarkdown>
+            </article>
+          </>}
         </TabsContent>
         <TabsContent value="pdf"><ProposalPdfPreview blob={pdfBlob} /></TabsContent>
         <TabsContent value="timeline">
