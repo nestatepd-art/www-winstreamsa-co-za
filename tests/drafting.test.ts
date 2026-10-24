@@ -1,10 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { DRAFTING_MODEL, draftingSchema } from "../src/lib/ai/drafting";
+import { DRAFTING_MODEL, DRAFTING_REASONING_EFFORT, draftingSchema } from "../src/lib/ai/drafting";
 import { proposalFilename, generateProposalPdf } from "../src/lib/proposal-pdf";
 
 describe("modern document drafting", () => {
   it("uses a current OpenAI model across drafting outputs", () => {
     expect(DRAFTING_MODEL).toBe("openai/gpt-6-astra");
+  });
+  it("uses high reasoning depth for professional document drafting", () => {
+    expect(DRAFTING_REASONING_EFFORT).toBe("high");
   });
   it("requires all structured notes fields", () => {
     expect(draftingSchema("quote_notes")?.required).toEqual(["intro", "terms"]);

@@ -1,4 +1,5 @@
 # Modern drafting and proposals
+- [x] Verify requested GPT-6 drafting upgrade: catalog confirms GPT-6 Astra is the strongest available OpenAI option; raised shared document reasoning to high; seven tests pass and a real 592-word proposal preserves R4,000/month, R12,000 total and no VAT. Preview build OK.
 - [x] Improve proposal depth using the supplied Brotherhood investment proposal as the quality reference; verified a real signed-in response with 2,956 words, financial tables, governance, NPC restrictions, risks and approval conditions, and six passing tests.
 - [ ] Upgrade all AI output calls to a verified modern model and test actual responses.
 - [ ] Add formatted proposal PDF preview, download and real email attachment delivery.

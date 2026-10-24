@@ -1,5 +1,5 @@
 import { createLovableAiGatewayRunIdFetch } from "./run-id.ts";
-import { DRAFTING_MODEL, draftingSchema } from "./drafting";
+import { DRAFTING_MODEL, DRAFTING_REASONING_EFFORT, draftingSchema } from "./drafting";
 
 export async function modernDraft(system: string, user: string, kind: string, key: string, model = DRAFTING_MODEL) {
   const run = createLovableAiGatewayRunIdFetch();
@@ -9,7 +9,7 @@ export async function modernDraft(system: string, user: string, kind: string, ke
     headers: { "Content-Type": "application/json", "Lovable-API-Key": key, "X-Lovable-AIG-SDK": "fetch" },
     body: JSON.stringify({
       model, stream: true, store: false,
-      reasoning: { effort: "low", summary: "auto" }, include: ["reasoning.encrypted_content"],
+      reasoning: { effort: DRAFTING_REASONING_EFFORT, summary: "auto" }, include: ["reasoning.encrypted_content"],
       input: [{ role: "system", content: system }, { role: "user", content: user }],
       ...(schema ? { text: { format: { type: "json_schema", name: kind, strict: true, schema } } } : {}),
     }),
