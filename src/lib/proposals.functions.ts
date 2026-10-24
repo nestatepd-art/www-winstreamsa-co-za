@@ -2,14 +2,14 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 import { callAIWithFallback } from "./ai-call.server";
-import { PROPOSAL_SYSTEM_PROMPT, proposalDraftInput, proposalUserPrompt, proposalOutputRequirements } from "./ai/proposal-drafting";
+import { PROPOSAL_SYSTEM_PROMPT, proposalDraftInput, proposalUserPrompt, proposalOutputRequirements, missingProposalHeadings } from "./ai/proposal-drafting";
 
 /** Generate a full proposal (markdown) from a short brief. */
 export const draftProposal = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) => proposalDraftInput.parse(input))
   .handler(async ({ data, context }) => {
-    const requirements = proposalOutputRequirements(data.brief);
+    const requirements = proposalOutputRequirements(data.brief, data.existingContent);
     const res = await callAIWithFallback({
       kind: "proposal",
       systemPrompt: PROPOSAL_SYSTEM_PROMPT,
@@ -21,7 +21,7 @@ export const draftProposal = createServerFn({ method: "POST" })
     });
 
     // Sanity-check that required section headings landed.
-    const missing = requirements.requiredHeadings.filter((h) => !res.content.includes(h));
+    const missing = missingProposalHeadings(res.content, requirements.requiredHeadings);
     if (missing.length) {
       throw new Error(
         `AI draft was incomplete (missing ${missing.join(", ")}). Please try again.`,

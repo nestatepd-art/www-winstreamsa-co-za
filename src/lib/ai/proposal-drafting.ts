@@ -8,12 +8,26 @@ export const proposalDraftInput = z.object({
   existingContent: z.string().max(40000).optional(),
 });
 
-export function proposalOutputRequirements(brief: string) {
-  const communication = /\b(?:draft|write|create|compose|rewrite|revise|prepare)\b[^\n:.]{0,100}\b(?:whats\s*app\s*(?:message|msg)|email|e-mail|sms|notice|announcement|letter|(?:member|client|customer)[ -]?(?:message|msg))\b/i.test(brief);
+export function proposalOutputRequirements(brief: string, existingContent?: string) {
+  const communicationRequest = /\b(?:draft|write|create|compose|rewrite|revise|prepare)\b[\s\S]{0,160}?\b(?:whats\s*app\s*(?:message|msg)|email|e-mail|sms|notice|announcement|letter|(?:member|client|customer)[ -]?(?:message|msg))\b/i;
+  const requestedCommunication = communicationRequest.test(brief) || /\b(?:as|into|a|an)\s+(?:whats\s*app\s*(?:message|msg)|email|e-mail|sms|notice|announcement|letter)\b/i.test(brief);
+  const requestedProposal = /\b(?:draft|write|create|compose|prepare|convert|turn|rewrite|revise|expand)\b[^\n:.]{0,100}\b(?:proposal|business plan)\b/i.test(brief);
+  // A tone-only revision must retain the saved document's format. Meeting channels
+  // (e.g. "briefing via WhatsApp call") do not identify a communication deliverable.
+  const existingProposal = /^\s*#{1,3}\s+(?:\d+[.)]?\s+)?(?:overview|scope of work)\s*$/im.test(existingContent ?? "");
+  const communication = requestedCommunication || (!requestedProposal && !!existingContent?.trim() && !existingProposal);
   const paragraphMatch = brief.match(/\b(\d+|one|two|three|four|five|six)\s*[- ]?paragraphs?\b/i);
   const numberWords: Record<string, number> = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6 };
   const paragraphCount = paragraphMatch ? numberWords[paragraphMatch[1].toLowerCase()] ?? Number(paragraphMatch[1]) : undefined;
   return { communication, paragraphCount, requiredHeadings: communication ? [] : ["## Overview", "## Scope of work"] };
+}
+
+export function missingProposalHeadings(content: string, requiredHeadings: string[]) {
+  const headings = content.split("\n").filter((line) => /^\s*#{1,6}\s+/.test(line)).map((line) =>
+    line.replace(/^\s*#{1,6}\s+/, "").replace(/\s*#+\s*$/, "").replace(/\*\*/g, "")
+      .replace(/^\d+[.)]?\s*/, "").trim().toLowerCase(),
+  );
+  return requiredHeadings.filter((heading) => !headings.includes(heading.replace(/^#+\s+/, "").toLowerCase()));
 }
 
 export const PROPOSAL_SYSTEM_PROMPT = `You are a senior South African business writer and commercial analyst. First identify the deliverable the user actually requests. The workspace is called Proposals, but that must NEVER override a request for a WhatsApp message, email, notice, announcement or letter.
@@ -60,7 +74,7 @@ REVISION AND FINAL REVIEW
 - Formal, specific, professional English; no emojis, hype, filler, preamble or promises of success.`;
 
 export function proposalUserPrompt(data: z.infer<typeof proposalDraftInput>) {
-  const requirements = proposalOutputRequirements(data.brief);
+  const requirements = proposalOutputRequirements(data.brief, data.existingContent);
   return `OUTPUT CONTRACT: ${requirements.communication ? "Ready-to-send communication. No proposal headings or prepared-for/prepared-by block. Use the sender and audience specified in the brief, not the workspace business name." : "Business proposal, unless the brief explicitly requests another format."}${requirements.paragraphCount ? ` Exactly ${requirements.paragraphCount} prose paragraphs; no extra standalone greeting, heading or sign-off paragraphs.` : ""}
 
 Workspace business (context only): ${data.businessName || "Not supplied — do not invent"}
