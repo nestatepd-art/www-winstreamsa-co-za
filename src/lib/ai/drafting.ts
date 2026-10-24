@@ -1,4 +1,5 @@
 export const DRAFTING_MODEL = "openai/gpt-6-astra";
+export const DRAFTING_REASONING_EFFORT = "high";
 
 const objectSchema = (properties: Record<string, unknown>) => ({
   type: "object", properties, required: Object.keys(properties), additionalProperties: false,
