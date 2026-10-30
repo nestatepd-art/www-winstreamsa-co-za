@@ -51,6 +51,9 @@ type DocumentPreviewProps = {
   vatRate: number | string;
   vatAmount: number | string;
   total: number | string;
+  discountRate?: number | string | null;
+  discountAmount?: number | string | null;
+  discountValidUntil?: string | null;
   notes?: string | null;
   terms?: string | null;
   items: LineItem[];
@@ -84,6 +87,9 @@ export function DocumentPreview({
   vatRate,
   vatAmount,
   total,
+  discountRate,
+  discountAmount,
+  discountValidUntil,
   notes,
   terms,
   items,
@@ -221,6 +227,12 @@ export function DocumentPreview({
               <span>Subtotal</span>
               <span className="tabular-nums">{formatZAR(subtotal)}</span>
             </div>
+            {Number(discountRate) > 0 && (
+              <div className="flex justify-between gap-4 text-document-muted">
+                <span>Discount ({Number(discountRate)}%)</span>
+                <span className="tabular-nums">−{formatZAR(discountAmount ?? 0)}</span>
+              </div>
+            )}
             {Number(vatRate) > 0 && (
               <div className="flex justify-between gap-4 text-document-muted">
                 <span>VAT ({Number(vatRate)}%)</span>

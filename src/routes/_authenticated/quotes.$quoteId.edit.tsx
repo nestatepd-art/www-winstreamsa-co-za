@@ -17,7 +17,7 @@ import { draftQuoteItem, draftQuoteNotes } from "@/lib/ai.functions";
 import { useConsumeQuota } from "@/hooks/use-credits";
 import { AiDraftedBanner } from "@/components/AiDraftedBanner";
 import { toast } from "sonner";
-import { formatZAR, computeQuoteTotals } from "@/lib/format";
+import { formatZAR, computeQuoteTotals, DISCOUNT_TIERS, discountValidUntil, discountClause } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/quotes/$quoteId/edit")({
   component: EditQuotePage,
@@ -70,6 +70,8 @@ function EditQuotePage() {
   const [issueDate, setIssueDate] = useState("");
   const [expiryDate, setExpiryDate] = useState("");
   const [vatRate, setVatRate] = useState(15);
+  const [discountRate, setDiscountRate] = useState(0);
+  const [discountUntil, setDiscountUntil] = useState<string | null>(null);
   const [items, setItems] = useState<Item[]>([{ description: "", quantity: 1, unit_price: 0 }]);
   const [notes, setNotes] = useState("");
   const [terms, setTerms] = useState("");
@@ -85,6 +87,8 @@ function EditQuotePage() {
       setIssueDate(q.issue_date ?? "");
       setExpiryDate(q.expiry_date ?? "");
       setVatRate(Number(q.vat_rate ?? 15));
+      setDiscountRate(Number(q.discount_rate ?? 0));
+      setDiscountUntil(q.discount_valid_until ?? null);
       setNotes(q.notes ?? "");
       setTerms(q.terms ?? "");
       if (data.items.length) {
@@ -102,15 +106,16 @@ function EditQuotePage() {
   const autosave = useEditAutosave({
     key: `quote:${quoteId}`,
     ready: loaded,
-    data: { clientId, title, quoteNumber, status, issueDate, expiryDate, vatRate, items: items.map(({ _drafting, ...r }) => r), notes, terms },
+    data: { clientId, title, quoteNumber, status, issueDate, expiryDate, vatRate, discountRate, discountUntil, items: items.map(({ _drafting, ...r }) => r), notes, terms },
     apply: (d) => {
       setClientId(d.clientId); setTitle(d.title); setQuoteNumber(d.quoteNumber); setStatus(d.status);
       setIssueDate(d.issueDate); setExpiryDate(d.expiryDate); setVatRate(d.vatRate); setItems(d.items);
+      setDiscountRate(Number(d.discountRate ?? 0)); setDiscountUntil(d.discountUntil ?? null);
       setNotes(d.notes); setTerms(d.terms);
     },
   });
 
-  const totals = useMemo(() => computeQuoteTotals(items, vatRate), [items, vatRate]);
+  const totals = useMemo(() => computeQuoteTotals(items, vatRate, discountRate), [items, vatRate, discountRate]);
 
   const updateItem = (i: number, patch: Partial<Item>) =>
     setItems((arr) => arr.map((it, idx) => (idx === i ? { ...it, ...patch } : it)));
@@ -172,6 +177,9 @@ function EditQuotePage() {
           notes: notes?.trim() ? notes : null,
           terms: terms?.trim() ? terms : null,
           subtotal: totals.subtotal,
+          discount_rate: discountRate,
+          discount_amount: totals.discount_amount,
+          discount_valid_until: discountRate > 0 ? discountUntil : null,
           vat_amount: totals.vat_amount,
           total: totals.total,
         })
@@ -272,6 +280,22 @@ function EditQuotePage() {
             </div>
           )}
           <div className="space-y-2 sm:col-span-3">
+            <Label>Discount (valid 7 days)</Label>
+            <Select value={String(discountRate)} onValueChange={(v) => {
+              const r = Number(v);
+              setDiscountRate(r);
+              setDiscountUntil(r > 0 ? discountValidUntil() : null);
+            }}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {DISCOUNT_TIERS.map((t) => <SelectItem key={t} value={String(t)}>{t === 0 ? "No discount" : `${t}%`}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            {discountRate > 0 && discountUntil && (
+              <p className="text-xs text-muted-foreground">{discountClause(discountRate, discountUntil)}</p>
+            )}
+          </div>
+          <div className="space-y-2 sm:col-span-3">
             <Label>Title</Label>
             <Input value={title} onChange={(e) => setTitle(e.target.value)} />
           </div>
@@ -338,6 +362,7 @@ function EditQuotePage() {
           <div className="flex justify-end pt-4 border-t">
             <div className="w-full max-w-xs space-y-1 text-sm">
               <div className="flex justify-between text-muted-foreground"><span>Subtotal</span><span className="tabular-nums">{formatZAR(totals.subtotal)}</span></div>
+              {discountRate > 0 && (<div className="flex justify-between text-primary"><span>Discount ({discountRate}%)</span><span className="tabular-nums">−{formatZAR(totals.discount_amount)}</span></div>)}
               {vatRate > 0 && (<div className="flex justify-between text-muted-foreground"><span>VAT ({vatRate}%)</span><span className="tabular-nums">{formatZAR(totals.vat_amount)}</span></div>)}
               <div className="flex justify-between font-semibold text-base pt-2 border-t"><span>Total</span><span className="tabular-nums">{formatZAR(totals.total)}</span></div>
             </div>

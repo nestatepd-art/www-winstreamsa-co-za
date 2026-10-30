@@ -59,6 +59,9 @@ type DocumentData = {
   vat_rate: number | string;
   vat_amount: number | string;
   total: number | string;
+  discount_rate?: number | string | null;
+  discount_amount?: number | string | null;
+  discount_valid_until?: string | null;
   notes?: string | null;
   terms?: string | null;
   items: LineItem[];
@@ -299,6 +302,13 @@ export function generateDocumentPdf(data: DocumentData): Blob {
   doc.text("Subtotal", totalsX, y);
   doc.setTextColor(30);
   doc.text(formatZAR(data.subtotal), PAGE_W - MARGIN, y, { align: "right" });
+  if (Number(data.discount_rate) > 0) {
+    y += 16;
+    doc.setTextColor(90);
+    doc.text(`Discount (${Number(data.discount_rate)}%)`, totalsX, y);
+    doc.setTextColor(30);
+    doc.text(`-${formatZAR(data.discount_amount ?? 0)}`, PAGE_W - MARGIN, y, { align: "right" });
+  }
   if (Number(data.vat_rate) > 0) {
     y += 16;
     doc.setTextColor(90);
