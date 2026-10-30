@@ -1,4 +1,4 @@
-import { formatDate, formatZAR } from "@/lib/format";
+import { formatDate, formatZAR, discountClause } from "@/lib/format";
 import { descriptionLines } from "@/lib/description-lines";
 import { unitLabel } from "@/components/UnitSelect";
 
@@ -246,6 +246,12 @@ export function DocumentPreview({
           </div>
         </div>
 
+        {discountClause(Number(discountRate ?? 0), discountValidUntil) && (
+          <section className="mt-8 border-t border-document-border pt-5">
+            <div className="text-xs font-medium uppercase text-document-muted">Discount clause</div>
+            <div className="mt-2 text-sm text-document-muted">{discountClause(Number(discountRate ?? 0), discountValidUntil)}</div>
+          </section>
+        )}
         {terms && (
           <section className="mt-8 border-t border-document-border pt-5">
             <div className="text-xs font-medium uppercase text-document-muted">Terms</div>

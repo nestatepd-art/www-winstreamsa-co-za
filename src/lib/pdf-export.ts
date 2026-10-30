@@ -1,5 +1,5 @@
 import { jsPDF } from "jspdf";
-import { formatZAR, formatDate } from "./format";
+import { formatZAR, formatDate, discountClause } from "./format";
 import { descriptionLines } from "./description-lines";
 
 function unitText(u?: string | null) {
@@ -348,6 +348,7 @@ export function generateDocumentPdf(data: DocumentData): Blob {
     y += 8;
   };
 
+  printBlock("Discount clause", discountClause(Number(data.discount_rate ?? 0), data.discount_valid_until));
   printBlock("Notes", data.notes);
   printBlock("Terms", data.terms);
 
