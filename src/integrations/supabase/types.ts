@@ -999,6 +999,9 @@ export type Database = {
           client_id: string | null
           created_at: string
           currency: string
+          discount_amount: number
+          discount_rate: number
+          discount_valid_until: string | null
           expiry_date: string | null
           id: string
           issue_date: string
@@ -1024,6 +1027,9 @@ export type Database = {
           client_id?: string | null
           created_at?: string
           currency?: string
+          discount_amount?: number
+          discount_rate?: number
+          discount_valid_until?: string | null
           expiry_date?: string | null
           id?: string
           issue_date?: string
@@ -1049,6 +1055,9 @@ export type Database = {
           client_id?: string | null
           created_at?: string
           currency?: string
+          discount_amount?: number
+          discount_rate?: number
+          discount_valid_until?: string | null
           expiry_date?: string | null
           id?: string
           issue_date?: string
