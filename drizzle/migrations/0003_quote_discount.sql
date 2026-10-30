@@ -1,0 +1,2 @@
+ALTER TABLE public.quotes ADD COLUMN IF NOT EXISTS discount_rate numeric NOT NULL DEFAULT 0, ADD COLUMN IF NOT EXISTS discount_amount numeric NOT NULL DEFAULT 0, ADD COLUMN IF NOT EXISTS discount_valid_until date;
+ALTER TABLE public.quotes ADD CONSTRAINT quotes_discount_rate_tier CHECK (discount_rate IN (0,10,15,20,30));

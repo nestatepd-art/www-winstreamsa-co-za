@@ -15,7 +15,7 @@ import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Sparkles, Trash2, Plus, Loader2, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
-import { formatZAR, computeQuoteTotals, generateQuoteNumber } from "@/lib/format";
+import { formatZAR, computeQuoteTotals, generateQuoteNumber, DISCOUNT_TIERS, discountValidUntil } from "@/lib/format";
 import { Link } from "@tanstack/react-router";
 import { AiDraftedBanner } from "@/components/AiDraftedBanner";
 import { useTaskbarDraft } from "@/lib/draft-tray";
@@ -57,19 +57,20 @@ function NewQuotePage() {
   const [draftingNotes, setDraftingNotes] = useState(false);
   const [aiUsed, setAiUsed] = useState(false);
   const [vatOverride, setVatOverride] = useState<boolean | null>(null);
+  const [discountRate, setDiscountRate] = useState(0);
 
   const vatEnabled = vatOverride ?? ((profile as any)?.vat_registered ?? true);
   const vatRate = vatEnabled ? 15 : 0;
-  const totals = useMemo(() => computeQuoteTotals(items, vatRate), [items, vatRate]);
+  const totals = useMemo(() => computeQuoteTotals(items, vatRate, discountRate), [items, vatRate, discountRate]);
 
   const tray = useTaskbarDraft({
     kind: "quote",
     route: "/quotes/new",
     title: `${title}${clients.find((c) => c.id === clientId)?.name ? " · " + clients.find((c) => c.id === clientId)!.name : ""}`,
-    data: { clientId, title, items: items.map(({ _drafting, ...r }) => r), notes, terms, scopeBrief, vatOverride },
+    data: { clientId, title, items: items.map(({ _drafting, ...r }) => r), notes, terms, scopeBrief, vatOverride, discountRate },
     apply: (d) => {
       setClientId(d.clientId); setTitle(d.title); setItems(d.items); setNotes(d.notes);
-      setTerms(d.terms); setScopeBrief(d.scopeBrief); setVatOverride(d.vatOverride);
+      setTerms(d.terms); setScopeBrief(d.scopeBrief); setVatOverride(d.vatOverride); setDiscountRate(Number(d.discountRate ?? 0));
     },
   });
 
@@ -140,6 +141,9 @@ function NewQuotePage() {
           terms: terms || profile?.default_quote_terms || null,
           expiry_date: expiry.toISOString().slice(0, 10),
           subtotal: totals.subtotal,
+          discount_rate: discountRate,
+          discount_amount: totals.discount_amount,
+          discount_valid_until: discountRate > 0 ? discountValidUntil() : null,
           vat_amount: totals.vat_amount,
           total: totals.total,
           sent_at: status === "sent" ? new Date().toISOString() : null,
@@ -212,6 +216,20 @@ function NewQuotePage() {
               </p>
             </div>
             <Switch id="quote-vat" checked={vatEnabled} onCheckedChange={(v) => setVatOverride(v)} />
+          </div>
+          <div className="sm:col-span-2 flex items-center justify-between gap-4 rounded-lg border border-border p-3">
+            <div>
+              <Label>Discount</Label>
+              <p className="text-xs text-muted-foreground mt-1">
+                {discountRate > 0 ? `Valid for 7 days only — the clause is added to the quote.` : "Offer a limited 7-day discount."}
+              </p>
+            </div>
+            <Select value={String(discountRate)} onValueChange={(v) => setDiscountRate(Number(v))}>
+              <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {DISCOUNT_TIERS.map((t) => <SelectItem key={t} value={String(t)}>{t === 0 ? "No discount" : `${t}%`}</SelectItem>)}
+              </SelectContent>
+            </Select>
           </div>
         </CardContent>
       </Card>
@@ -294,6 +312,11 @@ function NewQuotePage() {
             <div className="flex justify-between text-muted-foreground">
               <span>Subtotal</span><span className="tabular-nums">{formatZAR(totals.subtotal)}</span>
             </div>
+            {discountRate > 0 && (
+              <div className="flex justify-between text-primary">
+                <span>Discount ({discountRate}%)</span><span className="tabular-nums">−{formatZAR(totals.discount_amount)}</span>
+              </div>
+            )}
             {vatEnabled && (
               <div className="flex justify-between text-muted-foreground">
                 <span>VAT (15%)</span><span className="tabular-nums">{formatZAR(totals.vat_amount)}</span>

@@ -1,4 +1,4 @@
-import { formatDate, formatZAR } from "@/lib/format";
+import { formatDate, formatZAR, discountClause } from "@/lib/format";
 import { descriptionLines } from "@/lib/description-lines";
 import { unitLabel } from "@/components/UnitSelect";
 
@@ -51,6 +51,9 @@ type DocumentPreviewProps = {
   vatRate: number | string;
   vatAmount: number | string;
   total: number | string;
+  discountRate?: number | string | null;
+  discountAmount?: number | string | null;
+  discountValidUntil?: string | null;
   notes?: string | null;
   terms?: string | null;
   items: LineItem[];
@@ -84,6 +87,9 @@ export function DocumentPreview({
   vatRate,
   vatAmount,
   total,
+  discountRate,
+  discountAmount,
+  discountValidUntil,
   notes,
   terms,
   items,
@@ -221,6 +227,12 @@ export function DocumentPreview({
               <span>Subtotal</span>
               <span className="tabular-nums">{formatZAR(subtotal)}</span>
             </div>
+            {Number(discountRate) > 0 && (
+              <div className="flex justify-between gap-4 text-document-muted">
+                <span>Discount ({Number(discountRate)}%)</span>
+                <span className="tabular-nums">−{formatZAR(discountAmount ?? 0)}</span>
+              </div>
+            )}
             {Number(vatRate) > 0 && (
               <div className="flex justify-between gap-4 text-document-muted">
                 <span>VAT ({Number(vatRate)}%)</span>
@@ -234,6 +246,12 @@ export function DocumentPreview({
           </div>
         </div>
 
+        {discountClause(Number(discountRate ?? 0), discountValidUntil) && (
+          <section className="mt-8 border-t border-document-border pt-5">
+            <div className="text-xs font-medium uppercase text-document-muted">Discount clause</div>
+            <div className="mt-2 text-sm text-document-muted">{discountClause(Number(discountRate ?? 0), discountValidUntil)}</div>
+          </section>
+        )}
         {terms && (
           <section className="mt-8 border-t border-document-border pt-5">
             <div className="text-xs font-medium uppercase text-document-muted">Terms</div>

@@ -22,6 +22,13 @@
       "when": 1792501237124,
       "tag": "0002_deleted_records_archive",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1793371593138,
+      "tag": "0003_quote_discount",
+      "breakpoints": true
     }
   ]
 }
