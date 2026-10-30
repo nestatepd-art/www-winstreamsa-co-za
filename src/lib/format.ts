@@ -38,14 +38,34 @@ export function formatDate(d: string | Date | null | undefined): string {
   }).format(date);
 }
 
+export const DISCOUNT_TIERS = [0, 10, 15, 20, 30] as const;
+export const DISCOUNT_VALID_DAYS = 7;
+
+/** Discount is applied before VAT. */
 export function computeQuoteTotals(
   items: { quantity: number; unit_price: number }[],
   vatRate: number,
+  discountRate = 0,
 ) {
   const subtotal = items.reduce((s, i) => s + Number(i.quantity || 0) * Number(i.unit_price || 0), 0);
-  const vat_amount = +(subtotal * (vatRate / 100)).toFixed(2);
-  const total = +(subtotal + vat_amount).toFixed(2);
-  return { subtotal: +subtotal.toFixed(2), vat_amount, total };
+  const discount_amount = +(subtotal * (discountRate / 100)).toFixed(2);
+  const net = subtotal - discount_amount;
+  const vat_amount = +(net * (vatRate / 100)).toFixed(2);
+  const total = +(net + vat_amount).toFixed(2);
+  return { subtotal: +subtotal.toFixed(2), discount_amount, vat_amount, total };
+}
+
+/** Date (YYYY-MM-DD) the discount expires: 7 days from the given start. */
+export function discountValidUntil(from: Date = new Date()): string {
+  const d = new Date(from);
+  d.setDate(d.getDate() + DISCOUNT_VALID_DAYS);
+  return d.toISOString().slice(0, 10);
+}
+
+export function discountClause(rate: number, validUntil: string | null | undefined): string | null {
+  if (!rate || !validUntil) return null;
+  const nice = new Date(validUntil + "T00:00:00").toLocaleDateString("en-ZA", { day: "2-digit", month: "long", year: "numeric" });
+  return `${rate}% discount is valid for 7 days only, until ${nice}. After this date the discount lapses and standard pricing applies.`;
 }
 
 export function generateQuoteNumber(): string {
