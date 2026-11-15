@@ -1,3 +1,8 @@
+# Sending and monitoring
+- [x] End-to-end send test; block undeliverable client addresses before/after sending (dead domain, provider-blocked address) and verify working address delivers.
+- [x] Check all public pages, sitemap pages and outside links for broken links (none found).
+- [x] In-app monitor emailing sales@nativedigital.co.za about errors, dead/rage clicks, failed actions, broken links, undelivered emails, failed checks and new versions; admin Monitor page.
+
 # Modern drafting and proposals
 - [x] Fix saved-proposal revisions losing the requested communication format; 15 tests pass, and a signed-in tone-only message revision generates without the missing-headings error, saves, and reads back after reopening. Preview build OK. Publishing remains required.
 - [x] Correct proposal drafting to honour the requested communication format; ten tests pass and the exact supplied WhatsApp brief generates four paragraphs in the signed-in app, preserving meeting details and the editable brief without proposal headings. Preview build OK.
