@@ -1,4 +1,5 @@
 import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
+import { undeliverableFromResult } from "@/lib/send-errors";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
@@ -144,6 +145,11 @@ function QuoteViewPage({ quoteId, quote, items, profile }: { quoteId: string; qu
           pdfFilename: base64 ? filename : undefined,
         },
       });
+      const blocked = undeliverableFromResult(res);
+      if (blocked) {
+        toast.error(blocked, { duration: 12000 });
+        return;
+      }
       if (!res.ok) throw new Error("EMAIL_NOT_VERIFIED");
       toast.success(`Sent to ${res.to}`);
       import("@/lib/analytics").then(({ track }) => track("quote_sent", { quote_id: quoteId, total: quote.total }));

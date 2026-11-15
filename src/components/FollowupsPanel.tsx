@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { undeliverableFromResult } from "@/lib/send-errors";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -115,6 +116,12 @@ export function FollowupsPanel({ recordType, recordId, autoNudgeEnabled, onAutoN
                       pdfFilename: pdf?.filename,
                     },
                   });
+                  const blocked = undeliverableFromResult(res);
+                  if (blocked) {
+                    toast.error(blocked, { duration: 12000 });
+                    qc.invalidateQueries({ queryKey });
+                    return;
+                  }
                   if (!res.ok) throw new Error("EMAIL_NOT_VERIFIED");
                   toast.success("Follow-up sent");
                   qc.invalidateQueries({ queryKey });

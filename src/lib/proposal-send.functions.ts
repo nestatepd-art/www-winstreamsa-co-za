@@ -46,6 +46,9 @@ export const sendProposalNow = createServerFn({ method: "POST" })
           : undefined,
       });
     } catch (e: any) {
+      if (e?.code === "RECIPIENT_UNDELIVERABLE") {
+        return { ok: false as const, reason: "RECIPIENT_UNDELIVERABLE" as const, message: String(e.message), to: data.to };
+      }
       if (String(e?.message ?? e).includes("EMAIL_NOT_VERIFIED")) {
         return { ok: false as const, reason: "EMAIL_NOT_VERIFIED" as const, to: data.to };
       }

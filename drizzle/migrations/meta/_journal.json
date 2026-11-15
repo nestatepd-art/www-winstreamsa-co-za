@@ -29,6 +29,13 @@
       "when": 1793371593138,
       "tag": "0003_quote_discount",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1794764526262,
+      "tag": "0004_app_monitoring",
+      "breakpoints": true
     }
   ]
 }

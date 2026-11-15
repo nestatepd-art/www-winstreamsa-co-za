@@ -151,6 +151,22 @@ export const sendFollowupNow = createServerFn({ method: "POST" })
       return { ok: true as const, to: toEmail };
     } catch (e: any) {
       const msg = String(e?.message ?? e).slice(0, 500);
+      if (e?.code === "RECIPIENT_UNDELIVERABLE") {
+        await ((context.supabase as any) as any)
+          .from(tableFor(data.recordType))
+          .update({ status: "failed", error: msg })
+          .eq("id", data.id);
+        await (context.supabase as any).from("nudge_log").insert({
+          user_id: context.userId,
+          record_type: data.recordType,
+          record_id: (fu as any)[parentFkFor(data.recordType)],
+          sent_to: toEmail,
+          subject: (fu as any).subject,
+          status: "failed",
+          error: msg,
+        });
+        return { ok: false as const, reason: "RECIPIENT_UNDELIVERABLE" as const, message: msg, to: toEmail };
+      }
       if (msg.includes("EMAIL_NOT_VERIFIED")) {
         // Provider can't deliver to this recipient yet — let the UI fall back
         // to the user's mail app instead of surfacing a crash.
@@ -224,6 +240,18 @@ export const sendRecordNow = createServerFn({ method: "POST" })
       });
     } catch (e: any) {
       const msg = String(e?.message ?? e);
+      if (e?.code === "RECIPIENT_UNDELIVERABLE") {
+        await (context.supabase as any).from("nudge_log").insert({
+          user_id: context.userId,
+          record_type: data.recordType,
+          record_id: data.recordId,
+          sent_to: toEmail,
+          subject: data.subject,
+          status: "failed",
+          error: msg.slice(0, 500),
+        });
+        return { ok: false as const, reason: "RECIPIENT_UNDELIVERABLE" as const, message: msg, to: toEmail };
+      }
       if (msg.includes("EMAIL_NOT_VERIFIED")) {
         return { ok: false as const, reason: "EMAIL_NOT_VERIFIED" as const, to: toEmail };
       }

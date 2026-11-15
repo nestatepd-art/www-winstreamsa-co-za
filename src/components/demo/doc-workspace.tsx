@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { undeliverableFromResult } from "@/lib/send-errors";
 import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { Plus, Sparkles, Trash2, Send, Download, Loader2, ArrowRight } from "lucide-react";
@@ -246,6 +247,7 @@ function DocCard({ doc }: { doc: DemoDoc }) {
                 const filename = pdfFilename(doc);
 
                 let sent = false;
+                let blocked: string | null = null;
                 try {
                   const pdfBase64 = await blobToBase64(blob);
                   const res = await sendPublicDocumentEmail({
@@ -263,8 +265,14 @@ function DocCard({ doc }: { doc: DemoDoc }) {
                     },
                   });
                   sent = res.ok === true;
+                  blocked = undeliverableFromResult(res);
                 } catch {
                   sent = false;
+                }
+
+                if (blocked) {
+                  toast.error(blocked, { duration: 12000 });
+                  return;
                 }
 
                 updateDoc(doc.id, { status: "sent" });

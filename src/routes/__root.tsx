@@ -14,11 +14,15 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { installStaleServerFunctionReloadGuard } from "../lib/stale-server-function-reload";
 import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { installMonitor, reportBoundaryError, reportBrokenLink } from "@/lib/monitor-client";
 import { initAnalytics, identifyUser, resetAnalytics, track, trackPageview } from "@/lib/analytics";
 
 installStaleServerFunctionReloadGuard();
 
 function NotFoundComponent() {
+  useEffect(() => {
+    reportBrokenLink();
+  }, []);
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
@@ -45,6 +49,7 @@ function ErrorComponent({ error, reset }: { error: unknown; reset: () => void })
   const router = useRouter();
   useEffect(() => {
     reportLovableError(error, { boundary: "tanstack_root_error_component" });
+    reportBoundaryError(error);
   }, [error]);
 
   return (
@@ -186,6 +191,7 @@ function RootComponent() {
   const router = useRouter();
 
   useEffect(() => {
+    installMonitor();
     initAnalytics();
     // Capture the initial pageview + every SPA navigation.
     trackPageview(router.state.location.pathname);

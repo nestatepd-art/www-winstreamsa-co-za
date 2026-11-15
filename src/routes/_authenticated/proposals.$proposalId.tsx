@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { undeliverableFromResult } from "@/lib/send-errors";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState, useEffect, useMemo } from "react";
@@ -183,6 +184,8 @@ function ProposalDetail() {
         for (let i = 0; i < bytes.length; i += 0x8000) binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
         const res = await sendProposal({ data: { proposalId, to: email, subject, bodyText: body,
           clientName: client?.name ?? null, pdfBase64: btoa(binary), pdfFilename: filename } });
+        const blocked = undeliverableFromResult(res);
+        if (blocked) throw new Error(blocked);
         if (!res.ok) throw new Error("Email sending is unavailable until the sending address is verified. Your proposal has been kept.");
         toast.success(`Sent to ${res.to} with PDF attached`);
 

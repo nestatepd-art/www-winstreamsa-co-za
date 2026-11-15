@@ -1,3 +1,10 @@
+import {
+  RecipientUndeliverableError,
+  checkEmailDomain,
+  suppressedMessage,
+  undeliverableMessage,
+} from "./email-deliverability.server";
+
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/resend";
 
 export type ResendAttachment = {
@@ -13,6 +20,8 @@ export type ResendSendInput = {
   fromName?: string;
   replyTo?: string | null;
   attachments?: ResendAttachment[];
+  /** Report blocked/undelivered sends to the app monitor (default true). */
+  monitor?: boolean;
 };
 
 /** Cached lookup of a verified sending domain (so direct send starts working the moment DNS verifies). */
@@ -38,22 +47,74 @@ async function getVerifiedDomain(lovableKey: string, resendKey: string): Promise
   return verifiedDomainCache.value;
 }
 
+async function reportBlocked(input: ResendSendInput, message: string, stage: string) {
+  if (input.monitor === false) return;
+  try {
+    const { recordMonitorEvent } = await import("./monitor.server");
+    await recordMonitorEvent({
+      kind: "email_blocked",
+      severity: "warning",
+      title: `Email to ${input.to} could not be delivered`,
+      fingerprint: `email_blocked|${input.to.toLowerCase()}`,
+      dedupeHours: 24,
+      detail: { Recipient: input.to, Sender: input.fromName, Subject: input.subject, Stage: stage, Reason: message },
+    });
+  } catch {
+    /* monitoring must never break sending */
+  }
+}
+
+/** After the provider accepts a send, confirm it wasn't immediately suppressed. */
+async function confirmNotSuppressed(id: string, lovableKey: string, resendKey: string) {
+  for (const waitMs of [1200, 1800]) {
+    await new Promise((r) => setTimeout(r, waitMs));
+    try {
+      const res = await fetch(`${GATEWAY_URL}/emails/${id}`, {
+        headers: { Authorization: `Bearer ${lovableKey}`, "X-Connection-Api-Key": resendKey },
+      });
+      if (!res.ok) return "unknown";
+      const json: any = await res.json();
+      const ev = String(json?.last_event ?? "");
+      if (ev === "suppressed" || ev === "bounced" || ev === "failed") return ev;
+      if (ev === "delivered" || ev === "sent" || ev === "delivery_delayed") return ev;
+    } catch {
+      return "unknown";
+    }
+  }
+  return "unknown";
+}
+
 export async function sendViaResend(input: ResendSendInput): Promise<{ id?: string; raw: string }> {
   const LOVABLE_API_KEY = process.env.LOVABLE_API_KEY;
   const RESEND_API_KEY = process.env.RESEND_API_KEY;
   if (!LOVABLE_API_KEY || !RESEND_API_KEY) throw new Error("Email credentials not configured");
+
+  const to = String(input.to ?? "").trim();
+  // 1) The recipient's domain must be able to receive mail at all.
+  const recipientCheck = await checkEmailDomain(to);
+  if (!recipientCheck.ok) {
+    const message = undeliverableMessage(to, recipientCheck.reason);
+    await reportBlocked(input, message, "before sending (address check)");
+    throw new RecipientUndeliverableError(to, message);
+  }
+  // A reply-to on a dead domain means client replies bounce; send without it.
+  let replyTo = input.replyTo?.trim() || null;
+  if (replyTo) {
+    const replyCheck = await checkEmailDomain(replyTo);
+    if (!replyCheck.ok) replyTo = null;
+  }
 
   const fromLabel = (input.fromName || "WinStream").replace(/[<>]/g, "").trim() || "WinStream";
   const domain = await getVerifiedDomain(LOVABLE_API_KEY, RESEND_API_KEY);
   const fromAddress = domain ? `noreply@${domain}` : "onboarding@resend.dev";
   const body: Record<string, unknown> = {
     from: `${fromLabel} <${fromAddress}>`,
-    to: [input.to],
+    to: [to],
     subject: input.subject,
     html: input.html,
   };
 
-  if (input.replyTo) body.reply_to = input.replyTo;
+  if (replyTo) body.reply_to = replyTo;
   if (input.attachments?.length) body.attachments = input.attachments;
 
   const res = await fetch(`${GATEWAY_URL}/emails`, {
@@ -72,13 +133,39 @@ export async function sendViaResend(input: ResendSendInput): Promise<{ id?: stri
     if (res.status === 403 && /only send testing emails|verify a domain/i.test(text)) {
       throw new Error("EMAIL_NOT_VERIFIED");
     }
+    if (input.monitor !== false) {
+      try {
+        const { recordMonitorEvent } = await import("./monitor.server");
+        await recordMonitorEvent({
+          kind: "request_failed",
+          severity: "critical",
+          title: `Email service rejected a send (${res.status})`,
+          fingerprint: `email_provider|${res.status}`,
+          detail: { Status: res.status, Response: text.slice(0, 400), Recipient: to },
+        });
+      } catch {
+        /* ignore */
+      }
+    }
     throw new Error(`Resend ${res.status}: ${text.slice(0, 400)}`);
   }
+  let id: string | undefined;
   try {
-    return { id: JSON.parse(text)?.id, raw: text };
+    id = JSON.parse(text)?.id;
   } catch {
-    return { raw: text };
+    /* ignore */
   }
+
+  // 2) The provider accepts sends to suppressed addresses and silently drops them.
+  if (id) {
+    const status = await confirmNotSuppressed(id, LOVABLE_API_KEY, RESEND_API_KEY);
+    if (status === "suppressed" || status === "bounced" || status === "failed") {
+      const message = suppressedMessage(to);
+      await reportBlocked(input, message, `after sending (provider status: ${status})`);
+      throw new RecipientUndeliverableError(to, message);
+    }
+  }
+  return { id, raw: text };
 }
 
 export function brandedEmailHtml(opts: {

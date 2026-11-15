@@ -10,6 +10,7 @@ import {
   CreditCard,
   MessageSquare,
   Newspaper,
+  Activity,
   BellRing,
   Star,
   Repeat,
@@ -153,6 +154,14 @@ export function AppSidebar() {
                       <Link to="/admin/reviews" onClick={handleNavClick} className="flex items-center gap-2">
                         <Star className="h-4 w-4" />
                         {!collapsed && <span>Reviews Admin</span>}
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild isActive={isActive("/admin/monitor")}>
+                      <Link to="/admin/monitor" onClick={handleNavClick} className="flex items-center gap-2">
+                        <Activity className="h-4 w-4" />
+                        {!collapsed && <span>App Monitor</span>}
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

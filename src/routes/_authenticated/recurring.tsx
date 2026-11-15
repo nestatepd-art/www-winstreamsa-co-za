@@ -220,7 +220,7 @@ function RecurringPage() {
     mutationFn: (id: string) => runNow({ data: { id } }),
     onSuccess: (res: any) => {
       if (res.emailed) toast.success("Invoice created and emailed to the client");
-      else toast.warning(`Invoice created — email not sent (${res.emailError ?? "auto-send off"})`);
+      else toast.warning(`Invoice created — email not sent. ${res.emailError ?? "Auto-send is off."}`, { duration: 12000 });
       refresh();
     },
     onError: (e: any) => toast.error(e.message),
@@ -470,7 +470,7 @@ function RecurringPage() {
               <CardContent className="space-y-3">
                 <div className="text-sm text-muted-foreground">
                   {(s.items ?? []).length} line item(s) · auto-email {s.auto_send ? "on" : "off"}
-                  {s.run_count ? ` · sent ${s.run_count} time(s)` : ""}
+                  {s.run_count ? ` · issued ${s.run_count} time(s)` : ""}
                   {s.last_run_at ? ` · last run ${new Date(s.last_run_at).toLocaleString("en-ZA")}` : ""}
                 </div>
                 {s.last_error && <p className="text-sm text-destructive">Last issue: {s.last_error}</p>}

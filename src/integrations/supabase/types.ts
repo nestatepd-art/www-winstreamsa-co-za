@@ -713,6 +713,66 @@ export type Database = {
           },
         ]
       }
+      monitor_events: {
+        Row: {
+          build_id: string | null
+          created_at: string
+          detail: Json
+          fingerprint: string
+          id: string
+          kind: string
+          notified: boolean
+          path: string | null
+          severity: string
+          title: string
+          user_agent: string | null
+        }
+        Insert: {
+          build_id?: string | null
+          created_at?: string
+          detail?: Json
+          fingerprint: string
+          id?: string
+          kind: string
+          notified?: boolean
+          path?: string | null
+          severity?: string
+          title: string
+          user_agent?: string | null
+        }
+        Update: {
+          build_id?: string | null
+          created_at?: string
+          detail?: Json
+          fingerprint?: string
+          id?: string
+          kind?: string
+          notified?: boolean
+          path?: string | null
+          severity?: string
+          title?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
+      monitor_state: {
+        Row: {
+          key: string
+          updated_at: string
+          value: Json
+        }
+        Insert: {
+          key: string
+          updated_at?: string
+          value?: Json
+        }
+        Update: {
+          key?: string
+          updated_at?: string
+          value?: Json
+        }
+        Relationships: []
+      }
       nudge_confirmations: {
         Row: {
           created_at: string

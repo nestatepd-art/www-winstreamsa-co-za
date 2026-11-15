@@ -46,6 +46,7 @@ import { Route as TryProposalsRouteImport } from './routes/try/proposals'
 import { Route as TryQuotesRouteImport } from './routes/try/quotes'
 import { Route as TrySettingsRouteImport } from './routes/try/settings'
 import { Route as AuthenticatedAdminBlogRouteImport } from './routes/_authenticated/admin.blog'
+import { Route as AuthenticatedAdminMonitorRouteImport } from './routes/_authenticated/admin.monitor'
 import { Route as AuthenticatedAdminReviewsRouteImport } from './routes/_authenticated/admin.reviews'
 import { Route as AuthenticatedChatIndexRouteImport } from './routes/_authenticated/chat.index'
 import { Route as AuthenticatedChatThreadIdRouteImport } from './routes/_authenticated/chat.$threadId'
@@ -65,6 +66,8 @@ import { Route as AuthenticatedQuotesQuoteIdEditRouteImport } from './routes/_au
 import { Route as ApiPublicHooksAutoNudgeRouteImport } from './routes/api/public/hooks/auto-nudge'
 import { Route as ApiPublicHooksNudgeConfirmRouteImport } from './routes/api/public/hooks/nudge-confirm'
 import { Route as ApiPublicHooksRecurringInvoicesRouteImport } from './routes/api/public/hooks/recurring-invoices'
+import { Route as ApiPublicMonitorHeartbeatRouteImport } from './routes/api/public/monitor/heartbeat'
+import { Route as ApiPublicMonitorReportRouteImport } from './routes/api/public/monitor/report'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
@@ -255,6 +258,12 @@ const AuthenticatedAdminBlogRoute = AuthenticatedAdminBlogRouteImport.update({
   path: '/admin/blog',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAdminMonitorRoute =
+  AuthenticatedAdminMonitorRouteImport.update({
+    id: '/admin/monitor',
+    path: '/admin/monitor',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminReviewsRoute =
   AuthenticatedAdminReviewsRouteImport.update({
     id: '/admin/reviews',
@@ -364,6 +373,17 @@ const ApiPublicHooksRecurringInvoicesRoute =
     path: '/api/public/hooks/recurring-invoices',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicMonitorHeartbeatRoute =
+  ApiPublicMonitorHeartbeatRouteImport.update({
+    id: '/api/public/monitor/heartbeat',
+    path: '/api/public/monitor/heartbeat',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicMonitorReportRoute = ApiPublicMonitorReportRouteImport.update({
+  id: '/api/public/monitor/report',
+  path: '/api/public/monitor/report',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicPaymentsWebhookRoute =
   ApiPublicPaymentsWebhookRouteImport.update({
     id: '/api/public/payments/webhook',
@@ -424,6 +444,7 @@ export interface FileRoutesByFullPath {
   '/blog/': typeof BlogIndexRoute
   '/try/': typeof TryIndexRoute
   '/admin/blog': typeof AuthenticatedAdminBlogRoute
+  '/admin/monitor': typeof AuthenticatedAdminMonitorRoute
   '/admin/reviews': typeof AuthenticatedAdminReviewsRoute
   '/chat/$threadId': typeof AuthenticatedChatThreadIdRoute
   '/clients/new': typeof AuthenticatedClientsNewRoute
@@ -443,6 +464,8 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/auto-nudge': typeof ApiPublicHooksAutoNudgeRoute
   '/api/public/hooks/nudge-confirm': typeof ApiPublicHooksNudgeConfirmRoute
   '/api/public/hooks/recurring-invoices': typeof ApiPublicHooksRecurringInvoicesRoute
+  '/api/public/monitor/heartbeat': typeof ApiPublicMonitorHeartbeatRoute
+  '/api/public/monitor/report': typeof ApiPublicMonitorReportRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -483,6 +506,7 @@ export interface FileRoutesByTo {
   '/blog': typeof BlogIndexRoute
   '/try': typeof TryIndexRoute
   '/admin/blog': typeof AuthenticatedAdminBlogRoute
+  '/admin/monitor': typeof AuthenticatedAdminMonitorRoute
   '/admin/reviews': typeof AuthenticatedAdminReviewsRoute
   '/chat/$threadId': typeof AuthenticatedChatThreadIdRoute
   '/clients/new': typeof AuthenticatedClientsNewRoute
@@ -502,6 +526,8 @@ export interface FileRoutesByTo {
   '/api/public/hooks/auto-nudge': typeof ApiPublicHooksAutoNudgeRoute
   '/api/public/hooks/nudge-confirm': typeof ApiPublicHooksNudgeConfirmRoute
   '/api/public/hooks/recurring-invoices': typeof ApiPublicHooksRecurringInvoicesRoute
+  '/api/public/monitor/heartbeat': typeof ApiPublicMonitorHeartbeatRoute
+  '/api/public/monitor/report': typeof ApiPublicMonitorReportRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -546,6 +572,7 @@ export interface FileRoutesById {
   '/blog/': typeof BlogIndexRoute
   '/try/': typeof TryIndexRoute
   '/_authenticated/admin/blog': typeof AuthenticatedAdminBlogRoute
+  '/_authenticated/admin/monitor': typeof AuthenticatedAdminMonitorRoute
   '/_authenticated/admin/reviews': typeof AuthenticatedAdminReviewsRoute
   '/_authenticated/chat/$threadId': typeof AuthenticatedChatThreadIdRoute
   '/_authenticated/clients/new': typeof AuthenticatedClientsNewRoute
@@ -565,6 +592,8 @@ export interface FileRoutesById {
   '/api/public/hooks/auto-nudge': typeof ApiPublicHooksAutoNudgeRoute
   '/api/public/hooks/nudge-confirm': typeof ApiPublicHooksNudgeConfirmRoute
   '/api/public/hooks/recurring-invoices': typeof ApiPublicHooksRecurringInvoicesRoute
+  '/api/public/monitor/heartbeat': typeof ApiPublicMonitorHeartbeatRoute
+  '/api/public/monitor/report': typeof ApiPublicMonitorReportRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -609,6 +638,7 @@ export interface FileRouteTypes {
     | '/blog/'
     | '/try/'
     | '/admin/blog'
+    | '/admin/monitor'
     | '/admin/reviews'
     | '/chat/$threadId'
     | '/clients/new'
@@ -628,6 +658,8 @@ export interface FileRouteTypes {
     | '/api/public/hooks/auto-nudge'
     | '/api/public/hooks/nudge-confirm'
     | '/api/public/hooks/recurring-invoices'
+    | '/api/public/monitor/heartbeat'
+    | '/api/public/monitor/report'
     | '/api/public/payments/webhook'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -668,6 +700,7 @@ export interface FileRouteTypes {
     | '/blog'
     | '/try'
     | '/admin/blog'
+    | '/admin/monitor'
     | '/admin/reviews'
     | '/chat/$threadId'
     | '/clients/new'
@@ -687,6 +720,8 @@ export interface FileRouteTypes {
     | '/api/public/hooks/auto-nudge'
     | '/api/public/hooks/nudge-confirm'
     | '/api/public/hooks/recurring-invoices'
+    | '/api/public/monitor/heartbeat'
+    | '/api/public/monitor/report'
     | '/api/public/payments/webhook'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -730,6 +765,7 @@ export interface FileRouteTypes {
     | '/blog/'
     | '/try/'
     | '/_authenticated/admin/blog'
+    | '/_authenticated/admin/monitor'
     | '/_authenticated/admin/reviews'
     | '/_authenticated/chat/$threadId'
     | '/_authenticated/clients/new'
@@ -749,6 +785,8 @@ export interface FileRouteTypes {
     | '/api/public/hooks/auto-nudge'
     | '/api/public/hooks/nudge-confirm'
     | '/api/public/hooks/recurring-invoices'
+    | '/api/public/monitor/heartbeat'
+    | '/api/public/monitor/report'
     | '/api/public/payments/webhook'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -781,6 +819,8 @@ export interface RootRouteChildren {
   ApiPublicHooksAutoNudgeRoute: typeof ApiPublicHooksAutoNudgeRoute
   ApiPublicHooksNudgeConfirmRoute: typeof ApiPublicHooksNudgeConfirmRoute
   ApiPublicHooksRecurringInvoicesRoute: typeof ApiPublicHooksRecurringInvoicesRoute
+  ApiPublicMonitorHeartbeatRoute: typeof ApiPublicMonitorHeartbeatRoute
+  ApiPublicMonitorReportRoute: typeof ApiPublicMonitorReportRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
@@ -1048,6 +1088,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminBlogRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/monitor': {
+      id: '/_authenticated/admin/monitor'
+      path: '/admin/monitor'
+      fullPath: '/admin/monitor'
+      preLoaderRoute: typeof AuthenticatedAdminMonitorRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin/reviews': {
       id: '/_authenticated/admin/reviews'
       path: '/admin/reviews'
@@ -1181,6 +1228,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksRecurringInvoicesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/monitor/heartbeat': {
+      id: '/api/public/monitor/heartbeat'
+      path: '/api/public/monitor/heartbeat'
+      fullPath: '/api/public/monitor/heartbeat'
+      preLoaderRoute: typeof ApiPublicMonitorHeartbeatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/monitor/report': {
+      id: '/api/public/monitor/report'
+      path: '/api/public/monitor/report'
+      fullPath: '/api/public/monitor/report'
+      preLoaderRoute: typeof ApiPublicMonitorReportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/payments/webhook': {
       id: '/api/public/payments/webhook'
       path: '/api/public/payments/webhook'
@@ -1275,6 +1336,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedWriteReviewRoute: typeof AuthenticatedWriteReviewRoute
   AuthenticatedAdminBlogRoute: typeof AuthenticatedAdminBlogRoute
+  AuthenticatedAdminMonitorRoute: typeof AuthenticatedAdminMonitorRoute
   AuthenticatedAdminReviewsRoute: typeof AuthenticatedAdminReviewsRoute
   AuthenticatedInvoicesInvoiceIdRoute: typeof AuthenticatedInvoicesInvoiceIdRouteWithChildren
   AuthenticatedInvoicesNewRoute: typeof AuthenticatedInvoicesNewRoute
@@ -1297,6 +1359,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedWriteReviewRoute: AuthenticatedWriteReviewRoute,
   AuthenticatedAdminBlogRoute: AuthenticatedAdminBlogRoute,
+  AuthenticatedAdminMonitorRoute: AuthenticatedAdminMonitorRoute,
   AuthenticatedAdminReviewsRoute: AuthenticatedAdminReviewsRoute,
   AuthenticatedInvoicesInvoiceIdRoute:
     AuthenticatedInvoicesInvoiceIdRouteWithChildren,
@@ -1371,6 +1434,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksAutoNudgeRoute: ApiPublicHooksAutoNudgeRoute,
   ApiPublicHooksNudgeConfirmRoute: ApiPublicHooksNudgeConfirmRoute,
   ApiPublicHooksRecurringInvoicesRoute: ApiPublicHooksRecurringInvoicesRoute,
+  ApiPublicMonitorHeartbeatRoute: ApiPublicMonitorHeartbeatRoute,
+  ApiPublicMonitorReportRoute: ApiPublicMonitorReportRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
