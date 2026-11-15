@@ -5,3 +5,4 @@
 - Shared drafting uses a server-only Responses stream and centrally defined model, reasoning effort and schema configuration, because every document output must use consistent drafting quality without exposing credentials.
 - Proposal generation and revision share a dedicated prompt and format-aware validation; explicit communication requests override proposal headings, tone-only revisions inherit the saved document's format, and numbered headings are accepted, because the workspace must honour the requested deliverable on new and saved drafts.
 - Proposal preview, download and email attachment use the same generated PDF blob, because clients must receive exactly the document the owner reviewed.
+- Idle sign-out tracks last activity in localStorage shared across tabs and sign-in screens reset that clock, because a fresh sign-in must not inherit a stale idle timestamp.

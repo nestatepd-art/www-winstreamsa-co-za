@@ -12,6 +12,7 @@ import { PasswordInput } from "@/components/password-input";
 import winstreamLogo from "@/assets/winstream-logo.png.asset.json";
 import { toast } from "sonner";
 import { authRedirectUrl } from "@/lib/auth-redirect";
+import { IDLE_LOGOUT_FLAG, resetIdleClock } from "@/lib/idle-timeout";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
@@ -39,6 +40,21 @@ function AuthPage() {
   const [forgotOpen, setForgotOpen] = useState(false);
   const [pendingEmail, setPendingEmail] = useState<string | null>(null);
   const [resendCooldown, setResendCooldown] = useState(0);
+
+  useEffect(() => {
+    resetIdleClock();
+    try {
+      if (window.sessionStorage.getItem(IDLE_LOGOUT_FLAG)) {
+        window.sessionStorage.removeItem(IDLE_LOGOUT_FLAG);
+        toast.info("Signed out after 15 minutes of inactivity", {
+          description: "Sign in again to continue. Your unsaved work was autosaved.",
+          duration: 8000,
+        });
+      }
+    } catch {
+      /* ignore */
+    }
+  }, []);
 
   useEffect(() => {
     if (resendCooldown <= 0) return;

@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { resetIdleClock } from "@/lib/idle-timeout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
@@ -25,6 +26,7 @@ function AuthCallbackPage() {
   const [state, setState] = useState<"working" | "failed">("working");
 
   useEffect(() => {
+    resetIdleClock();
     let cancelled = false;
     (async () => {
       const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));

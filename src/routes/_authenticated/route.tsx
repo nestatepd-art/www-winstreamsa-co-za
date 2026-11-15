@@ -6,6 +6,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { DraftTaskbar } from "@/components/DraftTaskbar";
 import { isOnboardingAllowedPath, useOnboardingStatus } from "@/hooks/use-onboarding";
+import { useIdleLogout } from "@/hooks/use-idle-logout";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -50,6 +51,7 @@ function OnboardingGate() {
 }
 
 function AuthedLayout() {
+  useIdleLogout();
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">

@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { resetIdleClock } from "@/lib/idle-timeout";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -28,6 +29,7 @@ function ResetPasswordPage() {
   // Establish the recovery session from whichever link format arrived:
   // #access_token=... (implicit), ?code=... (PKCE) or ?token_hash=...&type=recovery.
   useEffect(() => {
+    resetIdleClock();
     let cancelled = false;
     (async () => {
       const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
